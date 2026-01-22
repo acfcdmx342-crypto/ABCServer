@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Página de Información</title>
+    <title>Info - Empresas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap -->
@@ -21,14 +21,16 @@
             background: #0f172a;
             color: #fff;
         }
+        .sidebar h5 {
+            color: #fff;
+        }
         .sidebar a {
             color: #cbd5e1;
             text-decoration: none;
             padding: 12px 20px;
             display: block;
         }
-        .sidebar a:hover,
-        .sidebar a.active {
+        .sidebar a:hover {
             background: #1e293b;
             color: #fff;
         }
@@ -41,6 +43,7 @@
 </head>
 
 <body>
+
 <div class="d-flex">
 
     <!-- SIDEBAR -->
@@ -68,40 +71,141 @@
 
 </div>
 
-<script>
-    function cargar(seccion) {
-        let contenido = document.getElementById("contenido");
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        switch (seccion) {
-            case 'empresas':
-                contenido.innerHTML = '<h3>Empresas</h3><p>Aquí se gestionarán las empresas.</p>';
-                break;
-            case 'zonas':
-                contenido.innerHTML = '<h3>Zonas</h3><p>Administración de zonas.</p>';
-                break;
-            case 'estados':
-                contenido.innerHTML = '<h3>Estados</h3><p>Catálogo de estados.</p>';
-                break;
-            case 'tipo':
-                contenido.innerHTML = '<h3>Tipo</h3><p>Tipos disponibles.</p>';
-                break;
-            case 'perfil':
-                contenido.innerHTML = '<h3>Perfil</h3><p>Gestión de perfiles.</p>';
-                break;
-            case 'unidad':
-                contenido.innerHTML = '<h3>Unidad</h3><p>Unidades organizacionales.</p>';
-                break;
-            case 'programa':
-                contenido.innerHTML = '<h3>Iniciar programa</h3><p>Ejecución del programa.</p>';
-                break;
-            case 'personal':
-                contenido.innerHTML = '<h3>Personal</h3><p>Gestión de personal.</p>';
-                break;
-            case 'servidores':
-                contenido.innerHTML = '<h3>Servidores</h3><p>Administración de servidores.</p>';
-                break;
-        }
+<script>
+/* ======================
+   DATOS EMPRESAS
+====================== */
+let empresas = [
+    "GROMA146 (SAS)",
+    "FRANQUICIA",
+    "ACF",
+    "GR",
+    "OMA",
+    "P57",
+    "PINGOL",
+    "PINPJ",
+    "PPJ",
+    "PUMO",
+    "SERMID"
+];
+
+/* ======================
+   NAVEGACIÓN
+====================== */
+function cargar(seccion) {
+    if (seccion === 'empresas') renderEmpresas();
+    else {
+        document.getElementById("contenido").innerHTML = `
+            <h3>${seccion.charAt(0).toUpperCase() + seccion.slice(1)}</h3>
+            <p>Sección en construcción.</p>
+        `;
     }
+}
+
+/* ======================
+   EMPRESAS
+====================== */
+function renderEmpresas() {
+
+    let filas = empresas.map((e, i) => `
+        <tr>
+            <td>${e}</td>
+            <td class="text-center">
+                <button class="btn btn-sm btn-warning" onclick="editarEmpresa(${i})">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="eliminarEmpresa(${i})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join("");
+
+    document.getElementById("contenido").innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Empresas</h3>
+            <button class="btn btn-primary" onclick="nuevaEmpresa()">
+                <i class="bi bi-plus-circle"></i> Agregar
+            </button>
+        </div>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Empresa</th>
+                    <th width="120">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${filas}
+            </tbody>
+        </table>
+
+        <!-- MODAL -->
+        <div class="modal fade" id="modalEmpresa" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tituloModal"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label">Nombre de la empresa</label>
+                        <input type="text" id="nombreEmpresa" class="form-control">
+                        <input type="hidden" id="indexEmpresa">
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button class="btn btn-success" onclick="guardarEmpresa()">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function nuevaEmpresa() {
+    document.getElementById("tituloModal").innerText = "Agregar empresa";
+    document.getElementById("nombreEmpresa").value = "";
+    document.getElementById("indexEmpresa").value = "";
+    new bootstrap.Modal(document.getElementById("modalEmpresa")).show();
+}
+
+function editarEmpresa(index) {
+    document.getElementById("tituloModal").innerText = "Editar empresa";
+    document.getElementById("nombreEmpresa").value = empresas[index];
+    document.getElementById("indexEmpresa").value = index;
+    new bootstrap.Modal(document.getElementById("modalEmpresa")).show();
+}
+
+function guardarEmpresa() {
+    let nombre = document.getElementById("nombreEmpresa").value.trim();
+    let index = document.getElementById("indexEmpresa").value;
+
+    if (!nombre) {
+        alert("El nombre de la empresa es obligatorio");
+        return;
+    }
+
+    if (index === "") {
+        empresas.push(nombre);
+    } else {
+        empresas[index] = nombre;
+    }
+
+    bootstrap.Modal.getInstance(document.getElementById("modalEmpresa")).hide();
+    renderEmpresas();
+}
+
+function eliminarEmpresa(index) {
+    if (confirm("¿Deseas eliminar esta empresa?")) {
+        empresas.splice(index, 1);
+        renderEmpresas();
+    }
+}
 </script>
 
 </body>
