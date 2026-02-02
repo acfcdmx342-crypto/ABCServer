@@ -5,67 +5,27 @@
     <title>Info - Catálogos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body { overflow-x: hidden; }
-
-        .sidebar {
-            width: 260px;
-            min-height: 100vh;
-            background: #0f172a;
-            color: #fff;
-        }
-
-        .sidebar h5 {
-            color: #fff;
-        }
-
-        .sidebar a {
-            color: #cbd5e1;
-            text-decoration: none;
-            padding: 12px 20px;
-            display: block;
-            font-size: 14px;
-        }
-
-        .sidebar a:hover {
-            background: #1e293b;
-            color: #fff;
-        }
-
-        .content {
-            padding: 20px;
-            background: #f8fafc;
-            min-height: 100vh;
-        }
-
-        table th, table td {
-            font-size: 12px;
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        table th:first-child,
-        table td:first-child {
-            text-align: left;
-            white-space: nowrap;
-        }
+        .sidebar { width: 260px; min-height: 100vh; background: #0f172a; color: #fff; }
+        .sidebar h5 { color: #fff; }
+        .sidebar a { color: #cbd5e1; text-decoration: none; padding: 12px 20px; display: block; font-size: 14px; }
+        .sidebar a:hover { background: #1e293b; color: #fff; }
+        .content { padding: 20px; background: #f8fafc; min-height: 100vh; }
+        table th, table td { font-size: 11px; text-align: center; vertical-align: middle; }
+        table th:first-child, table td:first-child { text-align: left; white-space: nowrap; font-weight: bold; }
     </style>
 </head>
 
 <body>
 
 <div class="d-flex">
-
-    <!-- ===== SIDEBAR ===== -->
     <div class="sidebar">
         <h5 class="text-center py-3 border-bottom">Información</h5>
-
         <a href="#" onclick="cargar('empresas')"><i class="bi bi-building"></i> Empresas</a>
         <a href="#" onclick="cargar('zonas')"><i class="bi bi-geo"></i> Zonas</a>
         <a href="#" onclick="cargar('estados')"><i class="bi bi-map"></i> Estados</a>
@@ -77,200 +37,205 @@
         <a href="#" onclick="cargar('servidores')"><i class="bi bi-hdd-network"></i> Servidores</a>
     </div>
 
-    <!-- ===== CONTENT ===== -->
     <div class="flex-grow-1 content">
         <div id="contenido">
             <h3>Bienvenido</h3>
             <p>Selecciona una opción del menú lateral.</p>
         </div>
     </div>
-
 </div>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue, remove, update } 
+    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-<script>
-/* =================================================
-   COLUMNAS EMPRESAS
-================================================= */
-const columnas = [
-    "GROMA146 (SAS)",
-    "GROMA58 (SUMMA)",
-    "GROMA148ASUMMA FERRE",
-    "GROMADW1 (CAS)",
-    "GROMATASK",
-    "GROMAES (WEB)",
-    "GROMAPROG",
-    "GROMAPWBI",
-    "GROMAW1 SUMMA ADV",
-    "GROMA146DB",
-    "GROMA58DB",
-    "GROMA148DB1",
-    "GROMA151DB",
-    "GROMA Sadv PRUEBAS ADV",
-    "GROMA XML",
-    "GROMASAP147D1",
-    "GROMASAP149DB"
-];
+    const firebaseConfig = {
+        databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/"
+    };
 
-/* =================================================
-   DATA
-================================================= */
-let empresas = [
-    crearEmpresa("EMPRESA DEMO")
-];
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-function crearEmpresa(nombre) {
-    let obj = { nombre };
-    columnas.forEach(c => obj[c] = false);
-    return obj;
-}
+    /* =================================================
+       COLUMNAS EMPRESAS
+    ================================================= */
+    const columnas = [
+        "GROMA146 (SAS)", "GROMA58 (SUMMA)", "GROMA148ASUMMA FERRE",
+        "GROMADW1 (CAS)", "GROMATASK", "GROMAES (WEB)",
+        "GROMAPROG", "GROMAPWBI", "GROMAW1 SUMMA ADV",
+        "GROMA146DB", "GROMA58DB", "GROMA148DB1",
+        "GROMA151DB", "GROMA Sadv PRUEBAS ADV", "GROMA XML",
+        "GROMASAP147D1", "GROMASAP149DB"
+    ];
 
-/* =================================================
-   NAVEGACIÓN
-================================================= */
-function cargar(seccion) {
-    if (seccion === 'empresas') {
-        renderEmpresas();
-    } else {
+    let empresasData = {}; // Objeto para mapear IDs de Firebase con la data
+
+    /* =================================================
+       CRUD FIREBASE
+    ================================================= */
+    
+    // Escuchar cambios en tiempo real
+    onValue(ref(db, 'empresas'), (snapshot) => {
+        empresasData = snapshot.val() || {};
+        // Si estamos en la sección empresas, refrescar tabla
+        if (document.getElementById("btnAgregarEmpresa")) {
+            renderEmpresas();
+        }
+    });
+
+    window.cargar = (seccion) => {
+        if (seccion === 'empresas') {
+            renderEmpresas();
+        } else {
+            document.getElementById("contenido").innerHTML = `
+                <h3>${seccion.charAt(0).toUpperCase() + seccion.slice(1)}</h3>
+                <p>Módulo en construcción.</p>
+            `;
+        }
+    };
+
+    function renderEmpresas() {
+        let headers = columnas.map(c => `<th>${c}</th>`).join("");
+        let rows = "";
+
+        Object.keys(empresasData).forEach((id) => {
+            let e = empresasData[id];
+            let checks = columnas.map(c =>
+                `<td><input type="checkbox" ${e[c] ? "checked" : ""} disabled></td>`
+            ).join("");
+
+            rows += `
+                <tr>
+                    <td>${e.nombre}</td>
+                    ${checks}
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editarEmpresa('${id}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarEmpresa('${id}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
         document.getElementById("contenido").innerHTML = `
-            <h3>${seccion.charAt(0).toUpperCase() + seccion.slice(1)}</h3>
-            <p>Módulo en construcción.</p>
+            <div class="d-flex justify-content-between mb-3">
+                <h3>Empresas</h3>
+                <button id="btnAgregarEmpresa" class="btn btn-primary" onclick="nuevaEmpresa()">
+                    <i class="bi bi-plus-circle"></i> Agregar
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Empresa</th>
+                            ${headers}
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+            ${modalEmpresaHTML()}
         `;
     }
-}
 
-/* =================================================
-   EMPRESAS
-================================================= */
-function renderEmpresas() {
+    window.nuevaEmpresa = () => {
+        document.getElementById("tituloModal").innerText = "Agregar empresa";
+        document.getElementById("empresaNombre").value = "";
+        document.getElementById("empresaID").value = "";
+        columnas.forEach(c => document.getElementById(`chk_${c}`).checked = false);
+        new bootstrap.Modal(document.getElementById("modalEmpresa")).show();
+    };
 
-    let headers = columnas.map(c => `<th>${c}</th>`).join("");
+    window.editarEmpresa = (id) => {
+        let e = empresasData[id];
+        document.getElementById("tituloModal").innerText = "Editar empresa";
+        document.getElementById("empresaNombre").value = e.nombre;
+        document.getElementById("empresaID").value = id;
+        columnas.forEach(c => document.getElementById(`chk_${c}`).checked = e[c] || false);
+        new bootstrap.Modal(document.getElementById("modalEmpresa")).show();
+    };
 
-    let rows = empresas.map((e, i) => {
-        let checks = columnas.map(c =>
-            `<td><input type="checkbox" ${e[c] ? "checked" : ""} disabled></td>`
-        ).join("");
+    window.guardarEmpresa = async () => {
+        let nombre = document.getElementById("empresaNombre").value.trim();
+        if (!nombre) return Swal.fire("Error", "El nombre es obligatorio", "error");
 
+        let data = { nombre };
+        columnas.forEach(c => data[c] = document.getElementById(`chk_${c}`).checked);
+
+        let id = document.getElementById("empresaID").value;
+        
+        try {
+            if (!id) {
+                // Nuevo registro
+                const nuevoRef = push(ref(db, 'empresas'));
+                await set(nuevoRef, data);
+            } else {
+                // Actualizar existente
+                await update(ref(db, `empresas/${id}`), data);
+            }
+            bootstrap.Modal.getInstance(document.getElementById("modalEmpresa")).hide();
+            Swal.fire("Guardado", "Información actualizada correctamente", "success");
+        } catch (error) {
+            Swal.fire("Error", "No se pudo guardar: " + error.message, "error");
+        }
+    };
+
+    window.eliminarEmpresa = async (id) => {
+        const result = await Swal.fire({
+            title: '¿Eliminar empresa?',
+            text: "Esta acción no se puede deshacer",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar'
+        });
+
+        if (result.isConfirmed) {
+            await remove(ref(db, `empresas/${id}`));
+            Swal.fire("Eliminado", "La empresa ha sido removida", "success");
+        }
+    };
+
+    function modalEmpresaHTML() {
         return `
-            <tr>
-                <td>${e.nombre}</td>
-                ${checks}
-                <td>
-                    <button class="btn btn-sm btn-warning" onclick="editarEmpresa(${i})">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="eliminarEmpresa(${i})">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    }).join("");
-
-    document.getElementById("contenido").innerHTML = `
-        <div class="d-flex justify-content-between mb-3">
-            <h3>Empresas</h3>
-            <button class="btn btn-primary" onclick="nuevaEmpresa()">
-                <i class="bi bi-plus-circle"></i> Agregar
-            </button>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Empresa</th>
-                        ${headers}
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-            </table>
-        </div>
-
-        ${modalEmpresaHTML()}
-    `;
-}
-
-/* =================================================
-   MODAL
-================================================= */
-function modalEmpresaHTML() {
-    return `
-    <div class="modal fade" id="modalEmpresa" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="tituloModal"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <label class="form-label">Empresa</label>
-                    <input type="text" id="empresaNombre" class="form-control mb-3">
-                    <div class="row">
-                        ${columnas.map(c => `
-                        <div class="col-md-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="chk_${c}">
-                                <label class="form-check-label">${c}</label>
-                            </div>
-                        </div>`).join("")}
+        <div class="modal fade" id="modalEmpresa" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tituloModal"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <input type="hidden" id="empresaIndex">
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button class="btn btn-success" onclick="guardarEmpresa()">Guardar</button>
+                    <div class="modal-body">
+                        <label class="form-label">Empresa</label>
+                        <input type="text" id="empresaNombre" class="form-control mb-3">
+                        <div class="row">
+                            ${columnas.map(c => `
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="chk_${c}">
+                                    <label class="form-check-label">${c}</label>
+                                </div>
+                            </div>`).join("")}
+                        </div>
+                        <input type="hidden" id="empresaID">
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button class="btn btn-success" onclick="guardarEmpresa()">Guardar</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>`;
-}
-
-/* =================================================
-   CRUD
-================================================= */
-function nuevaEmpresa() {
-    document.getElementById("tituloModal").innerText = "Agregar empresa";
-    document.getElementById("empresaNombre").value = "";
-    document.getElementById("empresaIndex").value = "";
-    columnas.forEach(c => document.getElementById(`chk_${c}`).checked = false);
-    new bootstrap.Modal(document.getElementById("modalEmpresa")).show();
-}
-
-function editarEmpresa(index) {
-    let e = empresas[index];
-    document.getElementById("tituloModal").innerText = "Editar empresa";
-    document.getElementById("empresaNombre").value = e.nombre;
-    document.getElementById("empresaIndex").value = index;
-    columnas.forEach(c => document.getElementById(`chk_${c}`).checked = e[c]);
-    new bootstrap.Modal(document.getElementById("modalEmpresa")).show();
-}
-
-function guardarEmpresa() {
-    let nombre = document.getElementById("empresaNombre").value.trim();
-    if (!nombre) return alert("El nombre es obligatorio");
-
-    let data = { nombre };
-    columnas.forEach(c => data[c] = document.getElementById(`chk_${c}`).checked);
-
-    let index = document.getElementById("empresaIndex").value;
-    if (index === "") empresas.push(data);
-    else empresas[index] = data;
-
-    bootstrap.Modal.getInstance(document.getElementById("modalEmpresa")).hide();
-    renderEmpresas();
-}
-
-function eliminarEmpresa(index) {
-    if (confirm("¿Eliminar esta empresa?")) {
-        empresas.splice(index, 1);
-        renderEmpresas();
+        </div>`;
     }
-}
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
