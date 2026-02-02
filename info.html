@@ -13,30 +13,20 @@
         body { overflow-x: hidden; }
         .sidebar { width: 260px; min-height: 100vh; background: #0f172a; color: #fff; flex-shrink: 0; }
         .sidebar h5 { color: #fff; }
-        .sidebar a { color: #cbd5e1; text-decoration: none; padding: 12px 20px; display: block; font-size: 14px; }
+        .sidebar a { color: #cbd5e1; text-decoration: none; padding: 12px 20px; display: block; font-size: 14px; cursor: pointer; }
         .sidebar a:hover { background: #1e293b; color: #fff; }
         
-        /* Ajustes para el contenido responsivo */
         .content { padding: 20px; background: #f8fafc; min-height: 100vh; overflow-x: auto; flex-grow: 1; }
         
-        /* Estilos de la tabla para legibilidad */
         table th, table td { font-size: 11px; text-align: center; vertical-align: middle; min-width: 100px; }
-        table th:first-child, table td:first-child { 
-            text-align: left; 
-            white-space: nowrap; 
-            font-weight: bold; 
-            position: sticky; 
-            left: 0; 
-            background: #fff; 
-            z-index: 1;
-            min-width: 200px;
+        /* Sticky para la primera columna */
+        .sticky-col { 
+            position: sticky; left: 0; background: #fff; z-index: 1; min-width: 180px; text-align: left !important; font-weight: bold;
         }
-        .table-dark th:first-child { background: #212529; }
+        .table-dark .sticky-col { background: #212529; }
 
-        /* Barra de desplazamiento estética */
         .table-responsive::-webkit-scrollbar { height: 8px; }
         .table-responsive::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .table-responsive::-webkit-scrollbar-track { background: #f1f5f9; }
     </style>
 </head>
 
@@ -45,15 +35,15 @@
 <div class="d-flex">
     <div class="sidebar">
         <h5 class="text-center py-3 border-bottom">Información</h5>
-        <a href="#" onclick="cargar('empresas')"><i class="bi bi-building"></i> Empresas</a>
-        <a href="#" onclick="cargar('zonas')"><i class="bi bi-geo"></i> Zonas</a>
-        <a href="#" onclick="cargar('estados')"><i class="bi bi-map"></i> Estados</a>
-        <a href="#" onclick="cargar('tipo')"><i class="bi bi-tags"></i> Tipo</a>
-        <a href="#" onclick="cargar('perfil')"><i class="bi bi-person-badge"></i> Perfil</a>
-        <a href="#" onclick="cargar('unidad')"><i class="bi bi-diagram-3"></i> Unidad</a>
-        <a href="#" onclick="cargar('programa')"><i class="bi bi-play-circle"></i> Iniciar programa</a>
-        <a href="#" onclick="cargar('personal')"><i class="bi bi-people"></i> Personal</a>
-        <a href="#" onclick="cargar('servidores')"><i class="bi bi-hdd-network"></i> Servidores</a>
+        <a onclick="cargar('empresas')"><i class="bi bi-building"></i> Empresas</a>
+        <a onclick="cargar('zonas')"><i class="bi bi-geo"></i> Zonas</a>
+        <a onclick="cargar('estados')"><i class="bi bi-map"></i> Estados</a>
+        <a onclick="cargar('tipo')"><i class="bi bi-tags"></i> Tipo</a>
+        <a onclick="cargar('perfil')"><i class="bi bi-person-badge"></i> Perfil</a>
+        <a onclick="cargar('unidad')"><i class="bi bi-diagram-3"></i> Unidad</a>
+        <a onclick="cargar('programa')"><i class="bi bi-play-circle"></i> Iniciar programa</a>
+        <a onclick="cargar('personal')"><i class="bi bi-people"></i> Personal</a>
+        <a onclick="cargar('servidores')"><i class="bi bi-hdd-network"></i> Servidores</a>
     </div>
 
     <div class="flex-grow-1 content">
@@ -69,14 +59,12 @@
     import { getDatabase, ref, set, push, onValue, remove, update } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    const firebaseConfig = {
-        databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/"
-    };
-
+    const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const columnas = [
+    // Configuración de columnas para Empresas
+    const colEmpresas = [
         "GROMA146 (SAS)", "GROMA58 (SUMMA)", "GROMA148ASUMMA FERRE",
         "GROMADW1 (CAS)", "GROMATASK", "GROMAES (WEB)",
         "GROMAPROG", "GROMAPWBI", "GROMAW1 SUMMA ADV",
@@ -86,161 +74,197 @@
     ];
 
     let empresasData = {};
+    let personalData = {};
 
-    onValue(ref(db, 'empresas'), (snapshot) => {
-        empresasData = snapshot.val() || {};
-        if (document.getElementById("btnAgregarEmpresa")) {
-            renderEmpresas();
-        }
+    // Listeners de Firebase
+    onValue(ref(db, 'empresas'), (snap) => {
+        empresasData = snap.val() || {};
+        if (document.getElementById("seccion-empresas")) renderEmpresas();
+    });
+
+    onValue(ref(db, 'personal'), (snap) => {
+        personalData = snap.val() || {};
+        if (document.getElementById("seccion-personal")) renderPersonal();
     });
 
     window.cargar = (seccion) => {
-        if (seccion === 'empresas') {
-            renderEmpresas();
-        } else {
-            document.getElementById("contenido").innerHTML = `
-                <h3>${seccion.charAt(0).toUpperCase() + seccion.slice(1)}</h3>
-                <p>Módulo en construcción.</p>
-            `;
-        }
+        const cont = document.getElementById("contenido");
+        if (seccion === 'empresas') renderEmpresas();
+        else if (seccion === 'personal') renderPersonal();
+        else cont.innerHTML = `<h3>${seccion.toUpperCase()}</h3><p>Módulo en construcción.</p>`;
     };
 
+    /* =================================================
+       MODULO: EMPRESAS
+    ================================================= */
     function renderEmpresas() {
-        let headers = columnas.map(c => `<th>${c}</th>`).join("");
-        let rows = "";
-
-        Object.keys(empresasData).forEach((id) => {
+        let headers = colEmpresas.map(c => `<th>${c}</th>`).join("");
+        let rows = Object.keys(empresasData).map(id => {
             let e = empresasData[id];
-            let checks = columnas.map(c =>
-                `<td><input type="checkbox" ${e[c] ? "checked" : ""} disabled></td>`
-            ).join("");
-
-            rows += `
-                <tr>
-                    <td>${e.nombre}</td>
-                    ${checks}
+            let checks = colEmpresas.map(c => `<td><input type="checkbox" ${e[c] ? "checked" : ""} disabled></td>`).join("");
+            return `<tr><td class="sticky-col">${e.nombre}</td>${checks}
                     <td>
-                        <button class="btn btn-sm btn-warning" onclick="editarEmpresa('${id}')">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarEmpresa('${id}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
+                        <button class="btn btn-sm btn-warning" onclick="abrirModalEmpresa('${id}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('empresas','${id}')"><i class="bi bi-trash"></i></button>
+                    </td></tr>`;
+        }).join("");
 
         document.getElementById("contenido").innerHTML = `
-            <div class="d-flex justify-content-between mb-3">
-                <h3>Empresas</h3>
-                <button id="btnAgregarEmpresa" class="btn btn-primary" onclick="nuevaEmpresa()">
-                    <i class="bi bi-plus-circle"></i> Agregar
-                </button>
+            <div id="seccion-empresas">
+                <div class="d-flex justify-content-between mb-3">
+                    <h3>Empresas</h3>
+                    <button class="btn btn-primary" onclick="abrirModalEmpresa()"><i class="bi bi-plus-circle"></i> Agregar</button>
+                </div>
+                <div class="table-responsive border rounded bg-white">
+                    <table class="table table-hover table-bordered mb-0">
+                        <thead class="table-dark"><tr><th class="sticky-col">Empresa</th>${headers}<th>Acciones</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-responsive border rounded shadow-sm bg-white">
-                <table class="table table-hover table-bordered mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Empresa</th>
-                            ${headers}
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-            </div>
-            ${modalEmpresaHTML()}
-        `;
+            ${modalEmpresaHTML()}`;
     }
 
-    // Funciones CRUD (nuevaEmpresa, editarEmpresa, guardarEmpresa, eliminarEmpresa)
-    window.nuevaEmpresa = () => {
-        document.getElementById("tituloModal").innerText = "Agregar empresa";
-        document.getElementById("empresaNombre").value = "";
-        document.getElementById("empresaID").value = "";
-        columnas.forEach(c => document.getElementById(`chk_${c}`).checked = false);
-        new bootstrap.Modal(document.getElementById("modalEmpresa")).show();
+    /* =================================================
+       MODULO: PERSONAL
+    ================================================= */
+    function renderPersonal() {
+        let rows = Object.keys(personalData).map(id => {
+            let p = personalData[id];
+            return `<tr>
+                <td class="sticky-col">${p.nombreCompleto}</td>
+                <td>${p.empresa}</td>
+                <td>${p.zona}</td>
+                <td>${p.departamento}</td>
+                <td>${p.usuario}</td>
+                <td>***</td>
+                <td>${p.puesto}</td>
+                <td>${p.correo}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" onclick="abrirModalPersonal('${id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('personal','${id}')"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>`;
+        }).join("");
+
+        document.getElementById("contenido").innerHTML = `
+            <div id="seccion-personal">
+                <div class="d-flex justify-content-between mb-3">
+                    <h3>Personal</h3>
+                    <button class="btn btn-primary" onclick="abrirModalPersonal()"><i class="bi bi-plus-circle"></i> Agregar</button>
+                </div>
+                <div class="table-responsive border rounded bg-white">
+                    <table class="table table-hover table-bordered mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="sticky-col">Nombre Completo</th>
+                                <th>Empresa</th><th>Zona</th><th>Departamento</th>
+                                <th>Usuario</th><th>Contraseña</th><th>Puesto</th><th>Correo</th><th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>
+            ${modalPersonalHTML()}`;
+    }
+
+    /* =================================================
+       FUNCIONES AUXILIARES (MODALES Y CRUD)
+    ================================================= */
+    
+    // CRUD GENERAL
+    window.eliminarRegistro = async (path, id) => {
+        const res = await Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true });
+        if (res.isConfirmed) await remove(ref(db, `${path}/${id}`));
     };
 
-    window.editarEmpresa = (id) => {
-        let e = empresasData[id];
-        document.getElementById("tituloModal").innerText = "Editar empresa";
-        document.getElementById("empresaNombre").value = e.nombre;
-        document.getElementById("empresaID").value = id;
-        columnas.forEach(c => document.getElementById(`chk_${c}`).checked = e[c] || false);
-        new bootstrap.Modal(document.getElementById("modalEmpresa")).show();
+    // LOGICA EMPRESAS
+    window.abrirModalEmpresa = (id = "") => {
+        const e = id ? empresasData[id] : { nombre: "" };
+        document.getElementById("tituloMod").innerText = id ? "Editar Empresa" : "Nueva Empresa";
+        document.getElementById("empID").value = id;
+        document.getElementById("empNom").value = e.nombre;
+        colEmpresas.forEach(c => document.getElementById(`chk_${c}`).checked = e[c] || false);
+        new bootstrap.Modal(document.getElementById("modalEmp")).show();
     };
 
     window.guardarEmpresa = async () => {
-        let nombre = document.getElementById("empresaNombre").value.trim();
-        if (!nombre) return Swal.fire("Error", "El nombre es obligatorio", "error");
-
-        let data = { nombre };
-        columnas.forEach(c => data[c] = document.getElementById(`chk_${c}`).checked);
-
-        let id = document.getElementById("empresaID").value;
+        let id = document.getElementById("empID").value;
+        let data = { nombre: document.getElementById("empNom").value.trim() };
+        if (!data.nombre) return Swal.fire("Error", "Nombre requerido", "error");
+        colEmpresas.forEach(c => data[c] = document.getElementById(`chk_${c}`).checked);
         
-        try {
-            if (!id) {
-                const nuevoRef = push(ref(db, 'empresas'));
-                await set(nuevoRef, data);
-            } else {
-                await update(ref(db, `empresas/${id}`), data);
-            }
-            bootstrap.Modal.getInstance(document.getElementById("modalEmpresa")).hide();
-            Swal.fire("Guardado", "Información actualizada correctamente", "success");
-        } catch (error) {
-            Swal.fire("Error", "No se pudo guardar: " + error.message, "error");
-        }
+        id ? await update(ref(db, `empresas/${id}`), data) : await push(ref(db, 'empresas'), data);
+        bootstrap.Modal.getInstance(document.getElementById("modalEmp")).hide();
+        Swal.fire("Éxito", "Guardado", "success");
     };
 
-    window.eliminarEmpresa = async (id) => {
-        const result = await Swal.fire({
-            title: '¿Eliminar empresa?',
-            text: "Esta acción no se puede deshacer",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'Sí, eliminar'
-        });
+    // LOGICA PERSONAL
+    window.abrirModalPersonal = (id = "") => {
+        const p = id ? personalData[id] : { empresa:"", zona:"", departamento:"", nombreCompleto:"", usuario:"", contraseña:"", puesto:"", correo:"" };
+        document.getElementById("tituloPers").innerText = id ? "Editar Personal" : "Nuevo Personal";
+        document.getElementById("persID").value = id;
+        document.getElementById("p_emp").value = p.empresa;
+        document.getElementById("p_zon").value = p.zona;
+        document.getElementById("p_dep").value = p.departamento;
+        document.getElementById("p_nom").value = p.nombreCompleto;
+        document.getElementById("p_usu").value = p.usuario;
+        document.getElementById("p_con").value = p.contraseña;
+        document.getElementById("p_pue").value = p.puesto;
+        document.getElementById("p_cor").value = p.correo;
+        new bootstrap.Modal(document.getElementById("modalPers")).show();
+    };
 
-        if (result.isConfirmed) {
-            await remove(ref(db, `empresas/${id}`));
-            Swal.fire("Eliminado", "La empresa ha sido removida", "success");
-        }
+    window.guardarPersonal = async () => {
+        let id = document.getElementById("persID").value;
+        let data = {
+            empresa: document.getElementById("p_emp").value,
+            zona: document.getElementById("p_zon").value,
+            departamento: document.getElementById("p_dep").value,
+            nombreCompleto: document.getElementById("p_nom").value,
+            usuario: document.getElementById("p_usu").value,
+            contraseña: document.getElementById("p_con").value,
+            puesto: document.getElementById("p_pue").value,
+            correo: document.getElementById("p_cor").value
+        };
+        if (!data.nombreCompleto) return Swal.fire("Error", "Nombre requerido", "error");
+
+        id ? await update(ref(db, `personal/${id}`), data) : await push(ref(db, 'personal'), data);
+        bootstrap.Modal.getInstance(document.getElementById("modalPers")).hide();
+        Swal.fire("Éxito", "Personal guardado", "success");
     };
 
     function modalEmpresaHTML() {
         return `
-        <div class="modal fade" id="modalEmpresa" tabindex="-1">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="tituloModal"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <label class="form-label">Empresa</label>
-                        <input type="text" id="empresaNombre" class="form-control mb-3">
-                        <div class="row">
-                            ${columnas.map(c => `
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="chk_${c}">
-                                    <label class="form-check-label">${c}</label>
-                                </div>
-                            </div>`).join("")}
-                        </div>
-                        <input type="hidden" id="empresaID">
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button class="btn btn-success" onclick="guardarEmpresa()">Guardar</button>
-                    </div>
-                </div>
+        <div class="modal fade" id="modalEmp" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content">
+            <div class="modal-header"><h5 id="tituloMod"></h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="hidden" id="empID">
+                <label>Nombre Empresa</label><input type="text" id="empNom" class="form-control mb-3">
+                <div class="row">${colEmpresas.map(c => `<div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" id="chk_${c}"><label>${c}</label></div></div>`).join("")}</div>
             </div>
-        </div>`;
+            <div class="modal-footer"><button class="btn btn-success" onclick="guardarEmpresa()">Guardar</button></div>
+        </div></div></div>`;
+    }
+
+    function modalPersonalHTML() {
+        return `
+        <div class="modal fade" id="modalPers" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+            <div class="modal-header"><h5 id="tituloPers"></h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body row g-3">
+                <input type="hidden" id="persID">
+                <div class="col-md-6"><label>Empresa</label><input type="text" id="p_emp" class="form-control"></div>
+                <div class="col-md-6"><label>Zona</label><input type="text" id="p_zon" class="form-control"></div>
+                <div class="col-md-6"><label>Departamento</label><input type="text" id="p_dep" class="form-control"></div>
+                <div class="col-md-6"><label>Nombre Completo</label><input type="text" id="p_nom" class="form-control"></div>
+                <div class="col-md-4"><label>Usuario</label><input type="text" id="p_usu" class="form-control"></div>
+                <div class="col-md-4"><label>Contraseña</label><input type="password" id="p_con" class="form-control"></div>
+                <div class="col-md-4"><label>Puesto</label><input type="text" id="p_pue" class="form-control"></div>
+                <div class="col-md-12"><label>Correo</label><input type="email" id="p_cor" class="form-control"></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-success" onclick="guardarPersonal()">Guardar Personal</button></div>
+        </div></div></div>`;
     }
 </script>
 
