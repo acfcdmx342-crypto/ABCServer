@@ -25,6 +25,7 @@
     <div class="sidebar">
         <h5 class="text-center py-3 border-bottom">Catálogos</h5>
         <a onclick="cargar('empresas')"><i class="bi bi-building"></i> Empresas</a>
+        <a onclick="cargar('zonas')"><i class="bi bi-geo-alt"></i> Zonas</a>
         <a onclick="cargar('personal')"><i class="bi bi-people"></i> Personal</a>
     </div>
 
@@ -51,6 +52,26 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-success" id="btnGuardarEmpresa">Guardar Empresa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalZona" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="tituloModZona">Nueva Zona</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="zonaID">
+                <label class="form-label">Nombre de la Zona</label>
+                <input type="text" id="zonaNom" class="form-control mb-3">
+                <div class="row" id="contenedorChecksZona"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" id="btnGuardarZona">Guardar Zona</button>
             </div>
         </div>
     </div>
@@ -100,6 +121,7 @@
     ];
 
     let empresasData = {};
+    let zonasData = {};
     let personalData = {};
 
     // Sincronización con Firebase
@@ -108,14 +130,19 @@
         if (document.getElementById("tabla-empresas")) renderEmpresas();
     });
 
+    onValue(ref(db, 'zonas'), (snap) => {
+        zonasData = snap.val() || {};
+        if (document.getElementById("tabla-zonas")) renderZonas();
+    });
+
     onValue(ref(db, 'personal'), (snap) => {
         personalData = snap.val() || {};
         if (document.getElementById("tabla-personal")) renderPersonal();
     });
 
-    // Función de Navegación
     window.cargar = (seccion) => {
         if (seccion === 'empresas') renderEmpresas();
+        else if (seccion === 'zonas') renderZonas();
         else if (seccion === 'personal') renderPersonal();
     };
 
@@ -132,12 +159,29 @@
         }).join("");
 
         document.getElementById("contenido").innerHTML = `
-            <div class="d-flex justify-content-between mb-3">
-                <h3>Empresas</h3>
-                <button class="btn btn-primary" onclick="abrirModalEmpresa()"><i class="bi bi-plus-circle"></i> Agregar</button>
-            </div>
+            <div class="d-flex justify-content-between mb-3"><h3>Empresas</h3><button class="btn btn-primary" onclick="abrirModalEmpresa()"><i class="bi bi-plus-circle"></i> Agregar</button></div>
             <div class="table-responsive"><table id="tabla-empresas" class="table table-hover table-bordered mb-0">
                 <thead class="table-dark"><tr><th class="sticky-col">Empresa</th>${headers}<th>Acciones</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table></div>`;
+    }
+
+    function renderZonas() {
+        let headers = colEmpresas.map(c => `<th>${c}</th>`).join("");
+        let rows = Object.keys(zonasData).map(id => {
+            let z = zonasData[id];
+            let checks = colEmpresas.map(c => `<td><i class="bi ${z[c] ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'}"></i></td>`).join("");
+            return `<tr><td class="sticky-col">${z.nombre}</td>${checks}
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="abrirModalZona('${id}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('zonas','${id}')"><i class="bi bi-trash"></i></button>
+                    </td></tr>`;
+        }).join("");
+
+        document.getElementById("contenido").innerHTML = `
+            <div class="d-flex justify-content-between mb-3"><h3>Zonas</h3><button class="btn btn-primary" onclick="abrirModalZona()"><i class="bi bi-plus-circle"></i> Agregar</button></div>
+            <div class="table-responsive"><table id="tabla-zonas" class="table table-hover table-bordered mb-0">
+                <thead class="table-dark"><tr><th class="sticky-col">Zona</th>${headers}<th>Acciones</th></tr></thead>
                 <tbody>${rows}</tbody>
             </table></div>`;
     }
@@ -155,34 +199,38 @@
         }).join("");
 
         document.getElementById("contenido").innerHTML = `
-            <div class="d-flex justify-content-between mb-3">
-                <h3>Personal</h3>
-                <button class="btn btn-primary" onclick="abrirModalPersonal()"><i class="bi bi-plus-circle"></i> Agregar</button>
-            </div>
+            <div class="d-flex justify-content-between mb-3"><h3>Personal</h3><button class="btn btn-primary" onclick="abrirModalPersonal()"><i class="bi bi-plus-circle"></i> Agregar</button></div>
             <div class="table-responsive"><table id="tabla-personal" class="table table-hover table-bordered mb-0">
-                <thead class="table-dark"><tr>
-                    <th class="sticky-col">Nombre</th><th>Empresa</th><th>Zona</th><th>Depto</th>
-                    <th>Usuario</th><th>Pass</th><th>Puesto</th><th>Correo</th><th>Acciones</th>
-                </tr></thead>
+                <thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Empresa</th><th>Zona</th><th>Depto</th><th>Usuario</th><th>Pass</th><th>Puesto</th><th>Correo</th><th>Acciones</th></tr></thead>
                 <tbody>${rows}</tbody>
             </table></div>`;
     }
 
-    // Lógica para abrir Modales
+    // Lógica Modales
     window.abrirModalEmpresa = (id = "") => {
         const e = id ? empresasData[id] : { nombre: "" };
         document.getElementById("tituloMod").innerText = id ? "Editar Empresa" : "Nueva Empresa";
         document.getElementById("empID").value = id;
         document.getElementById("empNom").value = e.nombre;
-        
-        // Generar checks dinámicamente
         document.getElementById("contenedorChecks").innerHTML = colEmpresas.map(c => `
             <div class="col-md-4"><div class="form-check">
                 <input class="form-check-input" type="checkbox" id="chk_${c}" ${e[c] ? 'checked' : ''}>
                 <label class="form-check-label">${c}</label>
             </div></div>`).join("");
-            
         new bootstrap.Modal(document.getElementById("modalEmp")).show();
+    };
+
+    window.abrirModalZona = (id = "") => {
+        const z = id ? zonasData[id] : { nombre: "" };
+        document.getElementById("tituloModZona").innerText = id ? "Editar Zona" : "Nueva Zona";
+        document.getElementById("zonaID").value = id;
+        document.getElementById("zonaNom").value = z.nombre;
+        document.getElementById("contenedorChecksZona").innerHTML = colEmpresas.map(c => `
+            <div class="col-md-4"><div class="form-check">
+                <input class="form-check-input" type="checkbox" id="chkZ_${c}" ${z[c] ? 'checked' : ''}>
+                <label class="form-check-label">${c}</label>
+            </div></div>`).join("");
+        new bootstrap.Modal(document.getElementById("modalZona")).show();
     };
 
     window.abrirModalPersonal = (id = "") => {
@@ -199,19 +247,30 @@
         new bootstrap.Modal(document.getElementById("modalPers")).show();
     };
 
-    // GUARDADO REAL (Event Listeners fijos para evitar errores)
+    // Listeners de Guardado
     document.getElementById("btnGuardarEmpresa").addEventListener("click", async () => {
         const id = document.getElementById("empID").value;
         const nombre = document.getElementById("empNom").value.trim();
         if(!nombre) return Swal.fire("Error", "Nombre obligatorio", "error");
-
         let data = { nombre };
         colEmpresas.forEach(c => data[c] = document.getElementById(`chk_${c}`).checked);
-
         try {
             id ? await update(ref(db, `empresas/${id}`), data) : await push(ref(db, 'empresas'), data);
             bootstrap.Modal.getInstance(document.getElementById("modalEmp")).hide();
-            Swal.fire("Éxito", "Empresa guardada", "success");
+            Swal.fire("Éxito", "Guardado", "success");
+        } catch(e) { Swal.fire("Error", e.message, "error"); }
+    });
+
+    document.getElementById("btnGuardarZona").addEventListener("click", async () => {
+        const id = document.getElementById("zonaID").value;
+        const nombre = document.getElementById("zonaNom").value.trim();
+        if(!nombre) return Swal.fire("Error", "Nombre obligatorio", "error");
+        let data = { nombre };
+        colEmpresas.forEach(c => data[c] = document.getElementById(`chkZ_${c}`).checked);
+        try {
+            id ? await update(ref(db, `zonas/${id}`), data) : await push(ref(db, 'zonas'), data);
+            bootstrap.Modal.getInstance(document.getElementById("modalZona")).hide();
+            Swal.fire("Éxito", "Zona guardada", "success");
         } catch(e) { Swal.fire("Error", e.message, "error"); }
     });
 
@@ -228,7 +287,6 @@
             correo: document.getElementById("p_cor").value
         };
         if(!data.nombreCompleto) return Swal.fire("Error", "Nombre obligatorio", "error");
-
         try {
             id ? await update(ref(db, `personal/${id}`), data) : await push(ref(db, 'personal'), data);
             bootstrap.Modal.getInstance(document.getElementById("modalPers")).hide();
@@ -237,7 +295,7 @@
     });
 
     window.eliminarRegistro = async (path, id) => {
-        const res = await Swal.fire({ title: '¿Eliminar?', text: "Esta acción borrará los datos", icon: 'warning', showCancelButton: true });
+        const res = await Swal.fire({ title: '¿Eliminar?', text: "Se borrarán los datos", icon: 'warning', showCancelButton: true });
         if (res.isConfirmed) await remove(ref(db, `${path}/${id}`));
     };
 </script>
