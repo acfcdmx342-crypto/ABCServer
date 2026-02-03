@@ -4,52 +4,79 @@
     <meta charset="UTF-8">
     <title>Info - Catálogos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
-        body { overflow-x: hidden; }
+        body { overflow-x: hidden; background: #f8fafc; }
         .sidebar { width: 260px; min-height: 100vh; background: #0f172a; color: #fff; flex-shrink: 0; }
-        .sidebar h5 { color: #fff; }
         .sidebar a { color: #cbd5e1; text-decoration: none; padding: 12px 20px; display: block; font-size: 14px; cursor: pointer; }
         .sidebar a:hover { background: #1e293b; color: #fff; }
-        
-        .content { padding: 20px; background: #f8fafc; min-height: 100vh; overflow-x: auto; flex-grow: 1; }
-        
+        .content { padding: 20px; flex-grow: 1; overflow-x: auto; }
         table th, table td { font-size: 11px; text-align: center; vertical-align: middle; min-width: 100px; }
-        /* Sticky para la primera columna */
-        .sticky-col { 
-            position: sticky; left: 0; background: #fff; z-index: 1; min-width: 180px; text-align: left !important; font-weight: bold;
-        }
+        .sticky-col { position: sticky; left: 0; background: #fff; z-index: 1; min-width: 180px; text-align: left !important; font-weight: bold; }
         .table-dark .sticky-col { background: #212529; }
-
-        .table-responsive::-webkit-scrollbar { height: 8px; }
-        .table-responsive::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .table-responsive { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     </style>
 </head>
-
 <body>
 
 <div class="d-flex">
     <div class="sidebar">
-        <h5 class="text-center py-3 border-bottom">Información</h5>
+        <h5 class="text-center py-3 border-bottom">Catálogos</h5>
         <a onclick="cargar('empresas')"><i class="bi bi-building"></i> Empresas</a>
-        <a onclick="cargar('zonas')"><i class="bi bi-geo"></i> Zonas</a>
-        <a onclick="cargar('estados')"><i class="bi bi-map"></i> Estados</a>
-        <a onclick="cargar('tipo')"><i class="bi bi-tags"></i> Tipo</a>
-        <a onclick="cargar('perfil')"><i class="bi bi-person-badge"></i> Perfil</a>
-        <a onclick="cargar('unidad')"><i class="bi bi-diagram-3"></i> Unidad</a>
-        <a onclick="cargar('programa')"><i class="bi bi-play-circle"></i> Iniciar programa</a>
         <a onclick="cargar('personal')"><i class="bi bi-people"></i> Personal</a>
-        <a onclick="cargar('servidores')"><i class="bi bi-hdd-network"></i> Servidores</a>
     </div>
 
     <div class="flex-grow-1 content">
         <div id="contenido">
             <h3>Bienvenido</h3>
             <p>Selecciona una opción del menú lateral.</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEmp" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="tituloMod">Nueva Empresa</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="empID">
+                <label class="form-label">Nombre de la Empresa</label>
+                <input type="text" id="empNom" class="form-control mb-3">
+                <div class="row" id="contenedorChecks"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" id="btnGuardarEmpresa">Guardar Empresa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalPers" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="tituloPers">Nuevo Personal</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body row g-3">
+                <input type="hidden" id="persID">
+                <div class="col-md-6"><label>Empresa</label><input type="text" id="p_emp" class="form-control"></div>
+                <div class="col-md-6"><label>Zona</label><input type="text" id="p_zon" class="form-control"></div>
+                <div class="col-md-6"><label>Departamento</label><input type="text" id="p_dep" class="form-control"></div>
+                <div class="col-md-6"><label>Nombre Completo</label><input type="text" id="p_nom" class="form-control"></div>
+                <div class="col-md-4"><label>Usuario</label><input type="text" id="p_usu" class="form-control"></div>
+                <div class="col-md-4"><label>Contraseña</label><input type="password" id="p_con" class="form-control"></div>
+                <div class="col-md-4"><label>Puesto</label><input type="text" id="p_pue" class="form-control"></div>
+                <div class="col-md-12"><label>Correo</label><input type="email" id="p_cor" class="form-control"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" id="btnGuardarPersonal">Guardar Personal</button>
+            </div>
         </div>
     </div>
 </div>
@@ -63,7 +90,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Configuración de columnas para Empresas
     const colEmpresas = [
         "GROMA146 (SAS)", "GROMA58 (SUMMA)", "GROMA148ASUMMA FERRE",
         "GROMADW1 (CAS)", "GROMATASK", "GROMAES (WEB)",
@@ -76,32 +102,28 @@
     let empresasData = {};
     let personalData = {};
 
-    // Listeners de Firebase
+    // Sincronización con Firebase
     onValue(ref(db, 'empresas'), (snap) => {
         empresasData = snap.val() || {};
-        if (document.getElementById("seccion-empresas")) renderEmpresas();
+        if (document.getElementById("tabla-empresas")) renderEmpresas();
     });
 
     onValue(ref(db, 'personal'), (snap) => {
         personalData = snap.val() || {};
-        if (document.getElementById("seccion-personal")) renderPersonal();
+        if (document.getElementById("tabla-personal")) renderPersonal();
     });
 
+    // Función de Navegación
     window.cargar = (seccion) => {
-        const cont = document.getElementById("contenido");
         if (seccion === 'empresas') renderEmpresas();
         else if (seccion === 'personal') renderPersonal();
-        else cont.innerHTML = `<h3>${seccion.toUpperCase()}</h3><p>Módulo en construcción.</p>`;
     };
 
-    /* =================================================
-       MODULO: EMPRESAS
-    ================================================= */
     function renderEmpresas() {
         let headers = colEmpresas.map(c => `<th>${c}</th>`).join("");
         let rows = Object.keys(empresasData).map(id => {
             let e = empresasData[id];
-            let checks = colEmpresas.map(c => `<td><input type="checkbox" ${e[c] ? "checked" : ""} disabled></td>`).join("");
+            let checks = colEmpresas.map(c => `<td><i class="bi ${e[c] ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'}"></i></td>`).join("");
             return `<tr><td class="sticky-col">${e.nombre}</td>${checks}
                     <td>
                         <button class="btn btn-sm btn-warning" onclick="abrirModalEmpresa('${id}')"><i class="bi bi-pencil"></i></button>
@@ -110,165 +132,116 @@
         }).join("");
 
         document.getElementById("contenido").innerHTML = `
-            <div id="seccion-empresas">
-                <div class="d-flex justify-content-between mb-3">
-                    <h3>Empresas</h3>
-                    <button class="btn btn-primary" onclick="abrirModalEmpresa()"><i class="bi bi-plus-circle"></i> Agregar</button>
-                </div>
-                <div class="table-responsive border rounded bg-white">
-                    <table class="table table-hover table-bordered mb-0">
-                        <thead class="table-dark"><tr><th class="sticky-col">Empresa</th>${headers}<th>Acciones</th></tr></thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                </div>
+            <div class="d-flex justify-content-between mb-3">
+                <h3>Empresas</h3>
+                <button class="btn btn-primary" onclick="abrirModalEmpresa()"><i class="bi bi-plus-circle"></i> Agregar</button>
             </div>
-            ${modalEmpresaHTML()}`;
+            <div class="table-responsive"><table id="tabla-empresas" class="table table-hover table-bordered mb-0">
+                <thead class="table-dark"><tr><th class="sticky-col">Empresa</th>${headers}<th>Acciones</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table></div>`;
     }
 
-    /* =================================================
-       MODULO: PERSONAL
-    ================================================= */
     function renderPersonal() {
         let rows = Object.keys(personalData).map(id => {
             let p = personalData[id];
-            return `<tr>
-                <td class="sticky-col">${p.nombreCompleto}</td>
-                <td>${p.empresa}</td>
-                <td>${p.zona}</td>
-                <td>${p.departamento}</td>
-                <td>${p.usuario}</td>
-                <td>***</td>
-                <td>${p.puesto}</td>
-                <td>${p.correo}</td>
+            return `<tr><td class="sticky-col">${p.nombreCompleto}</td>
+                <td>${p.empresa}</td><td>${p.zona}</td><td>${p.departamento}</td><td>${p.usuario}</td>
+                <td>***</td><td>${p.puesto}</td><td>${p.correo}</td>
                 <td>
                     <button class="btn btn-sm btn-warning" onclick="abrirModalPersonal('${id}')"><i class="bi bi-pencil"></i></button>
                     <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('personal','${id}')"><i class="bi bi-trash"></i></button>
-                </td>
-            </tr>`;
+                </td></tr>`;
         }).join("");
 
         document.getElementById("contenido").innerHTML = `
-            <div id="seccion-personal">
-                <div class="d-flex justify-content-between mb-3">
-                    <h3>Personal</h3>
-                    <button class="btn btn-primary" onclick="abrirModalPersonal()"><i class="bi bi-plus-circle"></i> Agregar</button>
-                </div>
-                <div class="table-responsive border rounded bg-white">
-                    <table class="table table-hover table-bordered mb-0">
-                        <thead class="table-dark">
-                            <tr>
-                                <th class="sticky-col">Nombre Completo</th>
-                                <th>Empresa</th><th>Zona</th><th>Departamento</th>
-                                <th>Usuario</th><th>Contraseña</th><th>Puesto</th><th>Correo</th><th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                </div>
+            <div class="d-flex justify-content-between mb-3">
+                <h3>Personal</h3>
+                <button class="btn btn-primary" onclick="abrirModalPersonal()"><i class="bi bi-plus-circle"></i> Agregar</button>
             </div>
-            ${modalPersonalHTML()}`;
+            <div class="table-responsive"><table id="tabla-personal" class="table table-hover table-bordered mb-0">
+                <thead class="table-dark"><tr>
+                    <th class="sticky-col">Nombre</th><th>Empresa</th><th>Zona</th><th>Depto</th>
+                    <th>Usuario</th><th>Pass</th><th>Puesto</th><th>Correo</th><th>Acciones</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table></div>`;
     }
 
-    /* =================================================
-       FUNCIONES AUXILIARES (MODALES Y CRUD)
-    ================================================= */
-    
-    // CRUD GENERAL
-    window.eliminarRegistro = async (path, id) => {
-        const res = await Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true });
-        if (res.isConfirmed) await remove(ref(db, `${path}/${id}`));
-    };
-
-    // LOGICA EMPRESAS
+    // Lógica para abrir Modales
     window.abrirModalEmpresa = (id = "") => {
         const e = id ? empresasData[id] : { nombre: "" };
         document.getElementById("tituloMod").innerText = id ? "Editar Empresa" : "Nueva Empresa";
         document.getElementById("empID").value = id;
         document.getElementById("empNom").value = e.nombre;
-        colEmpresas.forEach(c => document.getElementById(`chk_${c}`).checked = e[c] || false);
+        
+        // Generar checks dinámicamente
+        document.getElementById("contenedorChecks").innerHTML = colEmpresas.map(c => `
+            <div class="col-md-4"><div class="form-check">
+                <input class="form-check-input" type="checkbox" id="chk_${c}" ${e[c] ? 'checked' : ''}>
+                <label class="form-check-label">${c}</label>
+            </div></div>`).join("");
+            
         new bootstrap.Modal(document.getElementById("modalEmp")).show();
     };
 
-    window.guardarEmpresa = async () => {
-        let id = document.getElementById("empID").value;
-        let data = { nombre: document.getElementById("empNom").value.trim() };
-        if (!data.nombre) return Swal.fire("Error", "Nombre requerido", "error");
-        colEmpresas.forEach(c => data[c] = document.getElementById(`chk_${c}`).checked);
-        
-        id ? await update(ref(db, `empresas/${id}`), data) : await push(ref(db, 'empresas'), data);
-        bootstrap.Modal.getInstance(document.getElementById("modalEmp")).hide();
-        Swal.fire("Éxito", "Guardado", "success");
-    };
-
-    // LOGICA PERSONAL
     window.abrirModalPersonal = (id = "") => {
-        const p = id ? personalData[id] : { empresa:"", zona:"", departamento:"", nombreCompleto:"", usuario:"", contraseña:"", puesto:"", correo:"" };
-        document.getElementById("tituloPers").innerText = id ? "Editar Personal" : "Nuevo Personal";
+        const p = id ? personalData[id] : {};
         document.getElementById("persID").value = id;
-        document.getElementById("p_emp").value = p.empresa;
-        document.getElementById("p_zon").value = p.zona;
-        document.getElementById("p_dep").value = p.departamento;
-        document.getElementById("p_nom").value = p.nombreCompleto;
-        document.getElementById("p_usu").value = p.usuario;
-        document.getElementById("p_con").value = p.contraseña;
-        document.getElementById("p_pue").value = p.puesto;
-        document.getElementById("p_cor").value = p.correo;
+        document.getElementById("p_emp").value = p.empresa || "";
+        document.getElementById("p_zon").value = p.zona || "";
+        document.getElementById("p_dep").value = p.departamento || "";
+        document.getElementById("p_nom").value = p.nombreCompleto || "";
+        document.getElementById("p_usu").value = p.usuario || "";
+        document.getElementById("p_con").value = p.contraseña || "";
+        document.getElementById("p_pue").value = p.puesto || "";
+        document.getElementById("p_cor").value = p.correo || "";
         new bootstrap.Modal(document.getElementById("modalPers")).show();
     };
 
-    window.guardarPersonal = async () => {
-        let id = document.getElementById("persID").value;
-        let data = {
+    // GUARDADO REAL (Event Listeners fijos para evitar errores)
+    document.getElementById("btnGuardarEmpresa").addEventListener("click", async () => {
+        const id = document.getElementById("empID").value;
+        const nombre = document.getElementById("empNom").value.trim();
+        if(!nombre) return Swal.fire("Error", "Nombre obligatorio", "error");
+
+        let data = { nombre };
+        colEmpresas.forEach(c => data[c] = document.getElementById(`chk_${c}`).checked);
+
+        try {
+            id ? await update(ref(db, `empresas/${id}`), data) : await push(ref(db, 'empresas'), data);
+            bootstrap.Modal.getInstance(document.getElementById("modalEmp")).hide();
+            Swal.fire("Éxito", "Empresa guardada", "success");
+        } catch(e) { Swal.fire("Error", e.message, "error"); }
+    });
+
+    document.getElementById("btnGuardarPersonal").addEventListener("click", async () => {
+        const id = document.getElementById("persID").value;
+        const data = {
             empresa: document.getElementById("p_emp").value,
             zona: document.getElementById("p_zon").value,
             departamento: document.getElementById("p_dep").value,
-            nombreCompleto: document.getElementById("p_nom").value,
+            nombreCompleto: document.getElementById("p_nom").value.trim(),
             usuario: document.getElementById("p_usu").value,
             contraseña: document.getElementById("p_con").value,
             puesto: document.getElementById("p_pue").value,
             correo: document.getElementById("p_cor").value
         };
-        if (!data.nombreCompleto) return Swal.fire("Error", "Nombre requerido", "error");
+        if(!data.nombreCompleto) return Swal.fire("Error", "Nombre obligatorio", "error");
 
-        id ? await update(ref(db, `personal/${id}`), data) : await push(ref(db, 'personal'), data);
-        bootstrap.Modal.getInstance(document.getElementById("modalPers")).hide();
-        Swal.fire("Éxito", "Personal guardado", "success");
+        try {
+            id ? await update(ref(db, `personal/${id}`), data) : await push(ref(db, 'personal'), data);
+            bootstrap.Modal.getInstance(document.getElementById("modalPers")).hide();
+            Swal.fire("Éxito", "Personal guardado", "success");
+        } catch(e) { Swal.fire("Error", e.message, "error"); }
+    });
+
+    window.eliminarRegistro = async (path, id) => {
+        const res = await Swal.fire({ title: '¿Eliminar?', text: "Esta acción borrará los datos", icon: 'warning', showCancelButton: true });
+        if (res.isConfirmed) await remove(ref(db, `${path}/${id}`));
     };
-
-    function modalEmpresaHTML() {
-        return `
-        <div class="modal fade" id="modalEmp" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content">
-            <div class="modal-header"><h5 id="tituloMod"></h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <input type="hidden" id="empID">
-                <label>Nombre Empresa</label><input type="text" id="empNom" class="form-control mb-3">
-                <div class="row">${colEmpresas.map(c => `<div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" id="chk_${c}"><label>${c}</label></div></div>`).join("")}</div>
-            </div>
-            <div class="modal-footer"><button class="btn btn-success" onclick="guardarEmpresa()">Guardar</button></div>
-        </div></div></div>`;
-    }
-
-    function modalPersonalHTML() {
-        return `
-        <div class="modal fade" id="modalPers" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
-            <div class="modal-header"><h5 id="tituloPers"></h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body row g-3">
-                <input type="hidden" id="persID">
-                <div class="col-md-6"><label>Empresa</label><input type="text" id="p_emp" class="form-control"></div>
-                <div class="col-md-6"><label>Zona</label><input type="text" id="p_zon" class="form-control"></div>
-                <div class="col-md-6"><label>Departamento</label><input type="text" id="p_dep" class="form-control"></div>
-                <div class="col-md-6"><label>Nombre Completo</label><input type="text" id="p_nom" class="form-control"></div>
-                <div class="col-md-4"><label>Usuario</label><input type="text" id="p_usu" class="form-control"></div>
-                <div class="col-md-4"><label>Contraseña</label><input type="password" id="p_con" class="form-control"></div>
-                <div class="col-md-4"><label>Puesto</label><input type="text" id="p_pue" class="form-control"></div>
-                <div class="col-md-12"><label>Correo</label><input type="email" id="p_cor" class="form-control"></div>
-            </div>
-            <div class="modal-footer"><button class="btn btn-success" onclick="guardarPersonal()">Guardar Personal</button></div>
-        </div></div></div>`;
-    }
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
