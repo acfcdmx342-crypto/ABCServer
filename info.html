@@ -103,29 +103,35 @@
         "GROMASAP147D1", "GROMASAP149DB"
     ];
 
-    // Almacén de datos
     let catalogos = {
         empresas: {}, zonas: {}, estados: {}, tipos: {}, perfiles: {}, unidades: {}, programas: {}, personal: {}
     };
 
-    // Suscripción automática a todos los nodos
+    // Suscripción automática a todos los nodos de Firebase
     Object.keys(catalogos).forEach(path => {
         onValue(ref(db, path), (snap) => {
             catalogos[path] = snap.val() || {};
-            // Refrescar pantalla actual si coincide con el path
             const tablaActiva = document.querySelector('table')?.id.replace('tabla-', '');
             if (tablaActiva === path) window.cargar(path);
         });
     });
 
-    // Carga de Vistas
     window.cargar = (path) => {
         if (path === 'personal') return renderPersonal();
         renderModuloGenerico(path);
     };
 
     function renderModuloGenerico(path) {
-        const titulos = { empresas: 'Empresas', zonas: 'Zonas', estados: 'Estados', tipos: 'Tipos', perfiles: 'Perfiles', unidades: 'Unidades', programas: 'Inicia Programa' };
+        const titulos = { 
+            empresas: 'Empresas', 
+            zonas: 'Zonas', 
+            estados: 'Estados', 
+            tipos: 'Tipos', 
+            perfiles: 'Perfiles', 
+            unidades: 'Unidades', 
+            programas: 'Inicia Programa' 
+        };
+        
         let headers = colServidores.map(c => `<th>${c}</th>`).join("");
         let rows = Object.keys(catalogos[path]).map(id => {
             let item = catalogos[path][id];
@@ -159,13 +165,12 @@
                 <tbody>${rows}</tbody></table></div>`;
     }
 
-    // Lógica Modales Genéricos
     window.abrirModalGen = (path, id = "") => {
         const item = id ? catalogos[path][id] : { nombre: "" };
         document.getElementById("genPath").value = path;
         document.getElementById("genID").value = id;
         document.getElementById("genNom").value = item.nombre;
-        document.getElementById("genTitulo").innerText = (id ? 'Editar ' : 'Nuevo ') + path.slice(0,-1);
+        document.getElementById("genTitulo").innerText = (id ? 'Editar ' : 'Nuevo ') + path.charAt(0).toUpperCase() + path.slice(1, -1);
         
         document.getElementById("genChecks").innerHTML = colServidores.map(c => `
             <div class="col-md-4"><div class="form-check">
@@ -189,7 +194,6 @@
         new bootstrap.Modal(document.getElementById("modalPers")).show();
     };
 
-    // Guardado Genérico
     document.getElementById("btnGuardarGenerico").addEventListener("click", async () => {
         const path = document.getElementById("genPath").value;
         const id = document.getElementById("genID").value;
@@ -206,7 +210,6 @@
         } catch(e) { Swal.fire("Error", e.message, "error"); }
     });
 
-    // Guardado Personal
     document.getElementById("btnGuardarPersonal").addEventListener("click", async () => {
         const id = document.getElementById("persID").value;
         const data = {
