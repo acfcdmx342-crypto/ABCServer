@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Sistemas - Módulo Personal</title>
+    <title>Login Sistemas - Grupo Roma</title>
     <style>
         :root {
             --bg-principal: #f0f2f5;
@@ -11,8 +11,8 @@
             --texto: #1c1e21;
             --input-bg: #ffffff;
             --input-border: #dddfe2;
-            --btn-color: #007bff;
-            --btn-hover: #0056b3;
+            --btn-color: #0f172a; 
+            --btn-hover: #1e293b;
             --error: #dc3545;
             --exito: #28a745;
         }
@@ -23,8 +23,6 @@
             --texto: #e4e6eb;
             --input-bg: #3a3b3c;
             --input-border: #3e4042;
-            --btn-color: #2e89ff;
-            --btn-hover: #4599ff;
         }
 
         * { box-sizing: border-box; transition: background 0.3s ease, color 0.3s ease; }
@@ -43,8 +41,8 @@
         .login-card {
             background-color: var(--bg-card);
             padding: 2.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             width: 100%;
             max-width: 400px;
             text-align: center;
@@ -59,7 +57,7 @@
         }
 
         .form-group { text-align: left; margin-bottom: 1.2rem; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase;}
 
         input {
             width: 100%; padding: 12px;
@@ -68,7 +66,6 @@
             color: var(--texto); outline: none;
         }
 
-        /* 1. ESTILO PARA QUE SE VEA EN MAYÚSCULAS */
         #username { text-transform: uppercase; }
 
         .login-btn {
@@ -77,63 +74,98 @@
             font-size: 16px; font-weight: bold; cursor: pointer;
         }
 
-        #message { margin-top: 1rem; font-size: 14px; min-height: 20px; }
+        .login-btn:hover { background-color: var(--btn-hover); }
+
+        #message { margin-top: 1rem; font-size: 14px; min-height: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="login-card">
         <button class="toggle-btn" onclick="toggleDarkMode()">🌓 Modo</button>
-        <h2>Sistemas</h2>
-        <p style="font-size: 13px; color: #888;">Validación Módulo Personal</p>
+        <h2 style="font-weight: 800; letter-spacing: -1px;">SISTEMAS</h2>
+        <p style="font-size: 13px; color: #888; margin-bottom: 25px;">Acceso al Módulo de Servidores</p>
 
         <form id="loginForm">
             <div class="form-group">
                 <label for="username">Usuario</label>
                 <input type="text" id="username" placeholder="USUARIO" required oninput="this.value = this.value.toUpperCase()">
             </div>
-            <div class="form-group">
+            <div class="form-group" style="position: relative;">
                 <label for="password">Contraseña</label>
                 <input type="password" id="password" placeholder="••••••••" required>
+                <button type="button" onclick="togglePass()" style="position:absolute; right:10px; top:35px; border:none; background:none; cursor:pointer;">👁️</button>
             </div>
-            <button type="submit" class="login-btn">Entrar</button>
+            <button type="submit" class="login-btn" id="btnEntrar">ENTRAR</button>
         </form>
         <div id="message"></div>
     </div>
 
-    <script>
-        // Nota: Los nombres de usuario en la "base de datos" deben estar en MAYÚSCULAS 
-        // para que coincidan con lo que el usuario escribe.
-        const usuariosModuloPersonal = [
-            { user: "ADMIN_IT", pass: "sistemas2024", nombre: "Carlos", depto: "Sistemas" },
-            { user: "DEV_ZERO", pass: "root", nombre: "Ana", depto: "Sistemas" },
-            { user: "USER_RRHH", pass: "123", nombre: "Marta", depto: "Recursos Humanos" }
-        ];
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Misma configuración que tu página de catálogos
+        const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
         const form = document.getElementById('loginForm');
         const messageDiv = document.getElementById('message');
+        const btnEntrar = document.getElementById('btnEntrar');
 
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const userVal = document.getElementById('username').value;
-            const passVal = document.getElementById('password').value;
+            
+            // UI de carga
+            btnEntrar.disabled = true;
+            btnEntrar.innerText = "VERIFICANDO...";
+            messageDiv.innerText = "";
+            
+            const userIn = document.getElementById('username').value.trim();
+            const passIn = document.getElementById('password').value.trim();
 
-            const usuario = usuariosModuloPersonal.find(u => u.user === userVal && u.pass === passVal);
+            try {
+                const dbRef = ref(db);
+                // Leemos el nodo 'personal' que es donde guardas en tu página de catálogos
+                const snapshot = await get(child(dbRef, `personal`));
 
-            if (usuario) {
-                if (usuario.depto === "Sistemas") {
-                    mostrarMensaje("Acceso correcto. Redirigiendo...", "exito");
-                    
-                    // 3. REDIRECCIÓN A ab.html
-                    setTimeout(() => {
-                        window.location.href = "ab.html";
-                    }, 1000); 
+                if (snapshot.exists()) {
+                    const listaPersonal = snapshot.val();
+                    let autorizado = null;
 
+                    // Buscamos coincidencia
+                    for (let id in listaPersonal) {
+                        const p = listaPersonal[id];
+                        // IMPORTANTE: p.contraseña con 'ñ' como en tu código de catálogos
+                        if (p.usuario === userIn && p.contraseña === passIn) {
+                            autorizado = p;
+                            break;
+                        }
+                    }
+
+                    if (autorizado) {
+                        // Verificamos que sea de Sistemas (puedes ajustar el nombre del depto si es diferente)
+                        if (autorizado.departamento === "Sistemas" || autorizado.departamento === "SISTEMAS") {
+                            mostrarMensaje(`¡Bienvenido ${autorizado.nombreCompleto}!`, "exito");
+                            setTimeout(() => {
+                                window.location.href = "ab.html"; // Asegúrate de que este archivo se llame así
+                            }, 1000);
+                        } else {
+                            mostrarMensaje(`Acceso denegado: Área ${autorizado.departamento}`, "error");
+                        }
+                    } else {
+                        mostrarMensaje("Usuario o contraseña incorrectos", "error");
+                    }
                 } else {
-                    mostrarMensaje(`Error: Tu departamento (${usuario.depto}) no tiene acceso.`, "error");
+                    mostrarMensaje("Error: No hay personal registrado", "error");
                 }
-            } else {
-                mostrarMensaje("Usuario o contraseña incorrectos.", "error");
+            } catch (err) {
+                console.error(err);
+                mostrarMensaje("Error de conexión", "error");
+            } finally {
+                btnEntrar.disabled = false;
+                btnEntrar.innerText = "ENTRAR";
             }
         });
 
@@ -142,10 +174,15 @@
             messageDiv.style.color = tipo === "exito" ? "var(--exito)" : "var(--error)";
         }
 
-        function toggleDarkMode() {
+        window.togglePass = () => {
+            const p = document.getElementById('password');
+            p.type = p.type === "password" ? "text" : "password";
+        };
+
+        window.toggleDarkMode = () => {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-        }
+        };
 
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
     </script>
