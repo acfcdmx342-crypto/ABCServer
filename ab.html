@@ -12,10 +12,6 @@
             --bg-body: #f4f7f6;
             --bg-card: #ffffff;
             --text-main: #212529;
-            --border-color: #eee;
-            --input-bg: #ffffff;
-            --input-text: #212529;
-            --section-label-bg: #f4f7f6;
             --accent: #0f172a;
         }
 
@@ -23,81 +19,57 @@
             --bg-body: #121212;
             --bg-card: #1e1e1e;
             --text-main: #e0e0e0;
-            --border-color: #333;
-            --input-bg: #2d2d2d;
-            --input-text: #ffffff;
-            --section-label-bg: #1e1e1e;
         }
 
-        /* LOADER CORREGIDO: Asegura visibilidad inicial */
+        /* LOADER: Forzado a mostrarse hasta que la lógica lo oculte */
         #loader-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-body);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; 
-            visibility: visible;
+            z-index: 99999; 
             opacity: 1;
-            transition: opacity 0.5s ease, visibility 0.5s;
+            visibility: visible;
+            transition: opacity 0.5s ease;
         }
 
-        .loader-logo { max-width: 250px; animation: pulse 1.5s infinite ease-in-out; }
+        .loader-logo { max-width: 280px; animation: pulse 1.5s infinite ease-in-out; }
         @keyframes pulse {
-            0%, 100% { transform: scale(0.95); opacity: 0.7; }
-            50% { transform: scale(1); opacity: 1; }
+            0%, 100% { transform: scale(0.98); opacity: 0.8; }
+            50% { transform: scale(1.02); opacity: 1; }
         }
 
-        body { background: var(--bg-body); color: var(--text-main); padding: 20px; font-family: 'Segoe UI', sans-serif; transition: all 0.3s ease; }
-        .card { width: 100%; max-width: 850px; margin: auto; border: none; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: var(--bg-card); overflow: hidden;}
+        body { background: var(--bg-body); color: var(--text-main); font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card { max-width: 850px; margin: auto; border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: var(--bg-card); }
         
-        .header-logo { text-align: center; padding: 20px; border-bottom: 2px solid var(--border-color); }
-        .img-negocios { max-width: 220px; margin: 10px auto; display: block; }
-        
-        /* Sistema de Fases */
-        .form-phase { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
-        .form-phase.active { display: block; }
+        .user-session { font-size: 0.9rem; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 10px; margin-bottom: 20px; }
+        .form-phase { display: none; padding: 25px; }
+        .form-phase.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .phase-indicator { display: flex; justify-content: center; margin-bottom: 30px; gap: 10px; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--border-color); transition: 0.3s; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: 0.3s; }
         .dot.active { background: var(--accent); transform: scale(1.3); }
-
-        .btn-roma { background: var(--accent); color: white; font-weight: bold; padding: 10px 25px; border-radius: 8px; border: none; transition: 0.3s; }
-        .btn-roma:hover { opacity: 0.9; transform: translateY(-2px); }
-        .btn-secondary-roma { background: #64748b; color: white; border-radius: 8px; border: none; padding: 10px 25px; }
-
-        .action-group { background: #000; color: white; padding: 15px; border-radius: 10px; }
-        .form-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-main); opacity: 0.8; }
-        .user-session { font-size: 0.85rem; padding: 10px; background: rgba(15, 23, 42, 0.05); border-radius: 8px; margin-bottom: 15px; }
-        
-        .mode-toggle {
-            position: fixed; top: 20px; right: 20px; width: 45px; height: 45px; border-radius: 50%;
-            background: var(--accent); color: white; border: none; display: flex; align-items: center; justify-content: center; z-index: 1000;
-        }
+        .btn-roma { background: var(--accent); color: white; border: none; padding: 10px 30px; border-radius: 8px; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div id="loader-overlay">
-    <img src="https://gruporoma.com/wp-content/uploads/2023/06/cropped-cropped-procomex-pachuca-logo-350-%C3%97-100-px-1.png" alt="Cargando..." class="loader-logo">
-    <p class="mt-3">Sincronizando información...</p>
+    <img src="https://gruporoma.com/wp-content/uploads/2023/06/cropped-cropped-procomex-pachuca-logo-350-%C3%97-100-px-1.png" alt="Grupo Roma" class="loader-logo">
+    <h5 class="mt-4" id="loader-text">Cargando base de datos...</h5>
 </div>
 
-<button class="mode-toggle" onclick="toggleDarkMode()" id="btnTheme">
-    <i class="bi bi-moon-fill"></i>
-</button>
-
 <div class="card">
-    <div class="header-logo">
+    <div class="p-4 border-bottom text-center">
         <div class="user-session text-end">
-            <i class="bi bi-person-circle"></i> Sesión: <strong id="session-user">Cargando usuario...</strong>
+            <i class="bi bi-person-badge-fill"></i> Usuario: <strong id="session-user">Verificando...</strong>
         </div>
-        <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" alt="Logo" class="img-negocios" onerror="this.src='https://via.placeholder.com/200x60?text=Grupo+Roma'">
-        <h3 class="fw-bold m-0 mt-2">CONTROL DE ACCESOS</h3>
+        <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" alt="Logo" style="max-width: 200px;">
+        <h3 class="fw-bold mt-3">CONTROL DE ACCESOS</h3>
     </div>
 
     <div class="card-body">
-        <div class="phase-indicator mt-4">
+        <div class="d-flex justify-content-center gap-2 mb-4">
             <div class="dot active" id="dot1"></div>
             <div class="dot" id="dot2"></div>
             <div class="dot" id="dot3"></div>
@@ -105,102 +77,70 @@
 
         <form id="formAccion">
             <div class="form-phase active" id="phase1">
-                <h5 class="mb-4 text-center fw-bold">1. SELECCIÓN DE SERVIDOR Y ACCIÓN</h5>
-                <div class="row g-4 justify-content-center">
-                    <div class="col-md-8">
-                        <label class="form-label">Servidor Destino</label>
-                        <select id="listaServidores" class="form-select form-select-lg" required>
-                            <option value="" disabled selected>Seleccione Servidor...</option>
-                        </select>
-                    </div>
-                    <div class="col-md-8">
-                        <label class="form-label">Acción a realizar</label>
-                        <div class="action-group d-flex justify-content-around">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="accion" id="alta" value="ALTA" checked>
-                                <label class="form-check-label text-white fw-bold" for="alta">ALTA</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="accion" id="baja" value="BAJA">
-                                <label class="form-check-label text-white fw-bold" for="baja">BAJA</label>
-                            </div>
+                <div class="col-md-8 mx-auto">
+                    <label class="form-label fw-bold">1. Seleccione Servidor</label>
+                    <select id="listaServidores" class="form-select form-select-lg mb-4" required>
+                        <option value="" disabled selected>Cargando lista...</option>
+                    </select>
+                    
+                    <label class="form-label fw-bold">Acción</label>
+                    <div class="d-flex justify-content-around p-3 bg-dark rounded-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="accion" id="alta" value="ALTA" checked>
+                            <label class="form-check-label text-white" for="alta">ALTA</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="accion" id="baja" value="BAJA">
+                            <label class="form-check-label text-white" for="baja">BAJA</label>
                         </div>
                     </div>
                 </div>
                 <div class="text-center mt-5">
-                    <button type="button" class="btn btn-roma px-5" onclick="nextPhase(2)">Siguiente <i class="bi bi-arrow-right"></i></button>
+                    <button type="button" class="btn btn-roma" onclick="nextPhase(2)">Siguiente Step <i class="bi bi-chevron-right"></i></button>
                 </div>
             </div>
 
             <div class="form-phase" id="phase2">
-                <h5 class="mb-4 text-center fw-bold">2. DETALLES DE CLASIFICACIÓN</h5>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Quien Solicita</label>
-                        <select id="sel_personal" class="form-select" required><option value="">Seleccione...</option></select>
+                        <label class="form-label">Personal Solicitante</label>
+                        <select id="sel_personal" class="form-select" required><option value="">Cargando...</option></select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Empresa</label>
                         <select id="sel_empresas" class="form-select" required><option value="">Seleccione...</option></select>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Zona</label>
-                        <select id="sel_zonas" class="form-select"><option value="">Seleccione...</option></select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Estado</label>
-                        <select id="sel_estados" class="form-select"><option value="">Seleccione...</option></select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Tipo</label>
-                        <select id="sel_tipos" class="form-select"><option value="">Seleccione...</option></select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Unidad Organizativa</label>
-                        <select id="sel_unidades" class="form-select"><option value="">Seleccione...</option></select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Perfil</label>
-                        <select id="sel_perfiles" class="form-select"><option value="">Seleccione...</option></select>
-                    </div>
+                    <div class="col-md-4"><label class="form-label">Zona</label><select id="sel_zonas" class="form-select"></select></div>
+                    <div class="col-md-4"><label class="form-label">Estado</label><select id="sel_estados" class="form-select"></select></div>
+                    <div class="col-md-4"><label class="form-label">Unidad</label><select id="sel_unidades" class="form-select"></select></div>
                 </div>
                 <div class="d-flex justify-content-between mt-5">
-                    <button type="button" class="btn btn-secondary-roma" onclick="nextPhase(1)">Anterior</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="nextPhase(1)">Atrás</button>
                     <button type="button" class="btn btn-roma" onclick="nextPhase(3)">Siguiente</button>
                 </div>
             </div>
 
             <div class="form-phase" id="phase3">
-                <h5 class="mb-4 text-center fw-bold">3. DATOS DEL USUARIO A REGISTRAR</h5>
                 <div class="row g-3">
+                    <div class="col-md-12">
+                        <div class="alert alert-info">Confirme los datos del usuario seleccionados:</div>
+                    </div>
                     <div class="col-md-6">
-                        <label class="form-label">Nombre</label>
+                        <label class="form-label">Nombre Completo</label>
                         <input type="text" id="res_nombre" class="form-control" readonly>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Usuario</label>
+                        <label class="form-label">Usuario ID</label>
                         <input type="text" id="res_usuario" class="form-control" readonly>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Puesto</label>
-                        <input type="text" id="res_puesto" class="form-control" readonly>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Sucursal</label>
+                    <div class="col-md-12">
+                        <label class="form-label">Sucursal de Trabajo</label>
                         <input type="text" id="res_sucursal" class="form-control" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Inicia Programa</label>
-                        <select id="sel_programas" class="form-select"><option value="">Seleccione...</option></select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Comienza en</label>
-                        <input type="text" id="res_comienza" class="form-control" placeholder="Ej: 08:00 AM">
                     </div>
                 </div>
                 <div class="d-flex justify-content-between mt-5">
-                    <button type="button" class="btn btn-secondary-roma" onclick="nextPhase(2)">Anterior</button>
-                    <button type="submit" class="btn btn-roma px-5">ENVIAR SOLICITUD</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="nextPhase(2)">Atrás</button>
+                    <button type="submit" class="btn btn-success px-5 fw-bold">FINALIZAR Y ENVIAR</button>
                 </div>
             </div>
         </form>
@@ -210,100 +150,102 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const auth = getAuth(app);
 
-    // --- LÓGICA DE USUARIO DINÁMICO ---
-    // Esta función intenta obtener el usuario de la URL o del almacenamiento local
-    function obtenerUsuarioDinamicamente() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const userUrl = urlParams.get('user'); // Si la URL es: pagina.html?user=Luis Alberto
-        const userStorage = localStorage.getItem('usuario_logueado');
-        
-        return userUrl || userStorage || "Usuario Invitado"; 
-    }
+    // 1. MANEJO DE SESIÓN DINÁMICA
+    onAuthStateChanged(auth, (user) => {
+        const sessionElement = document.getElementById('session-user');
+        if (user) {
+            // Si el usuario tiene un displayName lo usa, si no, su correo
+            sessionElement.innerText = user.displayName || user.email;
+        } else {
+            // Si no hay sesión, intenta leer de localStorage o marca como anónimo
+            const localUser = localStorage.getItem('nombre_usuario');
+            sessionElement.innerText = localUser || "Luis Alberto García"; // Por defecto si no detecta login
+        }
+    });
 
-    document.getElementById('session-user').innerText = obtenerUsuarioDinamicamente();
+    // 2. CARGA DE DATOS Y CONTROL DEL LOADER
+    const catalogos = { 
+        empresas: {}, zonas: {}, estados: {}, tipos: {}, 
+        perfiles: {}, unidades: {}, programas: {}, personal: {} 
+    };
+    
+    let cargados = 0;
+    const total = Object.keys(catalogos).length;
 
-    const colServidores = ["GROMA146 (SAS)", "GROMA58 (SUMMA)", "GROMA148ASUMMA FERRE", "GROMADW1 (CAS)", "GROMATASK", "GROMAES (WEB)", "GROMAPROG", "GROMAPWBI", "GROMAW1 SUMMA ADV", "GROMA146DB", "GROMA58DB", "GROMA148DB1", "GROMA151DB", "GROMA Sadv PRUEBAS ADV", "GROMA XML", "GROMASAP147D1", "GROMASAP149DB"];
-
-    let catalogos = { empresas: {}, zonas: {}, estados: {}, tipos: {}, perfiles: {}, unidades: {}, programas: {}, personal: {} };
-    let pathsCargados = 0;
-    const totalPaths = Object.keys(catalogos).length;
-
+    // Inicializar Servidores
     const selectServ = document.getElementById('listaServidores');
+    const colServidores = ["GROMA146 (SAS)", "GROMA58 (SUMMA)", "GROMA148ASUMMA FERRE", "GROMADW1 (CAS)", "GROMATASK", "GROMAES (WEB)"];
+    selectServ.innerHTML = '<option value="" disabled selected>Seleccione Servidor...</option>';
     colServidores.forEach(s => selectServ.add(new Option(s, s)));
 
-    // Carga de Firebase
+    // Descarga masiva de Firebase
     Object.keys(catalogos).forEach(path => {
         onValue(ref(db, path), (snap) => {
             catalogos[path] = snap.val() || {};
-            pathsCargados++;
+            cargados++;
             
-            if (pathsCargados >= totalPaths) {
-                // Pequeño delay para asegurar que el loader sea visible y la transición sea suave
-                setTimeout(() => {
-                    const loader = document.getElementById('loader-overlay');
-                    loader.style.opacity = '0';
-                    setTimeout(() => loader.style.visibility = 'hidden', 500);
-                }, 1000);
+            // EL LOADER SOLO SE QUITA CUANDO TODO CARGA
+            if (cargados >= total) {
+                const overlay = document.getElementById('loader-overlay');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.visibility = 'hidden', 500);
+            }
+        }, { onlyOnce: true });
+    });
+
+    // 3. LÓGICA DE FILTRADO (Se activa al elegir servidor)
+    selectServ.addEventListener('change', () => {
+        const srv = selectServ.value;
+        llenarSelect('sel_personal', 'personal', srv, true);
+        llenarSelect('sel_empresas', 'empresas', srv);
+        llenarSelect('sel_zonas', 'zonas', srv);
+        llenarSelect('sel_estados', 'estados', srv);
+        llenarSelect('sel_unidades', 'unidades', srv);
+    });
+
+    function llenarSelect(id, path, srv, esPersonal = false) {
+        const el = document.getElementById(id);
+        el.innerHTML = '<option value="">Seleccione...</option>';
+        Object.entries(catalogos[path]).forEach(([key, val]) => {
+            if (val[srv] === true || val[srv] === "true") {
+                const texto = esPersonal ? val.nombreCompleto : val.nombre;
+                el.add(new Option(texto, key));
             }
         });
-    });
+    }
 
-    // Filtros dinámicos al cambiar servidor
-    selectServ.addEventListener('change', () => {
-        const servidor = selectServ.value;
-        const mapeo = {
-            'sel_personal': 'personal',
-            'sel_empresas': 'empresas', 
-            'sel_zonas': 'zonas', 
-            'sel_estados': 'estados', 
-            'sel_tipos': 'tipos', 
-            'sel_unidades': 'unidades', 
-            'sel_perfiles': 'perfiles', 
-            'sel_programas': 'programas'
-        };
-
-        for (let idHtml in mapeo) {
-            const selectEl = document.getElementById(idHtml);
-            selectEl.innerHTML = '<option value="">Seleccione...</option>';
-            
-            Object.entries(catalogos[mapeo[idHtml]]).forEach(([key, item]) => {
-                if (item[servidor] === true || item[servidor] === "true") {
-                    const nombreMostrar = item.nombreCompleto || item.nombre;
-                    selectEl.add(new Option(nombreMostrar, key));
-                }
-            });
-        }
-    });
-
+    // Autocompletar datos del usuario
     document.getElementById('sel_personal').addEventListener('change', (e) => {
         const p = catalogos.personal[e.target.value];
-        if (p) {
-            document.getElementById('res_nombre').value = p.nombreCompleto || '';
-            document.getElementById('res_usuario').value = p.usuario || '';
-            document.getElementById('res_puesto').value = p.puesto || '';
+        if(p) {
+            document.getElementById('res_nombre').value = p.nombreCompleto;
+            document.getElementById('res_usuario').value = p.usuario;
         }
     });
 
+    // Envío final
     document.getElementById('formAccion').addEventListener('submit', async (e) => {
         e.preventDefault();
-        Swal.fire({title: 'Procesando...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        Swal.fire({title: 'Enviando...', didOpen: () => Swal.showLoading()});
         
+        const payload = {
+            usuario_que_registro: document.getElementById('session-user').innerText,
+            servidor: selectServ.value,
+            accion: document.querySelector('input[name="accion"]:checked').value,
+            personal_nombre: document.getElementById('res_nombre').value,
+            fecha: new Date().toISOString()
+        };
+
         try {
-            const data = {
-                servidor: selectServ.value,
-                accion: document.querySelector('input[name="accion"]:checked').value,
-                solicitante: document.getElementById('res_nombre').value,
-                empresa: document.getElementById('sel_empresas').value,
-                fecha: new Date().toLocaleString(),
-                registrado_por: document.getElementById('session-user').innerText
-            };
-            await push(ref(db, 'movimientos'), data);
-            Swal.fire("¡Éxito!", "Solicitud enviada correctamente", "success").then(() => location.reload());
+            await push(ref(db, 'movimientos'), payload);
+            Swal.fire("Éxito", "Registro guardado", "success").then(() => location.reload());
         } catch (err) {
             Swal.fire("Error", err.message, "error");
         }
@@ -311,26 +253,20 @@
 </script>
 
 <script>
-    function nextPhase(p) {
+    // Navegación de fases
+    window.nextPhase = function(p) {
         if (p > 1) {
-            const currentPhase = p - 1;
-            const inputs = document.getElementById(`phase${currentPhase}`).querySelectorAll('[required]');
-            let valid = true;
-            inputs.forEach(i => { if(!i.value) valid = false; });
-            if(!valid) {
-                Swal.fire("Atención", "Por favor completa los campos obligatorios para continuar.", "warning");
-                return;
-            }
+            const inputs = document.getElementById(`phase${p-1}`).querySelectorAll('[required]');
+            let ok = true;
+            inputs.forEach(i => { if(!i.value) ok = false; });
+            if(!ok) return Swal.fire("Atención", "Completa los campos obligatorios", "warning");
         }
         document.querySelectorAll('.form-phase').forEach(f => f.classList.remove('active'));
         document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
         document.getElementById(`phase${p}`).classList.add('active');
         document.getElementById(`dot${p}`).classList.add('active');
     }
-
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-    }
 </script>
+
 </body>
 </html>
