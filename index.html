@@ -5,11 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Sistemas - Grupo Roma</title>
     <style>
-        :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --accent: #0f172a; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { background: var(--card); padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        .btn-login { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        :root { 
+            --bg: #f0f2f5; 
+            --card: #ffffff; 
+            --text: #1c1e21; 
+            --subtext: #666;
+            --accent: #0f172a; 
+            --input-bg: #ffffff;
+            --input-border: #ddd;
+        }
+
+        /* Estilos para Modo Oscuro */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f172a;
+                --card: #1e293b;
+                --text: #f8fafc;
+                --subtext: #94a3b8;
+                --accent: #38bdf8;
+                --input-bg: #0f172a;
+                --input-border: #334155;
+            }
+        }
+
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: var(--bg); 
+            color: var(--text);
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            transition: background 0.3s ease;
+        }
+
+        .login-card { 
+            background: var(--card); 
+            padding: 2.5rem; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            width: 100%; 
+            max-width: 380px; 
+            text-align: center; 
+            transition: background 0.3s ease;
+        }
+
+        h2 { color: var(--text); }
+        p { color: var(--subtext); }
+
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid var(--input-border); 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            background: var(--input-bg);
+            color: var(--text);
+        }
+
+        .btn-login { 
+            width: 100%; 
+            padding: 12px; 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px; 
+        }
+
+        .btn-login:hover { opacity: 0.9; }
+
         #message { margin-top: 15px; font-size: 14px; font-weight: bold; }
     </style>
 </head>
@@ -17,7 +86,7 @@
 
     <div class="login-card">
         <h2 style="letter-spacing: -1px; margin-bottom: 5px;">SISTEMAS</h2>
-        <p style="color: #666; font-size: 14px;">Módulo de Servidores</p>
+        <p style="font-size: 14px;">Módulo de Servidores</p>
         <form id="loginForm">
             <input type="text" id="user" placeholder="USUARIO" required style="text-transform: uppercase;">
             <input type="password" id="pass" placeholder="CONTRASEÑA" required>
@@ -54,13 +123,12 @@
                     );
 
                     if (encontrado) {
-                        // Guardamos la sesión
                         localStorage.setItem('user_name', encontrado.nombreCompleto);
-                        msg.style.color = "green";
+                        msg.style.color = "#22c55e"; // Verde éxito adaptable
                         msg.innerText = "¡Acceso correcto!";
                         setTimeout(() => window.location.href = "ab.html", 800);
                     } else {
-                        msg.style.color = "red";
+                        msg.style.color = "#ef4444"; // Rojo error adaptable
                         msg.innerText = "Usuario o contraseña incorrectos";
                     }
                 }
