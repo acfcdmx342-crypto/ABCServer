@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Sistemas - Módulo Personal</title>
+    <style>
+        /* Variables de color para facilitar el Modo Oscuro */
+        :root {
+            --bg-principal: #f0f2f5;
+            --bg-card: #ffffff;
+            --texto: #1c1e21;
+            --input-bg: #ffffff;
+            --input-border: #dddfe2;
+            --btn-color: #007bff;
+            --btn-hover: #0056b3;
+            --error: #dc3545;
+            --exito: #28a745;
+        }
+
+        /* Colores cuando la clase .dark-mode está activa */
+        body.dark-mode {
+            --bg-principal: #18191a;
+            --bg-card: #242526;
+            --texto: #e4e6eb;
+            --input-bg: #3a3b3c;
+            --input-border: #3e4042;
+            --btn-color: #2e89ff;
+            --btn-hover: #4599ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-principal);
+            color: var(--texto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-card {
+            background-color: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: 1px solid var(--input-border);
+            color: var(--texto);
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        h2 { margin-bottom: 0.5rem; }
+        p.subtitle { color: #888; margin-bottom: 2rem; font-size: 14px; }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--texto);
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--btn-color);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--btn-color);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .login-btn:hover {
+            background-color: var(--btn-hover);
+        }
+
+        #message {
+            margin-top: 1rem;
+            font-size: 14px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <button class="toggle-btn" onclick="toggleDarkMode()">🌓 Cambiar Modo</button>
+        
+        <h2>Módulo de Personal</h2>
+        <p class="subtitle">Solo acceso autorizado para <b>Sistemas</b></p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" placeholder="Tu usuario" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="login-btn">Iniciar Sesión</button>
+        </form>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // --- DATA DE SIMULACIÓN (REEMPLAZAR CON API O DB) ---
+        const usuariosModuloPersonal = [
+            { user: "admin_it", pass: "sistemas2024", nombre: "Carlos", depto: "Sistemas" },
+            { user: "dev_zero", pass: "root", nombre: "Ana", depto: "Sistemas" },
+            { user: "contabilidad_01", pass: "12345", nombre: "Roberto", depto: "Contabilidad" }
+        ];
+
+        const form = document.getElementById('loginForm');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const userVal = document.getElementById('username').value;
+            const passVal = document.getElementById('password').value;
+
+            // 1. Buscamos al usuario en los datos del módulo de personal
+            const usuario = usuariosModuloPersonal.find(u => u.user === userVal && u.pass === passVal);
+
+            if (usuario) {
+                // 2. Validamos si pertenece al departamento de Sistemas
+                if (usuario.depto === "Sistemas") {
+                    mostrarMensaje(`¡Bienvenido/a ${usuario.nombre}! Accediendo al sistema...`, "exito");
+                    // Aquí podrías usar: window.location.href = "dashboard_it.html";
+                } else {
+                    mostrarMensaje(`Acceso denegado: El usuario pertenece a ${usuario.depto}, no a Sistemas.`, "error");
+                }
+            } else {
+                mostrarMensaje("Usuario o contraseña incorrectos.", "error");
+            }
+        });
+
+        function mostrarMensaje(texto, tipo) {
+            messageDiv.innerText = texto;
+            messageDiv.style.color = tipo === "exito" ? "var(--exito)" : "var(--error)";
+        }
+
+        // --- LÓGICA MODO OSCURO ---
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            
+            // Guardar preferencia en el navegador
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Cargar preferencia guardada al iniciar
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+</body>
+</html>
