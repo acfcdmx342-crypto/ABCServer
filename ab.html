@@ -8,107 +8,70 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root { --bg-body: #f4f7f6; --bg-card: #ffffff; --text-main: #212529; --accent: #0f172a; }
-        body.dark-mode { --bg-body: #121212; --bg-card: #1e1e1e; --text-main: #e0e0e0; }
-
+        :root { --bg-body: #f4f7f6; --bg-card: #ffffff; --accent: #0f172a; }
+        body { background: var(--bg-body); font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        
+        /* Loader con salida garantizada */
         #loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-body); display: flex; flex-direction: column;
+            background: white; display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 99999;
-            transition: opacity 0.5s ease;
         }
 
-        .loader-logo { max-width: 280px; animation: pulse 1.5s infinite ease-in-out; }
-        @keyframes pulse { 0%, 100% { transform: scale(0.98); opacity: 0.8; } 50% { transform: scale(1.02); opacity: 1; } }
-
-        body { background: var(--bg-body); color: var(--text-main); font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .card { max-width: 850px; margin: auto; border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: var(--bg-card); overflow: hidden; }
-        .user-session { font-size: 0.9rem; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 10px; margin-bottom: 20px; }
-        .form-phase { display: none; padding: 25px; }
-        .form-phase.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: 0.3s; }
-        .dot.active { background: var(--accent); transform: scale(1.3); }
-        .btn-roma { background: var(--accent); color: white; border: none; padding: 10px 30px; border-radius: 8px; font-weight: 600; }
+        .card { max-width: 800px; margin: auto; border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .user-session { font-size: 0.9rem; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #ddd; }
+        .form-phase { display: none; padding: 20px; }
+        .form-phase.active { display: block; }
+        .btn-roma { background: var(--accent); color: white; border-radius: 8px; padding: 10px 25px; }
     </style>
 </head>
 <body>
 
 <div id="loader-overlay">
-    <img src="https://gruporoma.com/wp-content/uploads/2023/06/cropped-cropped-procomex-pachuca-logo-350-%C3%97-100-px-1.png" alt="Grupo Roma" class="loader-logo">
-    <h5 class="mt-4">Sincronizando con Servidor Roma...</h5>
+    <img src="https://gruporoma.com/wp-content/uploads/2023/06/cropped-cropped-procomex-pachuca-logo-350-%C3%97-100-px-1.png" style="max-width: 250px;">
+    <div class="spinner-border text-primary mt-3"></div>
+    <p class="mt-2">Cargando base de datos...</p>
 </div>
 
 <div class="card">
     <div class="p-4 border-bottom text-center">
-        <div class="user-session text-end">
-            <i class="bi bi-person-badge-fill"></i> Usuario: <strong id="session-user">Cargando...</strong>
+        <div class="user-session text-end mb-3">
+            <i class="bi bi-person-circle"></i> Sesión: <strong id="session-user">Detectando usuario...</strong>
         </div>
-        <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" alt="Logo" style="max-width: 200px;">
-        <h3 class="fw-bold mt-3">CONTROL DE ACCESOS</h3>
+        <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" style="max-width: 180px;">
+        <h4 class="fw-bold mt-2">CONTROL DE ACCESOS</h4>
     </div>
 
     <div class="card-body">
-        <div class="d-flex justify-content-center gap-2 mb-4">
-            <div class="dot active" id="dot1"></div>
-            <div class="dot" id="dot2"></div>
-            <div class="dot" id="dot3"></div>
-        </div>
-
         <form id="formAccion">
             <div class="form-phase active" id="phase1">
-                <div class="col-md-8 mx-auto">
-                    <label class="form-label fw-bold">1. Seleccione Servidor</label>
-                    <select id="listaServidores" class="form-select form-select-lg mb-4" required>
-                        <option value="" disabled selected>Seleccione...</option>
-                    </select>
-                    
-                    <label class="form-label fw-bold">Acción</label>
-                    <div class="d-flex justify-content-around p-3 bg-dark rounded-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="accion" id="alta" value="ALTA" checked>
-                            <label class="form-check-label text-white" for="alta">ALTA</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="accion" id="baja" value="BAJA">
-                            <label class="form-check-label text-white" for="baja">BAJA</label>
-                        </div>
-                    </div>
+                <label class="form-label fw-bold">Servidor Destino</label>
+                <select id="listaServidores" class="form-select mb-4" required>
+                    <option value="" disabled selected>Seleccione...</option>
+                    <option value="GROMA146 (SAS)">GROMA146 (SAS)</option>
+                    <option value="GROMA58 (SUMMA)">GROMA58 (SUMMA)</option>
+                </select>
+                
+                <label class="form-label fw-bold">Acción</label>
+                <div class="d-flex gap-4 p-3 bg-light rounded border mb-4">
+                    <label><input type="radio" name="accion" value="ALTA" checked> ALTA</label>
+                    <label><input type="radio" name="accion" value="BAJA"> BAJA</label>
                 </div>
-                <div class="text-center mt-5">
-                    <button type="button" class="btn btn-roma" onclick="nextPhase(2)">Siguiente <i class="bi bi-chevron-right"></i></button>
-                </div>
+                <button type="button" class="btn btn-roma w-100" onclick="nextPhase(2)">Siguiente</button>
             </div>
 
             <div class="form-phase" id="phase2">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Personal Solicitante</label>
-                        <select id="sel_personal" class="form-select" required><option value="">Seleccione servidor primero...</option></select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Empresa</label>
-                        <select id="sel_empresas" class="form-select" required><option value="">Seleccione...</option></select>
-                    </div>
-                    <div class="col-md-4"><label class="form-label">Zona</label><select id="sel_zonas" class="form-select"></select></div>
-                    <div class="col-md-4"><label class="form-label">Estado</label><select id="sel_estados" class="form-select"></select></div>
-                    <div class="col-md-4"><label class="form-label">Unidad</label><select id="sel_unidades" class="form-select"></select></div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Empresa</label>
+                    <select id="sel_empresas" class="form-select" required></select>
                 </div>
-                <div class="d-flex justify-content-between mt-5">
-                    <button type="button" class="btn btn-outline-secondary" onclick="nextPhase(1)">Atrás</button>
-                    <button type="button" class="btn btn-roma" onclick="nextPhase(3)">Siguiente</button>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Estado</label>
+                    <select id="sel_estados" class="form-select" required></select>
                 </div>
-            </div>
-
-            <div class="form-phase" id="phase3">
-                <div class="row g-3">
-                    <div class="col-md-6"><label class="form-label">Nombre</label><input type="text" id="res_nombre" class="form-control" readonly></div>
-                    <div class="col-md-6"><label class="form-label">Usuario</label><input type="text" id="res_usuario" class="form-control" readonly></div>
-                    <div class="col-md-12"><label class="form-label">Sucursal</label><input type="text" id="res_sucursal" class="form-control" required></div>
-                </div>
-                <div class="d-flex justify-content-between mt-5">
-                    <button type="button" class="btn btn-outline-secondary" onclick="nextPhase(2)">Atrás</button>
-                    <button type="submit" class="btn btn-success px-5 fw-bold">ENVIAR REGISTRO</button>
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-secondary" onclick="nextPhase(1)">Atrás</button>
+                    <button type="submit" class="btn btn-success">Finalizar Registro</button>
                 </div>
             </div>
         </form>
@@ -127,105 +90,75 @@
 
     // --- SESIÓN DINÁMICA ---
     onAuthStateChanged(auth, (user) => {
-        const sessionName = document.getElementById('session-user');
+        const sessionSpan = document.getElementById('session-user');
         if (user) {
-            sessionName.innerText = user.displayName || user.email;
+            sessionSpan.innerText = user.displayName || user.email;
         } else {
-            // Si no hay sesión activa, intenta jalar un nombre guardado o usa el genérico
-            sessionName.innerText = localStorage.getItem('user_name') || "Luis Alberto García";
+            // Si no hay sesión, intenta sacar el nombre de la URL o localStorage
+            const localName = localStorage.getItem('nombre_usuario');
+            sessionSpan.innerText = localName || "Luis Alberto García"; 
         }
     });
 
-    // --- CARGA DE DATOS ---
-    const catalogos = { empresas: {}, zonas: {}, estados: {}, tipos: {}, perfiles: {}, unidades: {}, programas: {}, personal: {} };
-    let cargados = 0;
-    const totalPaths = Object.keys(catalogos).length;
-
-    // Llenar servidores manualmente
-    const selectServ = document.getElementById('listaServidores');
-    const colServidores = ["GROMA146 (SAS)", "GROMA58 (SUMMA)", "GROMA148ASUMMA FERRE", "GROMADW1 (CAS)", "GROMATASK", "GROMAES (WEB)"];
-    colServidores.forEach(s => selectServ.add(new Option(s, s)));
-
-    // Descarga con control de errores (si falla una ruta, el loader igual se quita)
-    Object.keys(catalogos).forEach(path => {
-        const pathRef = ref(db, path);
-        onValue(pathRef, (snap) => {
-            catalogos[path] = snap.val() || {};
-            verificarCarga();
-        }, { onlyOnce: true });
-    });
-
-    // Timeout de seguridad: Si en 5 segundos no carga, quita el loader por la fuerza
-    const safetyTimeout = setTimeout(() => quitarLoader(), 5000);
-
-    function verificarCarga() {
-        cargados++;
-        if (cargados >= totalPaths) {
-            clearTimeout(safetyTimeout);
-            quitarLoader();
+    // --- CARGA DE DATOS REALES (Solo lo que tienes en tu DB) ---
+    onValue(ref(db, '/'), (snapshot) => {
+        const data = snapshot.val();
+        
+        // Llenar Empresas
+        const comboEmp = document.getElementById('sel_empresas');
+        comboEmp.innerHTML = '<option value="">Seleccione Empresa...</option>';
+        if(data.empresas) {
+            Object.values(data.empresas).forEach(emp => {
+                comboEmp.add(new Option(emp.nombre, emp.nombre));
+            });
         }
-    }
 
-    function quitarLoader() {
-        const overlay = document.getElementById('loader-overlay');
-        if(overlay) {
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 500);
+        // Llenar Estados
+        const comboEst = document.getElementById('sel_estados');
+        comboEst.innerHTML = '<option value="">Seleccione Estado...</option>';
+        if(data.estados) {
+            Object.values(data.estados).forEach(est => {
+                comboEst.add(new Option(est.nombre, est.nombre));
+            });
         }
-    }
 
-    // --- FILTRADO ---
-    selectServ.addEventListener('change', () => {
-        const srv = selectServ.value;
-        llenarSelect('sel_personal', 'personal', srv, true);
-        ['empresas', 'zonas', 'estados', 'unidades'].forEach(p => llenarSelect(`sel_${p}`, p, srv));
-    });
+        // OCULTAR LOADER (Como ya recibimos datos, lo quitamos)
+        document.getElementById('loader-overlay').style.display = 'none';
+    }, { onlyOnce: true });
 
-    function llenarSelect(id, path, srv, esPersonal = false) {
-        const el = document.getElementById(id);
-        el.innerHTML = '<option value="">Seleccione...</option>';
-        Object.entries(catalogos[path]).forEach(([key, val]) => {
-            if (val[srv] === true || val[srv] === "true") {
-                el.add(new Option(esPersonal ? val.nombreCompleto : val.nombre, key));
-            }
-        });
-    }
+    // Fallback por si la conexión es muy lenta
+    setTimeout(() => { document.getElementById('loader-overlay').style.display = 'none'; }, 3500);
 
-    document.getElementById('sel_personal').addEventListener('change', (e) => {
-        const p = catalogos.personal[e.target.value];
-        if(p) {
-            document.getElementById('res_nombre').value = p.nombreCompleto;
-            document.getElementById('res_usuario').value = p.usuario;
-        }
-    });
-
+    // --- GUARDAR MOVIMIENTO ---
     document.getElementById('formAccion').addEventListener('submit', async (e) => {
         e.preventDefault();
         Swal.fire({title: 'Guardando...', didOpen: () => Swal.showLoading()});
+
+        const registro = {
+            usuario_sesion: document.getElementById('session-user').innerText,
+            servidor: document.getElementById('listaServidores').value,
+            accion: document.querySelector('input[name="accion"]:checked').value,
+            empresa: document.getElementById('sel_empresas').value,
+            estado: document.getElementById('sel_estados').value,
+            fecha: new Date().toLocaleString()
+        };
+
         try {
-            await push(ref(db, 'movimientos'), {
-                registrado_por: document.getElementById('session-user').innerText,
-                servidor: selectServ.value,
-                accion: document.querySelector('input[name="accion"]:checked').value,
-                personal: document.getElementById('res_nombre').value,
-                fecha: new Date().toLocaleString()
-            });
-            Swal.fire("Listo", "Datos guardados", "success").then(() => location.reload());
-        } catch (err) { Swal.fire("Error", err.message, "error"); }
+            await push(ref(db, 'movimientos'), registro);
+            Swal.fire("Éxito", "Movimiento registrado", "success").then(() => location.reload());
+        } catch (err) {
+            Swal.fire("Error", err.message, "error");
+        }
     });
 </script>
 
 <script>
     function nextPhase(p) {
-        if (p > 1) {
-            const current = document.getElementById(`phase${p-1}`);
-            if (!Array.from(current.querySelectorAll('[required]')).every(i => i.value)) {
-                return Swal.fire("Atención", "Completa los campos obligatorios", "warning");
-            }
+        if (p === 2 && !document.getElementById('listaServidores').value) {
+            return Swal.fire("Atención", "Selecciona un servidor primero", "warning");
         }
-        document.querySelectorAll('.form-phase, .dot').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.form-phase').forEach(f => f.classList.remove('active'));
         document.getElementById(`phase${p}`).classList.add('active');
-        document.getElementById(`dot${p}`).classList.add('active');
     }
 </script>
 </body>
