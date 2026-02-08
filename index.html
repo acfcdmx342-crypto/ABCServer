@@ -5,98 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Sistemas - Grupo Roma</title>
     <style>
-        :root {
-            --bg-principal: #f0f2f5;
-            --bg-card: #ffffff;
-            --texto: #1c1e21;
-            --input-bg: #ffffff;
-            --input-border: #dddfe2;
-            --btn-color: #0f172a; 
-            --btn-hover: #1e293b;
-            --error: #dc3545;
-            --exito: #28a745;
-        }
-
-        body.dark-mode {
-            --bg-principal: #18191a;
-            --bg-card: #242526;
-            --texto: #e4e6eb;
-            --input-bg: #3a3b3c;
-            --input-border: #3e4042;
-        }
-
-        * { box-sizing: border-box; transition: background 0.3s ease, color 0.3s ease; }
-
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--bg-principal);
-            color: var(--texto);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .login-card {
-            background-color: var(--bg-card);
-            padding: 2.5rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-        }
-
-        .toggle-btn {
-            position: absolute; top: 15px; right: 15px;
-            background: none; border: 1px solid var(--input-border);
-            color: var(--texto); padding: 5px 10px; border-radius: 20px;
-            cursor: pointer; font-size: 12px;
-        }
-
-        .form-group { text-align: left; margin-bottom: 1.2rem; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase;}
-
-        input {
-            width: 100%; padding: 12px;
-            border: 1px solid var(--input-border);
-            border-radius: 6px; background-color: var(--input-bg);
-            color: var(--texto); outline: none;
-        }
-
-        #username { text-transform: uppercase; }
-
-        .login-btn {
-            width: 100%; padding: 12px; background-color: var(--btn-color);
-            border: none; border-radius: 6px; color: white;
-            font-size: 16px; font-weight: bold; cursor: pointer;
-        }
-
-        .login-btn:hover { background-color: var(--btn-hover); }
-
-        #message { margin-top: 1rem; font-size: 14px; min-height: 20px; font-weight: bold; }
+        :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --accent: #0f172a; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: var(--card); padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .btn-login { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #message { margin-top: 15px; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="login-card">
-        <button class="toggle-btn" onclick="toggleDarkMode()">🌓 Modo</button>
-        <h2 style="font-weight: 800; letter-spacing: -1px;">SISTEMAS</h2>
-        <p style="font-size: 13px; color: #888; margin-bottom: 25px;">Acceso al Módulo de Servidores</p>
-
+        <h2 style="letter-spacing: -1px; margin-bottom: 5px;">SISTEMAS</h2>
+        <p style="color: #666; font-size: 14px;">Módulo de Servidores</p>
         <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Usuario</label>
-                <input type="text" id="username" placeholder="USUARIO" required oninput="this.value = this.value.toUpperCase()">
-            </div>
-            <div class="form-group" style="position: relative;">
-                <label for="password">Contraseña</label>
-                <input type="password" id="password" placeholder="••••••••" required>
-                <button type="button" onclick="togglePass()" style="position:absolute; right:10px; top:35px; border:none; background:none; cursor:pointer;">👁️</button>
-            </div>
-            <button type="submit" class="login-btn" id="btnEntrar">ENTRAR</button>
+            <input type="text" id="user" placeholder="USUARIO" required style="text-transform: uppercase;">
+            <input type="password" id="pass" placeholder="CONTRASEÑA" required>
+            <button type="submit" class="btn-login" id="btnEntrar">ENTRAR</button>
         </form>
         <div id="message"></div>
     </div>
@@ -105,86 +30,47 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Misma configuración que tu página de catálogos
         const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const form = document.getElementById('loginForm');
-        const messageDiv = document.getElementById('message');
-        const btnEntrar = document.getElementById('btnEntrar');
-
-        form.addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const msg = document.getElementById('message');
+            const btn = document.getElementById('btnEntrar');
             
-            // UI de carga
-            btnEntrar.disabled = true;
-            btnEntrar.innerText = "VERIFICANDO...";
-            messageDiv.innerText = "";
-            
-            const userIn = document.getElementById('username').value.trim();
-            const passIn = document.getElementById('password').value.trim();
+            const userIn = document.getElementById('user').value.trim().toUpperCase();
+            const passIn = document.getElementById('pass').value.trim();
+
+            btn.disabled = true;
+            btn.innerText = "VERIFICANDO...";
 
             try {
-                const dbRef = ref(db);
-                // Leemos el nodo 'personal' que es donde guardas en tu página de catálogos
-                const snapshot = await get(child(dbRef, `personal`));
-
+                const snapshot = await get(child(ref(db), 'personal'));
                 if (snapshot.exists()) {
-                    const listaPersonal = snapshot.val();
-                    let autorizado = null;
+                    const personal = snapshot.val();
+                    let encontrado = Object.values(personal).find(p => 
+                        p.usuario?.toUpperCase() === userIn && p.contraseña === passIn
+                    );
 
-                    // Buscamos coincidencia
-                    for (let id in listaPersonal) {
-                        const p = listaPersonal[id];
-                        // IMPORTANTE: p.contraseña con 'ñ' como en tu código de catálogos
-                        if (p.usuario === userIn && p.contraseña === passIn) {
-                            autorizado = p;
-                            break;
-                        }
-                    }
-
-                    if (autorizado) {
-                        // Verificamos que sea de Sistemas (puedes ajustar el nombre del depto si es diferente)
-                        if (autorizado.departamento === "Sistemas" || autorizado.departamento === "SISTEMAS") {
-                            mostrarMensaje(`¡Bienvenido ${autorizado.nombreCompleto}!`, "exito");
-                            setTimeout(() => {
-                                window.location.href = "ab.html"; // Asegúrate de que este archivo se llame así
-                            }, 1000);
-                        } else {
-                            mostrarMensaje(`Acceso denegado: Área ${autorizado.departamento}`, "error");
-                        }
+                    if (encontrado) {
+                        // Guardamos la sesión
+                        localStorage.setItem('user_name', encontrado.nombreCompleto);
+                        msg.style.color = "green";
+                        msg.innerText = "¡Acceso correcto!";
+                        setTimeout(() => window.location.href = "ab.html", 800);
                     } else {
-                        mostrarMensaje("Usuario o contraseña incorrectos", "error");
+                        msg.style.color = "red";
+                        msg.innerText = "Usuario o contraseña incorrectos";
                     }
-                } else {
-                    mostrarMensaje("Error: No hay personal registrado", "error");
                 }
             } catch (err) {
-                console.error(err);
-                mostrarMensaje("Error de conexión", "error");
+                msg.innerText = "Error de conexión";
             } finally {
-                btnEntrar.disabled = false;
-                btnEntrar.innerText = "ENTRAR";
+                btn.disabled = false;
+                btn.innerText = "ENTRAR";
             }
         });
-
-        function mostrarMensaje(texto, tipo) {
-            messageDiv.innerText = texto;
-            messageDiv.style.color = tipo === "exito" ? "var(--exito)" : "var(--error)";
-        }
-
-        window.togglePass = () => {
-            const p = document.getElementById('password');
-            p.type = p.type === "password" ? "text" : "password";
-        };
-
-        window.toggleDarkMode = () => {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-        };
-
-        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
     </script>
 </body>
 </html>
