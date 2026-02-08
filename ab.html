@@ -16,10 +16,8 @@
             background: white; display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 99999;
         }
-
         .card { max-width: 850px; margin: auto; border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: var(--bg-card); }
         .user-session { font-size: 0.9rem; padding: 12px; background: #f8f9fa; border-radius: 10px; margin-bottom: 20px; border: 1px solid #eee; }
-        
         /* FASES */
         .form-phase { display: none; padding: 25px; }
         .form-phase.active { display: block; animation: fadeIn 0.4s ease; }
@@ -53,7 +51,6 @@
             <div class="dot" id="dot2"></div>
             <div class="dot" id="dot3"></div>
         </div>
-
         <form id="formAccion">
             <div class="form-phase active" id="phase1">
                 <div class="col-md-8 mx-auto">
@@ -64,8 +61,7 @@
                         <option value="GROMA58 (SUMMA)">GROMA58 (SUMMA)</option>
                         <option value="GROMA148ASUMMA FERRE">GROMA148ASUMMA FERRE</option>
                     </select>
-                    
-                    <label class="form-label fw-bold">Acción</label>
+                   <label class="form-label fw-bold">Acción</label>
                     <div class="d-flex justify-content-around p-3 bg-dark rounded-3">
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="accion" id="alta" value="ALTA" checked>
@@ -81,7 +77,6 @@
                     <button type="button" class="btn btn-roma" onclick="nextPhase(2)">Siguiente Step <i class="bi bi-chevron-right"></i></button>
                 </div>
             </div>
-
             <div class="form-phase" id="phase2">
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -119,7 +114,6 @@
         </form>
     </div>
 </div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -129,13 +123,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-
     // 1. MANEJO DE SESIÓN
     onAuthStateChanged(auth, (user) => {
         const sessionElement = document.getElementById('session-user');
         sessionElement.innerText = user ? (user.displayName || user.email) : (localStorage.getItem('nombre_usuario') || "Invitado Roma");
     });
-
     // 2. CARGA DE DATOS (Nodos Individuales para evitar bloqueo)
     const catalogos = { empresas: 'sel_empresas', estados: 'sel_estados', personal: 'sel_personal' };
     let nodosCargados = 0;
@@ -161,7 +153,6 @@
             document.getElementById('loader-overlay').style.display = 'none';
         }
     }
-
     // Timeout de seguridad
     setTimeout(() => { document.getElementById('loader-overlay').style.display = 'none'; }, 4000);
 
