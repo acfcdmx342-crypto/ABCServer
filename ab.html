@@ -11,17 +11,13 @@
         :root { --bg-body: #f4f7f6; --bg-card: #ffffff; --accent: #0f172a; }
         body { background: var(--bg-body); font-family: 'Segoe UI', sans-serif; padding: 20px; }
         
-        #loader-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 99999;
-        }
         .card { max-width: 850px; margin: auto; border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: var(--bg-card); }
         .user-session { font-size: 0.9rem; padding: 12px; background: #f8f9fa; border-radius: 10px; margin-bottom: 20px; border: 1px solid #eee; }
+        
         /* FASES */
         .form-phase { display: none; padding: 25px; }
-        .form-phase.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .form-phase.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: 0.3s; }
         .dot.active { background: var(--accent); transform: scale(1.3); }
@@ -30,16 +26,10 @@
 </head>
 <body>
 
-<div id="loader-overlay">
-    <img src="https://gruporoma.com/wp-content/uploads/2023/06/cropped-cropped-procomex-pachuca-logo-350-%C3%97-100-px-1.png" style="max-width: 280px;">
-    <div class="spinner-border text-primary mt-4"></div>
-    <h5 class="mt-3">Sincronizando con Servidor Roma...</h5>
-</div>
-
 <div class="card">
     <div class="p-4 border-bottom text-center">
         <div class="user-session text-end">
-            <i class="bi bi-person-badge-fill"></i> Usuario: <strong id="session-user">Cargando...</strong>
+            <i class="bi bi-person-badge-fill"></i> Usuario: <strong id="session-user">Luis Alberto García</strong>
         </div>
         <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" alt="Logo" style="max-width: 200px;">
         <h3 class="fw-bold mt-3">CONTROL DE ACCESOS</h3>
@@ -51,6 +41,7 @@
             <div class="dot" id="dot2"></div>
             <div class="dot" id="dot3"></div>
         </div>
+
         <form id="formAccion">
             <div class="form-phase active" id="phase1">
                 <div class="col-md-8 mx-auto">
@@ -61,7 +52,8 @@
                         <option value="GROMA58 (SUMMA)">GROMA58 (SUMMA)</option>
                         <option value="GROMA148ASUMMA FERRE">GROMA148ASUMMA FERRE</option>
                     </select>
-                   <label class="form-label fw-bold">Acción</label>
+                    
+                    <label class="form-label fw-bold">Acción</label>
                     <div class="d-flex justify-content-around p-3 bg-dark rounded-3">
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="accion" id="alta" value="ALTA" checked>
@@ -74,22 +66,23 @@
                     </div>
                 </div>
                 <div class="text-center mt-5">
-                    <button type="button" class="btn btn-roma" onclick="nextPhase(2)">Siguiente Step <i class="bi bi-chevron-right"></i></button>
+                    <button type="button" class="btn btn-roma" onclick="nextPhase(2)">Siguiente <i class="bi bi-chevron-right"></i></button>
                 </div>
             </div>
+
             <div class="form-phase" id="phase2">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Personal Solicitante</label>
-                        <select id="sel_personal" class="form-select" required><option value="">Cargando...</option></select>
+                        <select id="sel_personal" class="form-select" required><option value="">Cargando lista...</option></select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Empresa</label>
-                        <select id="sel_empresas" class="form-select" required><option value="">Cargando...</option></select>
+                        <select id="sel_empresas" class="form-select" required><option value="">Cargando lista...</option></select>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Estado</label>
-                        <select id="sel_estados" class="form-select" required><option value="">Cargando...</option></select>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Estado / Zona</label>
+                        <select id="sel_estados" class="form-select" required><option value="">Cargando lista...</option></select>
                     </div>
                 </div>
                 <div class="d-flex justify-content-between mt-5">
@@ -99,38 +92,38 @@
             </div>
 
             <div class="form-phase" id="phase3">
-                <div class="alert alert-info">Confirme los datos antes de finalizar:</div>
                 <div class="row g-3">
                     <div class="col-md-12">
-                        <label class="form-label">Sucursal de Trabajo</label>
-                        <input type="text" id="res_sucursal" class="form-control" placeholder="Ingrese sucursal..." required>
+                        <label class="form-label fw-bold">Sucursal / Ubicación específica</label>
+                        <input type="text" id="res_sucursal" class="form-control" placeholder="Ej. Matriz, Sucursal Centro..." required>
                     </div>
+                </div>
+                <div class="alert alert-secondary mt-4">
+                    <i class="bi bi-info-circle"></i> Revise que los datos sean correctos antes de finalizar el registro.
                 </div>
                 <div class="d-flex justify-content-between mt-5">
                     <button type="button" class="btn btn-outline-secondary" onclick="nextPhase(2)">Atrás</button>
-                    <button type="submit" class="btn btn-success px-5 fw-bold">FINALIZAR Y ENVIAR</button>
+                    <button type="submit" class="btn btn-success px-5 fw-bold">FINALIZAR REGISTRO</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const auth = getAuth(app);
-    // 1. MANEJO DE SESIÓN
-    onAuthStateChanged(auth, (user) => {
-        const sessionElement = document.getElementById('session-user');
-        sessionElement.innerText = user ? (user.displayName || user.email) : (localStorage.getItem('nombre_usuario') || "Invitado Roma");
-    });
-    // 2. CARGA DE DATOS (Nodos Individuales para evitar bloqueo)
-    const catalogos = { empresas: 'sel_empresas', estados: 'sel_estados', personal: 'sel_personal' };
-    let nodosCargados = 0;
+
+    // CARGA DE DATOS EN SEGUNDO PLANO
+    const catalogos = { 
+        empresas: 'sel_empresas', 
+        estados: 'sel_estados', 
+        personal: 'sel_personal' 
+    };
 
     Object.entries(catalogos).forEach(([nodo, elementId]) => {
         onValue(ref(db, nodo), (snap) => {
@@ -139,65 +132,60 @@
             const data = snap.val();
             if(data) {
                 Object.values(data).forEach(item => {
-                    const nombre = item.nombre || item.nombreCompleto || "Sin nombre";
+                    const nombre = item.nombre || item.nombreCompleto || "N/A";
                     select.add(new Option(nombre, nombre));
                 });
             }
-            verificarCarga();
-        }, { onlyOnce: true });
+        });
     });
 
-    function verificarCarga() {
-        nodosCargados++;
-        if (nodosCargados >= Object.keys(catalogos).length) {
-            document.getElementById('loader-overlay').style.display = 'none';
-        }
-    }
-    // Timeout de seguridad
-    setTimeout(() => { document.getElementById('loader-overlay').style.display = 'none'; }, 4000);
-
-    // 3. ENVÍO FINAL
+    // ENVÍO DE FORMULARIO
     document.getElementById('formAccion').addEventListener('submit', async (e) => {
         e.preventDefault();
-        Swal.fire({title: 'Enviando...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        Swal.fire({title: 'Guardando...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
         
         const payload = {
-            usuario_registro: document.getElementById('session-user').innerText,
+            atendido_por: document.getElementById('session-user').innerText,
             servidor: document.getElementById('listaServidores').value,
             accion: document.querySelector('input[name="accion"]:checked').value,
             personal: document.getElementById('sel_personal').value,
             empresa: document.getElementById('sel_empresas').value,
             estado: document.getElementById('sel_estados').value,
             sucursal: document.getElementById('res_sucursal').value,
-            fecha: new Date().toLocaleString()
+            fecha_hora: new Date().toLocaleString()
         };
 
         try {
             await push(ref(db, 'movimientos'), payload);
-            Swal.fire("Éxito", "Registro guardado correctamente", "success").then(() => location.reload());
+            Swal.fire("¡Listo!", "Registro guardado con éxito", "success").then(() => location.reload());
         } catch (err) {
-            Swal.fire("Error", err.message, "error");
+            Swal.fire("Error", "No se pudo conectar con la base de datos", "error");
         }
     });
 </script>
 
 <script>
     function nextPhase(p) {
-        // Validación antes de avanzar
+        // Validar campos de la fase actual antes de pasar a la siguiente
         if (p > 1) {
             const currentPhase = document.getElementById(`phase${p-1}`);
-            const inputs = currentPhase.querySelectorAll('[required]');
-            let valid = true;
-            inputs.forEach(i => { if(!i.value) valid = false; });
-            if(!valid) return Swal.fire("Atención", "Por favor completa los campos obligatorios", "warning");
+            const requiredFields = currentPhase.querySelectorAll('[required]');
+            let allFilled = true;
+            requiredFields.forEach(f => { if(!f.value) allFilled = false; });
+            
+            if(!allFilled) {
+                return Swal.fire("Campos incompletos", "Por favor llena los datos requeridos", "warning");
+            }
         }
 
-        // Cambio visual de fases
+        // Cambiar fase visible
         document.querySelectorAll('.form-phase').forEach(f => f.classList.remove('active'));
-        document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
-        
         document.getElementById(`phase${p}`).classList.add('active');
-        document.getElementById(`dot${p}`).classList.add('active');
+
+        // Actualizar indicadores (dots)
+        document.querySelectorAll('.dot').forEach((d, idx) => {
+            d.classList.toggle('active', idx === (p - 1));
+        });
     }
 </script>
 
