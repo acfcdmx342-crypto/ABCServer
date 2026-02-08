@@ -11,7 +11,6 @@
         :root { --bg-body: #f4f7f6; --bg-card: #ffffff; --accent: #0f172a; }
         body { background: var(--bg-body); font-family: 'Segoe UI', sans-serif; padding: 20px; }
         
-        /* Loader con salida garantizada */
         #loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; display: flex; flex-direction: column;
@@ -30,13 +29,13 @@
 <div id="loader-overlay">
     <img src="https://gruporoma.com/wp-content/uploads/2023/06/cropped-cropped-procomex-pachuca-logo-350-%C3%97-100-px-1.png" style="max-width: 250px;">
     <div class="spinner-border text-primary mt-3"></div>
-    <p class="mt-2">Cargando base de datos...</p>
+    <p class="mt-2">Sincronizando con Realtime Database...</p>
 </div>
 
 <div class="card">
     <div class="p-4 border-bottom text-center">
         <div class="user-session text-end mb-3">
-            <i class="bi bi-person-circle"></i> Sesión: <strong id="session-user">Detectando usuario...</strong>
+            <i class="bi bi-person-circle"></i> Sesión: <strong id="session-user">Detectando...</strong>
         </div>
         <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" style="max-width: 180px;">
         <h4 class="fw-bold mt-2">CONTROL DE ACCESOS</h4>
@@ -47,9 +46,10 @@
             <div class="form-phase active" id="phase1">
                 <label class="form-label fw-bold">Servidor Destino</label>
                 <select id="listaServidores" class="form-select mb-4" required>
-                    <option value="" disabled selected>Seleccione...</option>
+                    <option value="" disabled selected>Seleccione Servidor...</option>
                     <option value="GROMA146 (SAS)">GROMA146 (SAS)</option>
                     <option value="GROMA58 (SUMMA)">GROMA58 (SUMMA)</option>
+                    <option value="GROMA148ASUMMA FERRE">GROMA148ASUMMA FERRE</option>
                 </select>
                 
                 <label class="form-label fw-bold">Acción</label>
@@ -63,15 +63,15 @@
             <div class="form-phase" id="phase2">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Empresa</label>
-                    <select id="sel_empresas" class="form-select" required></select>
+                    <select id="sel_empresas" class="form-select" required><option value="">Cargando empresas...</option></select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">Estado</label>
-                    <select id="sel_estados" class="form-select" required></select>
+                    <select id="sel_estados" class="form-select" required><option value="">Cargando estados...</option></select>
                 </div>
                 <div class="d-flex justify-content-between mt-4">
                     <button type="button" class="btn btn-secondary" onclick="nextPhase(1)">Atrás</button>
-                    <button type="submit" class="btn btn-success">Finalizar Registro</button>
+                    <button type="submit" class="btn btn-success px-4">Finalizar y Guardar</button>
                 </div>
             </div>
         </form>
@@ -88,78 +88,79 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // --- SESIÓN DINÁMICA ---
+    // --- MANEJO DE USUARIO ---
     onAuthStateChanged(auth, (user) => {
         const sessionSpan = document.getElementById('session-user');
-        if (user) {
-            sessionSpan.innerText = user.displayName || user.email;
-        } else {
-            // Si no hay sesión, intenta sacar el nombre de la URL o localStorage
-            const localName = localStorage.getItem('nombre_usuario');
-            sessionSpan.innerText = localName || "Luis Alberto García"; 
-        }
+        sessionSpan.innerText = user ? (user.displayName || user.email) : (localStorage.getItem('nombre_usuario') || "Luis Alberto García");
     });
 
-    // --- CARGA DE DATOS REALES (Solo lo que tienes en tu DB) ---
-    onValue(ref(db, '/'), (snapshot) => {
-        const data = snapshot.val();
-        
-        // Llenar Empresas
-        const comboEmp = document.getElementById('sel_empresas');
-        comboEmp.innerHTML = '<option value="">Seleccione Empresa...</option>';
-        if(data.empresas) {
-            Object.values(data.empresas).forEach(emp => {
-                comboEmp.add(new Option(emp.nombre, emp.nombre));
-            });
-        }
+    // --- CARGA INDIVIDUAL DE NODOS (Para evitar bloqueo de reglas) ---
+    let cargasCompletas = 0;
+    const totalCargas = 2; // empresas y estados
 
-        // Llenar Estados
-        const comboEst = document.getElementById('sel_estados');
-        comboEst.innerHTML = '<option value="">Seleccione Estado...</option>';
-        if(data.estados) {
-            Object.values(data.estados).forEach(est => {
-                comboEst.add(new Option(est.nombre, est.nombre));
-            });
+    function revisarCarga() {
+        cargasCompletas++;
+        if (cargasCompletas >= totalCargas) {
+            document.getElementById('loader-overlay').style.display = 'none';
         }
+    }
 
-        // OCULTAR LOADER (Como ya recibimos datos, lo quitamos)
-        document.getElementById('loader-overlay').style.display = 'none';
+    // Cargar Empresas
+    onValue(ref(db, 'empresas'), (snapshot) => {
+        const combo = document.getElementById('sel_empresas');
+        combo.innerHTML = '<option value="">Seleccione Empresa...</option>';
+        snapshot.forEach((child) => {
+            const emp = child.val();
+            combo.add(new Option(emp.nombre, emp.nombre));
+        });
+        revisarCarga();
     }, { onlyOnce: true });
 
-    // Fallback por si la conexión es muy lenta
-    setTimeout(() => { document.getElementById('loader-overlay').style.display = 'none'; }, 3500);
+    // Cargar Estados
+    onValue(ref(db, 'estados'), (snapshot) => {
+        const combo = document.getElementById('sel_estados');
+        combo.innerHTML = '<option value="">Seleccione Estado...</option>';
+        snapshot.forEach((child) => {
+            const est = child.val();
+            combo.add(new Option(est.nombre, est.nombre));
+        });
+        revisarCarga();
+    }, { onlyOnce: true });
 
-    // --- GUARDAR MOVIMIENTO ---
+    // Fallback de seguridad (Loader se quita sí o sí en 4 segundos)
+    setTimeout(() => { document.getElementById('loader-overlay').style.display = 'none'; }, 4000);
+
+    // --- GUARDADO ---
     document.getElementById('formAccion').addEventListener('submit', async (e) => {
         e.preventDefault();
-        Swal.fire({title: 'Guardando...', didOpen: () => Swal.showLoading()});
+        Swal.fire({title: 'Procesando...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
 
-        const registro = {
-            usuario_sesion: document.getElementById('session-user').innerText,
+        const data = {
+            atendido_por: document.getElementById('session-user').innerText,
             servidor: document.getElementById('listaServidores').value,
             accion: document.querySelector('input[name="accion"]:checked').value,
             empresa: document.getElementById('sel_empresas').value,
             estado: document.getElementById('sel_estados').value,
-            fecha: new Date().toLocaleString()
+            timestamp: new Date().toISOString()
         };
 
         try {
-            await push(ref(db, 'movimientos'), registro);
-            Swal.fire("Éxito", "Movimiento registrado", "success").then(() => location.reload());
+            await push(ref(db, 'movimientos'), data);
+            Swal.fire("¡Completado!", "El acceso ha sido registrado en movimientos.", "success").then(() => location.reload());
         } catch (err) {
-            Swal.fire("Error", err.message, "error");
+            Swal.fire("Error", "No se pudo guardar: " + err.message, "error");
         }
     });
 </script>
 
 <script>
-    function nextPhase(p) {
+    window.nextPhase = (p) => {
         if (p === 2 && !document.getElementById('listaServidores').value) {
-            return Swal.fire("Atención", "Selecciona un servidor primero", "warning");
+            return Swal.fire("Aviso", "Seleccione un servidor", "info");
         }
         document.querySelectorAll('.form-phase').forEach(f => f.classList.remove('active'));
         document.getElementById(`phase${p}`).classList.add('active');
-    }
+    };
 </script>
 </body>
 </html>
