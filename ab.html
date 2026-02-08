@@ -25,21 +25,18 @@
             --border-color: #333;
             --input-bg: #2d2d2d;
             --input-text: #ffffff;
-            --section-label-bg: #1e1e1e;
+            --section-label-bg: #1e1e1e; /* Color de fondo del label en modo oscuro */
         }
 
         body { background: var(--bg-body); color: var(--text-main); padding: 20px; font-family: sans-serif; transition: all 0.3s ease; }
         
         .card { width: 100%; max-width: 900px; margin: auto; border: none; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: var(--bg-card); overflow: hidden; }
         
-        /* CORRECCIÓN: Se agrega color dinámico al header */
         .header-logo { text-align: center; padding: 20px; background: var(--bg-card); border-bottom: 2px solid var(--border-color); color: var(--text-main); }
-        .header-logo h2 { color: var(--text-main); } /* Asegura que el h2 cambie de color */
+        .header-logo h2 { color: var(--text-main); } 
         
         .logo-img { max-width: 120px; }
-        
-        /* Ajuste de imagen para asegurar que se intente cargar */
-        .img-negocios { max-width: 280px; height: auto; margin: 10px auto; display: block; border-radius: 8px; }
+        .img-negocios { max-width: 280px; height: auto; margin: 15px auto; display: block; border-radius: 8px; }
 
         .btn-roma { background: #0f172a; color: white; font-weight: bold; padding: 12px 40px; border-radius: 8px; border: none; transition: 0.3s; }
         .btn-roma:hover { background: #1e293b; transform: translateY(-2px); }
@@ -50,8 +47,15 @@
         .form-control, .form-select { background-color: var(--input-bg); color: var(--input-text); border-color: var(--border-color); }
         .form-control:focus, .form-select:focus { background-color: var(--input-bg); color: var(--input-text); border-color: #0f172a; box-shadow: none; }
 
-        .section-title { border: 1px solid var(--border-color); padding: 20px; position: relative; margin-top: 25px; border-radius: 10px; }
-        .section-label { position: absolute; top: -12px; left: 15px; background: var(--section-label-bg); padding: 0 10px; font-size: 0.75rem; font-weight: bold; transition: background 0.3s ease; }
+        /* CORRECCIÓN DE ETIQUETAS DE SECCIÓN */
+        .section-title { border: 1px solid var(--border-color); padding: 25px 20px 20px 20px; position: relative; margin-top: 25px; border-radius: 10px; }
+        .section-label { 
+            position: absolute; top: -12px; left: 15px; 
+            background: var(--section-label-bg); 
+            color: var(--text-main); /* Asegura que el texto cambie */
+            padding: 0 10px; font-size: 0.75rem; font-weight: bold; 
+            transition: all 0.3s ease; 
+        }
 
         .mode-toggle {
             position: fixed; top: 20px; right: 20px;
@@ -72,11 +76,12 @@
 <div class="card">
     <div class="header-logo">
         <div class="d-flex justify-content-between align-items-center px-4 mb-2">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6A6R9X..." alt="Grupo Roma" class="logo-img">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6A6R9X7G2Z" alt="Grupo Roma" class="logo-img">
             <div style="width: 120px;"></div> 
         </div>
-<img style="display: block;-webkit-user-select: none;margin: auto;background-color: hsl(0, 0%, 90%);transition: background-color 300ms;" src="http://soporte.gruporoma.com/Imagenes/Negocios.png">
-        <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" alt="Cargando Negocios..." class="img-negocios" onerror="this.src='https://via.placeholder.com/280x80?text=Error+al+Cargar+Imagen'">
+        
+        <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" alt="Negocios" class="img-negocios" onerror="this.src='https://via.placeholder.com/280x80?text=Logo+Negocios'">
+        
         <h2 class="fw-bold m-0" style="letter-spacing: -1px;">BIENVENIDO</h2>
     </div>
 
@@ -147,6 +152,7 @@
         }
     }
 
+    // Aplicar tema guardado al cargar
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
         document.getElementById('btnTheme').innerHTML = '<i class="bi bi-sun-fill"></i>';
@@ -175,25 +181,28 @@
     const selectServ = document.getElementById('listaServidores');
     colServidores.forEach(s => selectServ.add(new Option(s, s)));
 
+    // Escuchar cambios de Firebase sin bloquear la UI
     Object.keys(catalogos).forEach(path => {
         onValue(ref(db, path), (snap) => {
             catalogos[path] = snap.val() || {};
             if(path === 'personal') actualizarPersonal(); 
+        }, (error) => {
+            console.error("Error cargando " + path, error);
         });
     });
 
     function actualizarPersonal() {
         const selPers = document.getElementById('sel_personal');
+        const valorActual = selPers.value;
         selPers.innerHTML = '<option value="">Seleccione...</option>';
         Object.entries(catalogos.personal).forEach(([id, p]) => {
             selPers.add(new Option(p.nombreCompleto, id));
         });
+        selPers.value = valorActual;
     }
 
-    function actualizarFiltros() {
+    selectServ.addEventListener('change', () => {
         const servidor = selectServ.value;
-        if (!servidor) return;
-
         const mapeo = {
             'sel_empresas': 'empresas', 'sel_zonas': 'zonas', 'sel_estados': 'estados',
             'sel_tipos': 'tipos', 'sel_unidades': 'unidades', 'sel_perfiles': 'perfiles', 'sel_programas': 'programas'
@@ -208,9 +217,7 @@
                 if (item[servidor] === true) selectEl.add(new Option(item.nombre, item.nombre));
             });
         }
-    }
-
-    selectServ.addEventListener('change', actualizarFiltros);
+    });
 
     document.getElementById('sel_personal').addEventListener('change', (e) => {
         const p = catalogos.personal[e.target.value];
@@ -223,21 +230,27 @@
 
     document.getElementById('formAccion').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btnSubmit = e.target.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+
         const data = {
             servidor: selectServ.value,
             accion: document.querySelector('input[name="accion"]:checked').value,
             solicitante: document.getElementById('res_nombre').value,
             empresa: document.getElementById('sel_empresas').value,
             zona: document.getElementById('sel_zonas').value,
+            puesto: document.getElementById('res_puesto').value,
             fecha: new Date().toLocaleString()
         };
 
         try {
             await push(ref(db, 'movimientos'), data);
             Swal.fire("¡Éxito!", "La solicitud se ha enviado correctamente", "success");
-            document.getElementById('formAccion').reset();
+            e.target.reset();
         } catch (err) {
             Swal.fire("Error", "No se pudo enviar: " + err.message, "error");
+        } finally {
+            btnSubmit.disabled = false;
         }
     });
 </script>
