@@ -32,9 +32,14 @@
         
         .card { width: 100%; max-width: 900px; margin: auto; border: none; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: var(--bg-card); overflow: hidden; }
         
-        .header-logo { text-align: center; padding: 20px; background: var(--bg-card); border-bottom: 2px solid var(--border-color); }
+        /* CORRECCIÓN: Se agrega color dinámico al header */
+        .header-logo { text-align: center; padding: 20px; background: var(--bg-card); border-bottom: 2px solid var(--border-color); color: var(--text-main); }
+        .header-logo h2 { color: var(--text-main); } /* Asegura que el h2 cambie de color */
+        
         .logo-img { max-width: 120px; }
-        .img-negocios { max-width: 280px; height: auto; margin: 10px auto; display: block; }
+        
+        /* Ajuste de imagen para asegurar que se intente cargar */
+        .img-negocios { max-width: 280px; height: auto; margin: 10px auto; display: block; border-radius: 8px; }
 
         .btn-roma { background: #0f172a; color: white; font-weight: bold; padding: 12px 40px; border-radius: 8px; border: none; transition: 0.3s; }
         .btn-roma:hover { background: #1e293b; transform: translateY(-2px); }
@@ -46,7 +51,7 @@
         .form-control:focus, .form-select:focus { background-color: var(--input-bg); color: var(--input-text); border-color: #0f172a; box-shadow: none; }
 
         .section-title { border: 1px solid var(--border-color); padding: 20px; position: relative; margin-top: 25px; border-radius: 10px; }
-        .section-label { position: absolute; top: -12px; left: 15px; background: var(--section-label-bg); padding: 0 10px; font-size: 0.75rem; font-weight: bold; }
+        .section-label { position: absolute; top: -12px; left: 15px; background: var(--section-label-bg); padding: 0 10px; font-size: 0.75rem; font-weight: bold; transition: background 0.3s ease; }
 
         .mode-toggle {
             position: fixed; top: 20px; right: 20px;
@@ -70,7 +75,7 @@
             <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6A6R9X..." alt="Grupo Roma" class="logo-img">
             <div style="width: 120px;"></div> 
         </div>
-        <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" alt="Negocios" class="img-negocios">
+        <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" alt="Cargando Negocios..." class="img-negocios" onerror="this.src='https://via.placeholder.com/280x80?text=Error+al+Cargar+Imagen'">
         <h2 class="fw-bold m-0" style="letter-spacing: -1px;">BIENVENIDO</h2>
     </div>
 
@@ -166,11 +171,9 @@
 
     let catalogos = { empresas: {}, zonas: {}, estados: {}, tipos: {}, perfiles: {}, unidades: {}, programas: {}, personal: {} };
 
-    // Llenar select de servidores
     const selectServ = document.getElementById('listaServidores');
     colServidores.forEach(s => selectServ.add(new Option(s, s)));
 
-    // Cargar datos de Firebase
     Object.keys(catalogos).forEach(path => {
         onValue(ref(db, path), (snap) => {
             catalogos[path] = snap.val() || {};
