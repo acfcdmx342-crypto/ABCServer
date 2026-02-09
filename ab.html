@@ -369,6 +369,7 @@
         document.getElementById('final_folio').value = folio;
     }
 
+    // NUEVA FUNCIÓN MEJORADA PARA LLENAR EL RESUMEN
     function prepararResumen() {
         if(!document.getElementById('usuario_nombre').value || !document.getElementById('usuario_id').value){
              Swal.fire("Atención", "Complete los campos del usuario", "warning");
@@ -379,25 +380,29 @@
         const fechaStr = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         document.getElementById('final_fecha_sol').value = fechaStr;
         
-        // Mapeo de campos a la nueva estructura de resumen
-        // Columna 1
+        // Helper para obtener el texto del select seleccionado
+        const getSelectText = (id) => {
+            const el = document.getElementById(id);
+            return el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : "";
+        };
+
+        // Llenar etiquetas de resumen con el texto visible de los selects
         document.getElementById('res_servidor').innerText = document.getElementById('servidor').value;
-        document.getElementById('res_personal').innerText = document.getElementById('sel_personal').value;
-        document.getElementById('res_empresa').innerText = document.getElementById('sel_empresas').value;
-        document.getElementById('res_zona').innerText = document.getElementById('sel_zonas').value;
-        document.getElementById('res_estado').innerText = document.getElementById('sel_estados').value;
-        document.getElementById('res_tipo').innerText = document.getElementById('sel_tipos').value;
-        document.getElementById('res_unidad').innerText = document.getElementById('sel_unidades').value;
-        document.getElementById('res_programa').innerText = document.getElementById('sel_programas').value;
+        document.getElementById('res_personal').innerText = getSelectText('sel_personal');
+        document.getElementById('res_empresa').innerText = getSelectText('sel_empresas');
+        document.getElementById('res_zona').innerText = getSelectText('sel_zonas');
+        document.getElementById('res_estado').innerText = getSelectText('sel_estados');
+        document.getElementById('res_tipo').innerText = getSelectText('sel_tipos');
+        document.getElementById('res_unidad').innerText = getSelectText('sel_unidades');
+        document.getElementById('res_programa').innerText = getSelectText('sel_programas');
         document.getElementById('res_comienza').innerText = document.getElementById('comienza_fecha').value;
 
-        // Columna 2
         document.getElementById('res_accion').innerText = document.querySelector('input[name="accion"]:checked').value;
         document.getElementById('res_nombre_usuario').innerText = document.getElementById('usuario_nombre').value;
         document.getElementById('res_id_usuario').innerText = document.getElementById('usuario_id').value;
         document.getElementById('res_puesto_usuario').innerText = document.getElementById('usuario_puesto').value;
         document.getElementById('res_sucursal_usuario').innerText = document.getElementById('sucursal').value;
-        document.getElementById('res_perfil_usuario').innerText = document.getElementById('sel_perfiles').value;
+        document.getElementById('res_perfil_usuario').innerText = getSelectText('sel_perfiles');
 
         generarFolio();
         irFase(4);
@@ -452,23 +457,24 @@
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        // Guardar usando el contenido de los párrafos del resumen para asegurar consistencia
         const payload = {
             atendido_por: admin,
-            servidor: document.getElementById('servidor').value,
-            accion: document.querySelector('input[name="accion"]:checked').value,
-            personal_solicita: document.getElementById('sel_personal').value,
-            empresa: document.getElementById('sel_empresas').value,
-            zona: document.getElementById('sel_zonas').value,
-            estado: document.getElementById('sel_estados').value,
-            tipo: document.getElementById('sel_tipos').value,
-            unidad_organizativa: document.getElementById('sel_unidades').value,
-            perfil: document.getElementById('sel_perfiles').value,
-            nombre_usuario_reg: document.getElementById('usuario_nombre').value,
-            id_usuario_reg: document.getElementById('usuario_id').value,
-            puesto_usuario: document.getElementById('usuario_puesto').value,
-            sucursal: document.getElementById('sucursal').value,
-            programa_inicia: document.getElementById('sel_programas').value,
-            comienza_el: document.getElementById('comienza_fecha').value,
+            servidor: document.getElementById('res_servidor').innerText,
+            accion: document.getElementById('res_accion').innerText,
+            personal_solicita: document.getElementById('res_personal').innerText,
+            empresa: document.getElementById('res_empresa').innerText,
+            zona: document.getElementById('res_zona').innerText,
+            estado: document.getElementById('res_estado').innerText,
+            tipo: document.getElementById('res_tipo').innerText,
+            unidad_organizativa: document.getElementById('res_unidad').innerText,
+            perfil: document.getElementById('res_perfil_usuario').innerText,
+            nombre_usuario_reg: document.getElementById('res_nombre_usuario').innerText,
+            id_usuario_reg: document.getElementById('res_id_usuario').innerText,
+            puesto_usuario: document.getElementById('res_puesto_usuario').innerText,
+            sucursal: document.getElementById('res_sucursal_usuario').innerText,
+            programa_inicia: document.getElementById('res_programa').innerText,
+            comienza_el: document.getElementById('res_comienza').innerText,
             n_solicitud: document.getElementById('final_n_solicitud').value,
             folio: document.getElementById('final_folio').value,
             fecha_solicitud_manual: document.getElementById('final_fecha_sol').value,
