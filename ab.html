@@ -35,7 +35,7 @@
         #admin-name, h4, #fase-titulo { color: var(--title-color); }
 
         .card { 
-            max-width: 750px; 
+            max-width: 850px; 
             margin: auto; 
             border-radius: 15px; 
             border: none; 
@@ -110,6 +110,7 @@
             font-weight: 600;
             border: 1px solid var(--input-border);
         }
+        .readonly-view { background-color: var(--info-bg) !important; opacity: 1; }
     </style>
 </head>
 <body>
@@ -137,7 +138,7 @@
         <p class="text-center text-muted small mb-4" id="fase-titulo">Fase 1: Configuración de Servidor</p>
         
         <div class="progress">
-            <div id="progreso-bar" class="progress-bar bg-primary" style="width: 33%"></div>
+            <div id="progreso-bar" class="progress-bar bg-primary" style="width: 25%"></div>
         </div>
 
         <form id="formRegistro">
@@ -171,39 +172,27 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Empresa</label>
-                        <select id="sel_empresas" class="form-select" required>
-                            <option value="">Seleccione servidor...</option>
-                        </select>
+                        <select id="sel_empresas" class="form-select" required><option value="">Seleccione servidor...</option></select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Zona</label>
-                        <select id="sel_zonas" class="form-select" required>
-                            <option value="">Seleccione servidor...</option>
-                        </select>
+                        <select id="sel_zonas" class="form-select" required><option value="">Seleccione servidor...</option></select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Estado</label>
-                        <select id="sel_estados" class="form-select" required>
-                            <option value="">Seleccione servidor...</option>
-                        </select>
+                        <select id="sel_estados" class="form-select" required><option value="">Seleccione servidor...</option></select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Tipo</label>
-                        <select id="sel_tipos" class="form-select" required>
-                            <option value="">Seleccione servidor...</option>
-                        </select>
+                        <select id="sel_tipos" class="form-select" required><option value="">Seleccione servidor...</option></select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Unidad Organizativa</label>
-                        <select id="sel_unidades" class="form-select" required>
-                            <option value="">Seleccione servidor...</option>
-                        </select>
+                        <select id="sel_unidades" class="form-select" required><option value="">Seleccione servidor...</option></select>
                     </div>
                     <div class="col-12">
                         <label class="form-label">Perfil</label>
-                        <select id="sel_perfiles" class="form-select" required>
-                            <option value="">Seleccione servidor...</option>
-                        </select>
+                        <select id="sel_perfiles" class="form-select" required><option value="">Seleccione servidor...</option></select>
                     </div>
                 </div>
                 <div class="d-flex gap-2 mt-4">
@@ -232,9 +221,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Inicia Programa</label>
-                        <select id="sel_programas" class="form-select" required>
-                            <option value="">Seleccione servidor...</option>
-                        </select>
+                        <select id="sel_programas" class="form-select" required><option value="">Seleccione servidor...</option></select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Comienza en</label>
@@ -243,7 +230,42 @@
                 </div>
                 <div class="d-flex gap-2 mt-4">
                     <button type="button" class="btn btn-secondary w-50" onclick="irFase(2)">Atrás</button>
-                    <button type="submit" class="btn btn-success w-50 fw-bold">FINALIZAR REGISTRO</button>
+                    <button type="button" class="btn btn-primary w-50" onclick="prepararResumen()">Revisar Registro</button>
+                </div>
+            </div>
+
+            <div id="fase4" class="fase-section">
+                <div class="alert alert-info py-2 small text-center">Valide la información antes de finalizar.</div>
+                
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label small">N° de Solicitud</label>
+                        <input type="number" id="final_n_solicitud" class="form-control form-control-sm" value="1" min="1">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">N° de Folio</label>
+                        <input type="text" id="final_folio" class="form-control form-control-sm readonly-view" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Fecha de Solicitud</label>
+                        <input type="text" id="final_fecha_sol" class="form-control form-control-sm">
+                    </div>
+                </div>
+
+                <div class="row g-2 border rounded p-2 bg-light-subtle">
+                    <div class="col-md-6 small"><strong>Servidor:</strong> <span id="res_servidor"></span></div>
+                    <div class="col-md-6 small"><strong>Acción:</strong> <span id="res_accion"></span></div>
+                    <div class="col-md-6 small"><strong>Solicitante:</strong> <span id="res_personal"></span></div>
+                    <div class="col-md-6 small"><strong>Empresa/Zona:</strong> <span id="res_empresa_zona"></span></div>
+                    <div class="col-md-6 small"><strong>Usuario:</strong> <span id="res_usuario"></span></div>
+                    <div class="col-md-6 small"><strong>ID:</strong> <span id="res_id"></span></div>
+                    <div class="col-md-6 small"><strong>Puesto:</strong> <span id="res_puesto"></span></div>
+                    <div class="col-md-6 small"><strong>Programa:</strong> <span id="res_programa"></span></div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="button" class="btn btn-secondary w-50" onclick="irFase(3)">Corregir Datos</button>
+                    <button type="submit" class="btn btn-success w-50 fw-bold">FINALIZAR Y GUARDAR</button>
                 </div>
             </div>
         </form>
@@ -275,18 +297,12 @@
             document.getElementById('label-accion').innerText = accion;
             
             const tagAccion = document.getElementById('tag-accion');
-            if(accion === 'ALTA') {
-                tagAccion.className = 'info-tag text-primary';
-            } else {
-                tagAccion.className = 'info-tag text-danger';
-            }
+            tagAccion.className = accion === 'ALTA' ? 'info-tag text-primary' : 'info-tag text-danger';
             
             document.getElementById('display-info').style.display = 'flex';
 
             if(f === 2 || f === 3) {
-                if (window.filtrarCamposPorServidor) {
-                    window.filtrarCamposPorServidor(servidor);
-                }
+                if (window.filtrarCamposPorServidor) window.filtrarCamposPorServidor(servidor);
             }
         } else {
             document.getElementById('display-info').style.display = 'none';
@@ -295,10 +311,52 @@
         document.querySelectorAll('.fase-section').forEach(s => s.classList.remove('fase-active'));
         document.getElementById('fase'+f).classList.add('fase-active');
         
-        const titulos = ["", "Fase 1: Configuración de Servidor", "Fase 2: Especificaciones de Solicitud", "Fase 3: Datos del Usuario a Registrar"];
+        const titulos = ["", "Fase 1: Configuración de Servidor", "Fase 2: Especificaciones de Solicitud", "Fase 3: Datos del Usuario a Registrar", "Fase 4: Resumen y Folio"];
         document.getElementById('fase-titulo').innerText = titulos[f];
-        document.getElementById('progreso-bar').style.width = (f === 1 ? '33%' : f === 2 ? '66%' : '100%');
+        document.getElementById('progreso-bar').style.width = (f * 25) + '%';
     }
+
+    // Lógica para el Folio y Resumen
+    function generarFolio() {
+        const fechaRaw = document.getElementById('final_fecha_sol').value; // DD/MM/YYYY
+        const soloNumerosFecha = fechaRaw.replace(/\//g, '');
+        const accion = document.querySelector('input[name="accion"]:checked').value;
+        const letraAccion = accion === 'ALTA' ? 'A' : 'B';
+        const nSolicitud = document.getElementById('final_n_solicitud').value;
+        
+        const folio = `GRSIS-${soloNumerosFecha}-${letraAccion}${nSolicitud}`;
+        document.getElementById('final_folio').value = folio;
+    }
+
+    function prepararResumen() {
+        // Validar campos de fase 3 antes de pasar
+        if(!document.getElementById('usuario_nombre').value || !document.getElementById('usuario_id').value){
+             Swal.fire("Atención", "Complete los campos del usuario", "warning");
+             return;
+        }
+
+        // Setear fecha actual en campo editable
+        const hoy = new Date();
+        const fechaStr = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        document.getElementById('final_fecha_sol').value = fechaStr;
+        
+        // Llenar datos de texto para el resumen visual
+        document.getElementById('res_servidor').innerText = document.getElementById('servidor').value;
+        document.getElementById('res_accion').innerText = document.querySelector('input[name="accion"]:checked').value;
+        document.getElementById('res_personal').innerText = document.getElementById('sel_personal').value;
+        document.getElementById('res_empresa_zona').innerText = `${document.getElementById('sel_empresas').value} / ${document.getElementById('sel_zonas').value}`;
+        document.getElementById('res_usuario').innerText = document.getElementById('usuario_nombre').value;
+        document.getElementById('res_id').innerText = document.getElementById('usuario_id').value;
+        document.getElementById('res_puesto').innerText = document.getElementById('usuario_puesto').value;
+        document.getElementById('res_programa').innerText = document.getElementById('sel_programas').value;
+
+        generarFolio();
+        irFase(4);
+    }
+
+    // Listener para actualizar folio cuando cambie N° Solicitud o Fecha
+    document.getElementById('final_n_solicitud').addEventListener('input', generarFolio);
+    document.getElementById('final_fecha_sol').addEventListener('input', generarFolio);
 </script>
 
 <script type="module">
@@ -316,6 +374,7 @@
     const cargarCatalogo = (nodo, elementId, filtroServidor = null) => {
         onValue(ref(db, nodo), (snap) => {
             const select = document.getElementById(elementId);
+            if(!select) return;
             select.innerHTML = '<option value="">Seleccione...</option>';
             const data = snap.val();
             
@@ -323,15 +382,11 @@
                 Object.values(data).forEach(item => {
                     const estaActivo = item.activo !== false;
                     let cumpleServidor = true;
-                    if (filtroServidor) {
-                        cumpleServidor = item[filtroServidor] === true;
-                    }
+                    if (filtroServidor) cumpleServidor = item[filtroServidor] === true;
 
                     if (estaActivo && cumpleServidor) {
                         const nombre = item.nombre || item.nombreCompleto;
-                        if (nombre) {
-                            select.add(new Option(nombre, nombre));
-                        }
+                        if (nombre) select.add(new Option(nombre, nombre));
                     }
                 });
             }
@@ -339,13 +394,8 @@
     };
 
     window.filtrarCamposPorServidor = (servidor) => {
-        cargarCatalogo('empresas', 'sel_empresas', servidor);
-        cargarCatalogo('zonas', 'sel_zonas', servidor);
-        cargarCatalogo('estados', 'sel_estados', servidor);
-        cargarCatalogo('tipos', 'sel_tipos', servidor);
-        cargarCatalogo('unidades', 'sel_unidades', servidor);
-        cargarCatalogo('perfiles', 'sel_perfiles', servidor);
-        cargarCatalogo('programas', 'sel_programas', servidor);
+        const nodos = ['empresas', 'zonas', 'estados', 'tipos', 'unidades', 'perfiles', 'programas'];
+        nodos.forEach(n => cargarCatalogo(n, 'sel_' + (n === 'programas' ? 'programas' : n), servidor));
     };
 
     cargarCatalogo('servidores', 'servidor');
@@ -353,12 +403,11 @@
 
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const accionSeleccionada = document.querySelector('input[name="accion"]:checked').value;
-
+        
         const payload = {
             atendido_por: admin,
             servidor: document.getElementById('servidor').value,
-            accion: accionSeleccionada,
+            accion: document.querySelector('input[name="accion"]:checked').value,
             personal_solicita: document.getElementById('sel_personal').value,
             empresa: document.getElementById('sel_empresas').value,
             zona: document.getElementById('sel_zonas').value,
@@ -372,14 +421,18 @@
             sucursal: document.getElementById('sucursal').value,
             programa_inicia: document.getElementById('sel_programas').value,
             comienza_el: document.getElementById('comienza_fecha').value,
-            fecha_registro: new Date().toLocaleString()
+            // Campos nuevos del resumen
+            n_solicitud: document.getElementById('final_n_solicitud').value,
+            folio: document.getElementById('final_folio').value,
+            fecha_solicitud_manual: document.getElementById('final_fecha_sol').value,
+            fecha_registro_sistema: new Date().toLocaleString()
         };
 
         try {
             await push(ref(db, 'movimientos'), payload);
             Swal.fire({
-                title: "¡Registro Exitoso!",
-                text: "La información se ha guardado correctamente.",
+                title: "¡Registro Guardado!",
+                text: "Folio generado: " + payload.folio,
                 icon: "success",
                 background: document.body.classList.contains('dark-mode') ? '#1e293b' : '#fff',
                 color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
