@@ -172,28 +172,38 @@
                     <div class="col-md-6">
                         <label class="form-label">Empresa</label>
                         <select id="sel_empresas" class="form-select" required>
-                            <option value="">Seleccione un servidor primero...</option>
+                            <option value="">Seleccione servidor...</option>
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Zona</label>
-                        <select id="sel_zonas" class="form-select" required></select>
+                        <select id="sel_zonas" class="form-select" required>
+                            <option value="">Seleccione servidor...</option>
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Estado</label>
-                        <select id="sel_estados" class="form-select" required></select>
+                        <select id="sel_estados" class="form-select" required>
+                            <option value="">Seleccione servidor...</option>
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Tipo</label>
-                        <select id="sel_tipos" class="form-select" required></select>
+                        <select id="sel_tipos" class="form-select" required>
+                            <option value="">Seleccione servidor...</option>
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Unidad Organizativa</label>
-                        <select id="sel_unidades" class="form-select" required></select>
+                        <select id="sel_unidades" class="form-select" required>
+                            <option value="">Seleccione servidor...</option>
+                        </select>
                     </div>
                     <div class="col-12">
                         <label class="form-label">Perfil</label>
-                        <select id="sel_perfiles" class="form-select" required></select>
+                        <select id="sel_perfiles" class="form-select" required>
+                            <option value="">Seleccione servidor...</option>
+                        </select>
                     </div>
                 </div>
                 <div class="d-flex gap-2 mt-4">
@@ -271,9 +281,11 @@
             
             document.getElementById('display-info').style.display = 'flex';
 
-            // Al pasar a Fase 2, disparamos el filtrado de empresas basado en el servidor
+            // Al pasar a Fase 2, filtramos todos los campos dependientes del servidor
             if(f === 2) {
-                window.filtrarEmpresasPorServidor(servidor);
+                if (window.filtrarCamposPorServidor) {
+                    window.filtrarCamposPorServidor(servidor);
+                }
             }
         } else {
             document.getElementById('display-info').style.display = 'none';
@@ -300,7 +312,6 @@
     if(!admin) window.location.href = "index.html";
     document.getElementById('admin-name').innerText = admin;
 
-    // Función genérica para cargar catálogos con opción de filtrado
     const cargarCatalogo = (nodo, elementId, filtroServidor = null) => {
         onValue(ref(db, nodo), (snap) => {
             const select = document.getElementById(elementId);
@@ -309,13 +320,9 @@
             
             if(data) {
                 Object.values(data).forEach(item => {
-                    // Validar que esté activo
                     const estaActivo = item.activo !== false;
-                    
-                    // Validar servidor si se requiere filtro
                     let cumpleServidor = true;
                     if (filtroServidor) {
-                        // Verifica si el campo con el nombre del servidor es true/marcado
                         cumpleServidor = item[filtroServidor] === true;
                     }
 
@@ -330,19 +337,19 @@
         });
     };
 
-    // Exponer la función de filtrado al scope global para que irFase pueda llamarla
-    window.filtrarEmpresasPorServidor = (servidor) => {
+    // Función global para filtrar múltiples campos a la vez según el servidor
+    window.filtrarCamposPorServidor = (servidor) => {
         cargarCatalogo('empresas', 'sel_empresas', servidor);
+        cargarCatalogo('zonas', 'sel_zonas', servidor);
+        cargarCatalogo('estados', 'sel_estados', servidor);
+        cargarCatalogo('tipos', 'sel_tipos', servidor);
+        cargarCatalogo('unidades', 'sel_unidades', servidor);
+        cargarCatalogo('perfiles', 'sel_perfiles', servidor);
     };
 
-    // Cargas iniciales de catálogos sin dependencias
+    // Cargas iniciales de catálogos que NO dependen del servidor o que se cargan al inicio
     cargarCatalogo('servidores', 'servidor');
     cargarCatalogo('personal', 'sel_personal');
-    cargarCatalogo('zonas', 'sel_zonas');
-    cargarCatalogo('estados', 'sel_estados');
-    cargarCatalogo('tipos', 'sel_tipos');
-    cargarCatalogo('unidades', 'sel_unidades');
-    cargarCatalogo('perfiles', 'sel_perfiles');
     cargarCatalogo('programas', 'sel_programas');
 
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
