@@ -31,6 +31,7 @@
         }
 
         body { background: var(--bg); color: var(--text); padding: 20px; transition: all 0.3s ease; }
+        
         #admin-name, h4, #fase-titulo { color: var(--title-color); }
 
         .card { 
@@ -60,6 +61,12 @@
             color: var(--text);
         }
 
+        .form-control:focus, .form-select:focus {
+            background-color: var(--input-bg);
+            color: var(--text);
+            border-color: #38bdf8;
+        }
+
         .fase-section { display: none; animation: fadeIn 0.4s ease; }
         .fase-active { display: block; }
 
@@ -68,16 +75,33 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .theme-btn { cursor: pointer; font-size: 1.2rem; margin-right: 15px; color: var(--text); }
+        .theme-btn {
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-right: 15px;
+            color: var(--text);
+        }
+        
         .bi-sun-fill { display: none; color: #ffca28; }
         .dark-mode .bi-sun-fill { display: block; }
         .dark-mode .bi-moon-stars-fill { display: none; }
 
         .progress { height: 8px; margin-bottom: 20px; border-radius: 10px; }
-        .btn-group-actions { display: flex; gap: 10px; }
-        .btn-group-actions .btn { flex: 1; }
 
-        .info-badge-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .btn-group-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-group-actions .btn {
+            flex: 1;
+        }
+
+        .info-badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
         .info-tag {
             background: var(--badge-bg);
             padding: 5px 12px;
@@ -133,7 +157,7 @@
             <div id="fase1" class="fase-section fase-active">
                 <div class="mb-4">
                     <label class="form-label">Servidor</label>
-                    <select id="servidor" class="form-select" required>
+                    <select id="servidor" class="form-select" required onchange="filtrarCamposPorServidor(this.value)">
                         <option value="">Cargando servidores...</option>
                     </select>
                 </div>
@@ -204,19 +228,19 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Nombre del Usuario</label>
-                        <input type="text" id="usuario_nombre" class="form-control" placeholder="Nombre Completo" required>
+                        <input type="text" id="usuario_nombre" class="form-control" placeholder="Nombre Completo" required style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Usuario ID</label>
-                        <input type="text" id="usuario_id" class="form-control" placeholder="ID / Login" required>
+                        <input type="text" id="usuario_id" class="form-control" placeholder="ID / Login" required style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Puesto</label>
-                        <input type="text" id="usuario_puesto" class="form-control" placeholder="Cargo del usuario" required>
+                        <input type="text" id="usuario_puesto" class="form-control" placeholder="Cargo del usuario" required style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Sucursal / Ubicación</label>
-                        <input type="text" id="sucursal" class="form-control" placeholder="Ej. Matriz Pachuca" required>
+                        <input type="text" id="sucursal" class="form-control" placeholder="Ej. Matriz Pachuca" required style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Inicia Programa</label>
@@ -298,7 +322,7 @@
         const el = document.getElementById(id);
         if (el && el.selectedIndex !== -1) {
             const text = el.options[el.selectedIndex].text;
-            return (text === "Seleccione..." || text === "" || text.includes("Seleccione servidor")) ? "No registrado" : text;
+            return (text === "Seleccione..." || text === "") ? "No registrado" : text;
         }
         return "No registrado";
     }
@@ -408,14 +432,10 @@
         });
     };
 
-    // Evento para cargar dependencias cuando cambia el servidor
-    document.getElementById('servidor').addEventListener('change', (e) => {
-        const servidor = e.target.value;
-        if(servidor) {
-            const nodos = ['empresas', 'zonas', 'estados', 'tipos', 'unidades', 'perfiles', 'programas'];
-            nodos.forEach(n => cargarCatalogo(n, 'sel_' + (n === 'programas' ? 'programas' : n), servidor));
-        }
-    });
+    window.filtrarCamposPorServidor = (servidor) => {
+        const nodos = ['empresas', 'zonas', 'estados', 'tipos', 'unidades', 'perfiles', 'programas'];
+        nodos.forEach(n => cargarCatalogo(n, 'sel_' + (n === 'programas' ? 'programas' : n), servidor));
+    };
 
     cargarCatalogo('servidores', 'servidor');
     cargarCatalogo('personal', 'sel_personal');
@@ -450,7 +470,9 @@
             Swal.fire({
                 title: "¡Registro Guardado!",
                 text: "Folio: " + payload.folio,
-                icon: "success"
+                icon: "success",
+                background: document.body.classList.contains('dark-mode') ? '#1e293b' : '#fff',
+                color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
             }).then(() => location.reload());
         } catch (err) {
             Swal.fire("Error", "No se pudo guardar", "error");
