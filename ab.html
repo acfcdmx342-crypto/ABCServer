@@ -349,6 +349,8 @@
                 document.getElementById('min_tipo').innerText = getSafeSelectText('sel_tipos');
                 document.getElementById('min_perfil').innerText = getSafeSelectText('sel_perfiles');
             }
+        } else {
+             document.getElementById('display-info').style.display = 'none';
         }
 
         document.querySelectorAll('.fase-section').forEach(s => s.classList.remove('fase-active'));
@@ -447,7 +449,8 @@
         doc.setFont("helvetica", "italic");
         doc.text("Este documento es un comprobante oficial de la solicitud procesada en el sistema GRSIS.", margin, y + 20);
 
-        doc.save(`${datos.folio}.pdf`);
+        // MODIFICACIÓN: En lugar de guardar, abrimos vista previa
+        window.open(doc.output('bloburl'), '_blank');
     }
 
     document.getElementById('final_n_solicitud').addEventListener('input', generarFolio);
@@ -496,7 +499,6 @@
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // CORRECCIÓN: Nombres de llaves ajustados para que el Historial los reconozca
         const payload = {
             atendido_por: admin,
             servidor: document.getElementById('res_servidor').innerText,
@@ -516,7 +518,7 @@
             comienza_en: document.getElementById('res_comienza').innerText,
             n_solicitud: document.getElementById('final_n_solicitud').value,
             folio: document.getElementById('final_folio').value,
-            fecha_alta: document.getElementById('final_fecha_sol').value, // El historial suele buscar fecha_alta o similar
+            fecha_alta: document.getElementById('final_fecha_sol').value,
             fecha_registro_sistema: new Date().toLocaleString()
         };
 
@@ -526,14 +528,15 @@
 
             Swal.fire({
                 title: "¡Registro Guardado!",
-                text: "Folio: " + payload.folio + ". Redirigiendo a historial...",
+                text: "Folio: " + payload.folio + ". Se ha generado la vista previa del PDF.",
                 icon: "success",
-                timer: 2000,
-                showConfirmButton: false,
+                confirmButtonText: "Nuevo Registro",
                 background: document.body.classList.contains('dark-mode') ? '#1e293b' : '#fff',
                 color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
             }).then(() => {
-                window.location.href = 'historial.html';
+                // MODIFICACIÓN: Resetear formulario y volver a fase 1 en lugar de ir a historial
+                document.getElementById('formRegistro').reset();
+                irFase(1);
             });
         } catch (err) {
             Swal.fire("Error", "No se pudo guardar", "error");
