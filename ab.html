@@ -17,7 +17,6 @@
             --input-border: #dee2e6;
         }
 
-        /* Estilos Modo Oscuro Corregidos */
         body.dark-mode {
             --bg: #0f172a;
             --card-bg: #1e293b;
@@ -27,26 +26,14 @@
             --input-border: #475569;
         }
 
-        /* Forzar color de texto en modo oscuro para elementos específicos */
-        body.dark-mode h4, 
-        body.dark-mode strong, 
-        body.dark-mode label, 
-        body.dark-mode span,
-        body.dark-mode .form-select,
-        body.dark-mode .form-control {
-            color: var(--text) !important;
-        }
-
         body { background: var(--bg); color: var(--text); padding: 20px; transition: all 0.3s ease; }
-        
         .card { 
-            max-width: 700px; 
+            max-width: 750px; 
             margin: auto; 
             border-radius: 15px; 
             border: none; 
             background: var(--card-bg);
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            transition: background 0.3s ease;
         }
         
         .session-info { 
@@ -58,13 +45,11 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            transition: background 0.3s ease;
         }
 
         .form-label { font-weight: 600; color: var(--text); opacity: 0.9; }
-        
         .form-control, .form-select {
-            background-color: var(--input-bg) !important;
+            background-color: var(--input-bg);
             border-color: var(--input-border);
             color: var(--text);
         }
@@ -73,29 +58,28 @@
             background-color: var(--input-bg);
             color: var(--text);
             border-color: #38bdf8;
-            box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25);
         }
 
-        /* Switch de tema */
+        .fase-section { display: none; animation: fadeIn 0.4s ease; }
+        .fase-active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .theme-btn {
             cursor: pointer;
             font-size: 1.2rem;
             margin-right: 15px;
-            display: flex;
-            align-items: center;
             color: var(--text);
-            transition: transform 0.2s;
         }
-        .theme-btn:hover { transform: scale(1.1); }
         
         .bi-sun-fill { display: none; color: #ffca28; }
         .dark-mode .bi-sun-fill { display: block; }
         .dark-mode .bi-moon-stars-fill { display: none; }
 
-        /* Ajuste de brillo para iconos en modo oscuro */
-        body.dark-mode .bi-person-circle {
-            color: var(--text);
-        }
+        .progress { height: 8px; margin-bottom: 20px; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -104,7 +88,6 @@
     <div class="card-body p-4">
         <div class="session-info">
             <span><i class="bi bi-person-circle"></i> Atiende: <strong id="admin-name">...</strong></span>
-            
             <div class="d-flex align-items-center">
                 <div class="theme-btn" onclick="toggleTheme()">
                     <i class="bi bi-moon-stars-fill"></i>
@@ -114,70 +97,134 @@
             </div>
         </div>
 
-        <h4 class="text-center mb-4 fw-bold">REGISTRO DE ACCESO</h4>
+        <h4 class="text-center mb-1 fw-bold">REGISTRO DE ACCESO</h4>
+        <p class="text-center text-muted small mb-4" id="fase-titulo">Fase 1: Configuración de Servidor</p>
+        
+        <div class="progress">
+            <div id="progreso-bar" class="progress-bar bg-primary" style="width: 33%"></div>
+        </div>
 
         <form id="formRegistro">
-            <div class="mb-3">
-                <label class="form-label">Servidor</label>
-                <select id="servidor" class="form-select" required>
-                    <option value="">Seleccione servidor...</option>
-                    <option>GROMA146 (SAS)</option>
-                    <option>GROMA58 (SUMMA)</option>
-                    <option>GROMA148ASUMMA FERRE</option>
-                    <option>GROMADW1 (CAS)</option>
-                </select>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Acción</label>
+            <div id="fase1" class="fase-section fase-active">
+                <div class="mb-3">
+                    <label class="form-label">Servidor</label>
+                    <select id="servidor" class="form-select" required>
+                        <option value="">Seleccione servidor...</option>
+                        <option>GROMA146 (SAS)</option>
+                        <option>GROMA58 (SUMMA)</option>
+                        <option>GROMA148ASUMMA FERRE</option>
+                        <option>GROMADW1 (CAS)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Acción a realizar</label>
                     <select id="accion" class="form-select" required>
                         <option value="ALTA">ALTA</option>
                         <option value="BAJA">BAJA</option>
                     </select>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Solicitante (Personal)</label>
-                    <select id="sel_personal" class="form-select" required><option value="">Cargando...</option></select>
+                <button type="button" class="btn btn-primary w-100 py-2 mt-3" onclick="irFase(2)">Siguiente Fase <i class="bi bi-arrow-right-short"></i></button>
+            </div>
+
+            <div id="fase2" class="fase-section">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Quién solicita</label>
+                        <select id="sel_personal" class="form-select" required></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Empresa</label>
+                        <select id="sel_empresas" class="form-select" required></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Zona</label>
+                        <select id="sel_zonas" class="form-select" required></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Estado</label>
+                        <select id="sel_estados" class="form-select" required></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo</label>
+                        <select id="sel_tipos" class="form-select" required></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Unidad Organizativa</label>
+                        <select id="sel_unidades" class="form-select" required></select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Perfil</label>
+                        <select id="sel_perfiles" class="form-select" required></select>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="button" class="btn btn-secondary w-50" onclick="irFase(1)">Atrás</button>
+                    <button type="button" class="btn btn-primary w-50" onclick="irFase(3)">Siguiente Fase <i class="bi bi-arrow-right-short"></i></button>
                 </div>
             </div>
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Empresa</label>
-                    <select id="sel_empresas" class="form-select" required><option value="">Cargando...</option></select>
+            <div id="fase3" class="fase-section">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nombre del Usuario</label>
+                        <input type="text" id="usuario_nombre" class="form-control" placeholder="Nombre Completo" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Usuario ID</label>
+                        <input type="text" id="usuario_id" class="form-control" placeholder="ID / Login" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Puesto</label>
+                        <input type="text" id="usuario_puesto" class="form-control" placeholder="Cargo del usuario" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Sucursal</label>
+                        <input type="text" id="sucursal" class="form-control" placeholder="Ej. Matriz Pachuca" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Inicia Programa</label>
+                        <select id="sel_programas" class="form-select" required></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Comienza en</label>
+                        <input type="date" id="comienza_fecha" class="form-control" required>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Estado / Zona</label>
-                    <select id="sel_estados" class="form-select" required><option value="">Cargando...</option></select>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="button" class="btn btn-secondary w-50" onclick="irFase(2)">Atrás</button>
+                    <button type="submit" class="btn btn-success w-50 fw-bold">FINALIZAR REGISTRO</button>
                 </div>
             </div>
-
-            <div class="mb-4">
-                <label class="form-label">Ubicación / Sucursal</label>
-                <input type="text" id="sucursal" class="form-control" placeholder="Ej. Matriz Pachuca" required>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100 fw-bold py-2">FINALIZAR REGISTRO</button>
         </form>
     </div>
 </div>
 
 <script>
-    // Lógica del Tema Oscuro
     function toggleTheme() {
         document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
     }
-
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-    }
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
 
     function cerrarSesion() {
         localStorage.removeItem('user_name');
         window.location.href = 'index.html';
+    }
+
+    function irFase(f) {
+        if(f > 1) {
+            const servidor = document.getElementById('servidor').value;
+            if(!servidor) {
+                Swal.fire("Atención", "Debe seleccionar un servidor primero", "warning");
+                return;
+            }
+        }
+        document.querySelectorAll('.fase-section').forEach(s => s.classList.remove('fase-active'));
+        document.getElementById('fase'+f).classList.add('fase-active');
+        
+        const titulos = ["", "Fase 1: Configuración de Servidor", "Fase 2: Especificaciones de Solicitud", "Fase 3: Datos del Usuario a Registrar"];
+        document.getElementById('fase-titulo').innerText = titulos[f];
+        document.getElementById('progreso-bar').style.width = (f === 1 ? '33%' : f === 2 ? '66%' : '100%');
     }
 </script>
 
@@ -189,12 +236,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Verificar sesión
     const admin = localStorage.getItem('user_name');
     if(!admin) window.location.href = "index.html";
     document.getElementById('admin-name').innerText = admin;
 
-    // Cargar Catálogos
     const cargarCatalogo = (nodo, elementId) => {
         onValue(ref(db, nodo), (snap) => {
             const select = document.getElementById(elementId);
@@ -209,11 +254,16 @@
         });
     };
 
-    cargarCatalogo('empresas', 'sel_empresas');
-    cargarCatalogo('estados', 'sel_estados');
+    // Cargar todos los catálogos solicitados
     cargarCatalogo('personal', 'sel_personal');
+    cargarCatalogo('empresas', 'sel_empresas');
+    cargarCatalogo('zonas', 'sel_zonas');
+    cargarCatalogo('estados', 'sel_estados');
+    cargarCatalogo('tipos', 'sel_tipos');
+    cargarCatalogo('unidades', 'sel_unidades');
+    cargarCatalogo('perfiles', 'sel_perfiles');
+    cargarCatalogo('programas', 'sel_programas');
 
-    // Guardar Registro
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
         const payload = {
@@ -222,22 +272,31 @@
             accion: document.getElementById('accion').value,
             personal_solicita: document.getElementById('sel_personal').value,
             empresa: document.getElementById('sel_empresas').value,
+            zona: document.getElementById('sel_zonas').value,
             estado: document.getElementById('sel_estados').value,
+            tipo: document.getElementById('sel_tipos').value,
+            unidad_organizativa: document.getElementById('sel_unidades').value,
+            perfil: document.getElementById('sel_perfiles').value,
+            nombre_usuario_reg: document.getElementById('usuario_nombre').value,
+            id_usuario_reg: document.getElementById('usuario_id').value,
+            puesto_usuario: document.getElementById('usuario_puesto').value,
             sucursal: document.getElementById('sucursal').value,
-            fecha_hora: new Date().toLocaleString()
+            programa_inicia: document.getElementById('sel_programas').value,
+            comienza_el: document.getElementById('comienza_fecha').value,
+            fecha_registro: new Date().toLocaleString()
         };
 
         try {
             await push(ref(db, 'movimientos'), payload);
             Swal.fire({
-                title: "¡Guardado!",
-                text: "El acceso se registró con éxito",
+                title: "¡Registro Exitoso!",
+                text: "La información se ha guardado correctamente.",
                 icon: "success",
                 background: document.body.classList.contains('dark-mode') ? '#1e293b' : '#fff',
                 color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
             }).then(() => location.reload());
         } catch (err) {
-            Swal.fire("Error", "No se pudo conectar con la base de datos", "error");
+            Swal.fire("Error", "No se pudo guardar la información", "error");
         }
     });
 </script>
