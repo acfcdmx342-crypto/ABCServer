@@ -20,6 +20,7 @@
         .table-responsive { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .btn-add { background: #0f172a; color: white; border: none; }
         .btn-add:hover { background: #1e293b; color: white; }
+        .badge-status { font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; }
     </style>
 </head>
 <body>
@@ -45,7 +46,7 @@
             <div class="text-center mt-5">
                 <i class="bi bi-arrow-left-circle display-1 text-muted"></i>
                 <h3 class="mt-3">Panel de Administración</h3>
-                <p class="text-secondary">Selecciona un catálogo para comenzar a gestionar los datos.</p>
+                <p class="text-secondary">Selecciona un catálogo para gestionar datos y estados.</p>
             </div>
         </div>
     </div>
@@ -55,15 +56,30 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 id="genTitulo">Nuevo Registro</h5>
+                <h5 id="genTitulo">Registro</h5>
                 <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="genID">
                 <input type="hidden" id="genPath">
-                <label class="form-label fw-bold">Nombre / Descripción</label>
-                <input type="text" id="genNom" class="form-control mb-3" placeholder="Ej. GROMA-01">
-                <div class="row g-2" id="genChecks"></div>
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">Nombre / Descripción</label>
+                        <input type="text" id="genNom" class="form-control" placeholder="Ej. Registro ABC">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Estado del Registro</label>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" id="genActivo" checked>
+                            <label class="form-check-label" for="genActivo">¿Está Activo?</label>
+                        </div>
+                    </div>
+                </div>
+                <div id="servidoresCheckContainer">
+                    <hr>
+                    <label class="form-label fw-bold mb-3">Asociar a Servidores:</label>
+                    <div class="row g-2" id="genChecks"></div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary px-4" id="btnGuardarGenerico">Guardar Datos</button>
@@ -78,14 +94,21 @@
             <div class="modal-header"><h5>Gestión de Personal</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body row g-3">
                 <input type="hidden" id="persID">
+                <div class="col-md-9"><label class="form-label">Nombre Completo</label><input type="text" id="p_nom" class="form-control"></div>
+                <div class="col-md-3">
+                    <label class="form-label">Estado</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" id="p_activo" checked>
+                        <label class="form-check-label">Activo</label>
+                    </div>
+                </div>
                 <div class="col-md-6"><label class="form-label">Empresa</label><input type="text" id="p_emp" class="form-control"></div>
                 <div class="col-md-6"><label class="form-label">Zona</label><input type="text" id="p_zon" class="form-control"></div>
                 <div class="col-md-6"><label class="form-label">Departamento</label><input type="text" id="p_dep" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">Nombre Completo</label><input type="text" id="p_nom" class="form-control"></div>
-                <div class="col-md-4"><label class="form-label">Usuario</label><input type="text" id="p_usu" class="form-control"></div>
-                <div class="col-md-4"><label class="form-label">Contraseña</label><input type="password" id="p_con" class="form-control"></div>
-                <div class="col-md-4"><label class="form-label">Puesto</label><input type="text" id="p_pue" class="form-control"></div>
-                <div class="col-md-12"><label class="form-label">Correo</label><input type="email" id="p_cor" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">Usuario</label><input type="text" id="p_usu" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">Contraseña</label><input type="password" id="p_con" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">Puesto</label><input type="text" id="p_pue" class="form-control"></div>
+                <div class="col-12"><label class="form-label">Correo</label><input type="email" id="p_cor" class="form-control"></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" id="btnGuardarPersonal">Guardar Personal</button>
@@ -102,27 +125,23 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Lista dinámica de servidores desde Firebase
     let listaServidoresActual = [];
+    let catalogos = { servidores: {}, empresas: {}, zonas: {}, estados: {}, tipos: {}, perfiles: {}, unidades: {}, programas: {}, personal: {} };
 
-    let catalogos = {
-        servidores: {}, empresas: {}, zonas: {}, estados: {}, tipos: {}, perfiles: {}, unidades: {}, programas: {}, personal: {}
-    };
-
-    // Suscripción automática a todos los nodos
     Object.keys(catalogos).forEach(path => {
         onValue(ref(db, path), (snap) => {
             catalogos[path] = snap.val() || {};
-            
-            // Si el nodo es servidores, actualizamos el array de nombres para los headers
             if (path === 'servidores') {
                 listaServidoresActual = Object.values(catalogos.servidores).map(s => s.nombre).sort();
             }
-
             const tablaActiva = document.querySelector('table')?.id.replace('tabla-', '');
             if (tablaActiva === path) window.cargar(path);
         });
     });
+
+    const getBadgeStatus = (activo) => activo ? 
+        '<span class="badge bg-success badge-status"><i class="bi bi-check-circle"></i> Activo</span>' : 
+        '<span class="badge bg-danger badge-status"><i class="bi bi-x-circle"></i> Inactivo</span>';
 
     window.cargar = (path) => {
         if (path === 'personal') return renderPersonal();
@@ -135,6 +154,7 @@
             let s = catalogos.servidores[id];
             return `<tr>
                 <td class="text-start ps-4 fw-bold">${s.nombre}</td>
+                <td>${getBadgeStatus(s.activo)}</td>
                 <td>
                     <button class="btn btn-sm btn-warning" onclick="abrirModalGen('servidores', '${id}')"><i class="bi bi-pencil"></i></button>
                     <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('servidores','${id}')"><i class="bi bi-trash"></i></button>
@@ -146,20 +166,19 @@
                 <h3><i class="bi bi-hdd-stack"></i> Gestión de Servidores</h3>
                 <button class="btn btn-add" onclick="abrirModalGen('servidores')"><i class="bi bi-plus-circle"></i> Nuevo Servidor</button>
             </div>
-            <div class="table-responsive col-md-6 mx-auto"><table id="tabla-servidores" class="table table-hover table-bordered mb-0">
-                <thead class="table-dark"><tr><th class="text-start ps-4">Nombre del Servidor</th><th>Acciones</th></tr></thead>
-                <tbody>${rows || '<tr><td colspan="2" class="text-muted">No hay servidores registrados</td></tr>'}</tbody>
+            <div class="table-responsive col-md-8 mx-auto"><table id="tabla-servidores" class="table table-hover table-bordered mb-0">
+                <thead class="table-dark"><tr><th class="text-start ps-4">Nombre</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody>${rows || '<tr><td colspan="3">Sin datos</td></tr>'}</tbody>
             </table></div>`;
     }
 
     function renderModuloGenerico(path) {
         const titulos = { empresas: 'Empresas', zonas: 'Zonas', estados: 'Estados', tipos: 'Tipos', perfiles: 'Perfiles', unidades: 'Unidades', programas: 'Inicia Programa' };
-        
         let headers = listaServidoresActual.map(c => `<th>${c}</th>`).join("");
         let rows = Object.keys(catalogos[path]).map(id => {
             let item = catalogos[path][id];
             let checks = listaServidoresActual.map(c => `<td><i class="bi ${item[c] ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'}"></i></td>`).join("");
-            return `<tr><td class="sticky-col">${item.nombre}</td>${checks}
+            return `<tr><td class="sticky-col">${item.nombre}</td><td>${getBadgeStatus(item.activo)}</td>${checks}
                 <td>
                     <button class="btn btn-sm btn-warning" onclick="abrirModalGen('${path}', '${id}')"><i class="bi bi-pencil"></i></button>
                     <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${path}','${id}')"><i class="bi bi-trash"></i></button>
@@ -167,12 +186,9 @@
         }).join("");
 
         document.getElementById("contenido").innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>${titulos[path]}</h3>
-                <button class="btn btn-add" onclick="abrirModalGen('${path}')"><i class="bi bi-plus-circle"></i> Agregar</button>
-            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3"><h3>${titulos[path]}</h3><button class="btn btn-add" onclick="abrirModalGen('${path}')"><i class="bi bi-plus-circle"></i> Agregar</button></div>
             <div class="table-responsive"><table id="tabla-${path}" class="table table-hover table-bordered mb-0">
-                <thead class="table-dark"><tr><th class="sticky-col">Nombre</th>${headers}<th>Acciones</th></tr></thead>
+                <thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Estado</th>${headers}<th>Acciones</th></tr></thead>
                 <tbody>${rows}</tbody>
             </table></div>`;
     }
@@ -180,28 +196,32 @@
     function renderPersonal() {
         let rows = Object.keys(catalogos.personal).map(id => {
             let p = catalogos.personal[id];
-            return `<tr><td class="sticky-col">${p.nombreCompleto}</td><td>${p.empresa}</td><td>${p.zona}</td><td>${p.departamento}</td><td>${p.usuario}</td><td>***</td><td>${p.puesto}</td><td>${p.correo}</td>
+            return `<tr><td class="sticky-col">${p.nombreCompleto}</td><td>${getBadgeStatus(p.activo)}</td><td>${p.empresa}</td><td>${p.zona}</td><td>${p.departamento}</td><td>${p.usuario}</td><td>***</td><td>${p.puesto}</td>
                 <td><button class="btn btn-sm btn-warning" onclick="abrirModalPersonal('${id}')"><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('personal','${id}')"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join("");
         document.getElementById("contenido").innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-3"><h3>Personal</h3><button class="btn btn-add" onclick="abrirModalPersonal()"><i class="bi bi-plus-circle"></i> Agregar</button></div>
             <div class="table-responsive"><table id="tabla-personal" class="table table-hover table-bordered mb-0">
-                <thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Empresa</th><th>Zona</th><th>Depto</th><th>Usuario</th><th>Pass</th><th>Puesto</th><th>Correo</th><th>Acciones</th></tr></thead>
+                <thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Estado</th><th>Empresa</th><th>Zona</th><th>Depto</th><th>Usuario</th><th>Pass</th><th>Puesto</th><th>Acciones</th></tr></thead>
                 <tbody>${rows}</tbody></table></div>`;
     }
 
     window.abrirModalGen = (path, id = "") => {
-        const item = id ? catalogos[path][id] : { nombre: "" };
+        const item = id ? catalogos[path][id] : { nombre: "", activo: true };
         document.getElementById("genPath").value = path;
         document.getElementById("genID").value = id;
         document.getElementById("genNom").value = item.nombre;
-        document.getElementById("genTitulo").innerText = (id ? 'Editar ' : 'Nuevo ') + (path === 'servidores' ? 'Servidor' : path.slice(0,-1));
+        document.getElementById("genActivo").checked = item.activo !== false;
+        document.getElementById("genTitulo").innerText = (id ? 'Editar ' : 'Nuevo ') + path;
         
         const container = document.getElementById("genChecks");
+        const srvWrapper = document.getElementById("servidoresCheckContainer");
+
         if (path === 'servidores') {
-            container.innerHTML = `<div class="col-12 text-muted small">Módulo de gestión de columna de servidor.</div>`;
+            srvWrapper.style.display = 'none';
         } else {
+            srvWrapper.style.display = 'block';
             container.innerHTML = listaServidoresActual.map(c => `
                 <div class="col-md-4"><div class="form-check">
                     <input class="form-check-input" type="checkbox" id="genChk_${c}" ${item[c] ? 'checked' : ''}>
@@ -212,12 +232,13 @@
     };
 
     window.abrirModalPersonal = (id = "") => {
-        const p = id ? catalogos.personal[id] : {};
+        const p = id ? catalogos.personal[id] : { activo: true };
         document.getElementById("persID").value = id;
+        document.getElementById("p_nom").value = p.nombreCompleto || "";
+        document.getElementById("p_activo").checked = p.activo !== false;
         document.getElementById("p_emp").value = p.empresa || "";
         document.getElementById("p_zon").value = p.zona || "";
         document.getElementById("p_dep").value = p.departamento || "";
-        document.getElementById("p_nom").value = p.nombreCompleto || "";
         document.getElementById("p_usu").value = p.usuario || "";
         document.getElementById("p_con").value = p.contraseña || "";
         document.getElementById("p_pue").value = p.puesto || "";
@@ -229,9 +250,10 @@
         const path = document.getElementById("genPath").value;
         const id = document.getElementById("genID").value;
         const nombre = document.getElementById("genNom").value.trim();
+        const activo = document.getElementById("genActivo").checked;
         if(!nombre) return Swal.fire("Error", "Nombre requerido", "error");
 
-        let data = { nombre };
+        let data = { nombre, activo };
         if (path !== 'servidores') {
             listaServidoresActual.forEach(c => data[c] = document.getElementById(`genChk_${c}`).checked);
         }
@@ -239,28 +261,30 @@
         try {
             id ? await update(ref(db, `${path}/${id}`), data) : await push(ref(db, path), data);
             bootstrap.Modal.getInstance(document.getElementById("modalGenerico")).hide();
-            Swal.fire("Éxito", "Guardado correctamente", "success");
+            Swal.fire("Éxito", "Guardado", "success");
         } catch(e) { Swal.fire("Error", e.message, "error"); }
     });
 
     document.getElementById("btnGuardarPersonal").addEventListener("click", async () => {
         const id = document.getElementById("persID").value;
         const data = {
+            nombreCompleto: document.getElementById("p_nom").value.trim(),
+            activo: document.getElementById("p_activo").checked,
             empresa: document.getElementById("p_emp").value, zona: document.getElementById("p_zon").value,
-            departamento: document.getElementById("p_dep").value, nombreCompleto: document.getElementById("p_nom").value.trim(),
-            usuario: document.getElementById("p_usu").value, contraseña: document.getElementById("p_con").value,
-            puesto: document.getElementById("p_pue").value, correo: document.getElementById("p_cor").value
+            departamento: document.getElementById("p_dep").value, usuario: document.getElementById("p_usu").value, 
+            contraseña: document.getElementById("p_con").value, puesto: document.getElementById("p_pue").value, 
+            correo: document.getElementById("p_cor").value
         };
         if(!data.nombreCompleto) return Swal.fire("Error", "Nombre requerido", "error");
         try {
             id ? await update(ref(db, `personal/${id}`), data) : await push(ref(db, 'personal'), data);
             bootstrap.Modal.getInstance(document.getElementById("modalPers")).hide();
-            Swal.fire("Éxito", "Personal guardado", "success");
+            Swal.fire("Éxito", "Guardado", "success");
         } catch(e) { Swal.fire("Error", e.message, "error"); }
     });
 
     window.eliminarRegistro = async (path, id) => {
-        const res = await Swal.fire({ title: '¿Eliminar?', text: "Esta acción no se puede deshacer", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
+        const res = await Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true });
         if (res.isConfirmed) await remove(ref(db, `${path}/${id}`));
     };
 </script>
