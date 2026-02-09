@@ -6,7 +6,6 @@
     <title>Historial de Altas y Bajas - Dark Mode</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Configuración de Tailwind para usar la clase 'dark'
         tailwind.config = {
             darkMode: 'class',
         }
@@ -24,79 +23,100 @@
                     <svg id="theme-toggle-dark-icon" class="hidden w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     <svg id="theme-toggle-light-icon" class="hidden w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
                 </button>
-                <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Exportar</button>
+                <button onclick="window.location.href='registro.html'" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">Nuevo Registro</button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <input type="text" placeholder="Buscar..." class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-            <select class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                <option>Sucursal / Depto</option>
+            <input type="text" id="filter-search" placeholder="Buscar por Folio o Nombre..." class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select id="filter-sucursal" class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="">Todas las Sucursales</option>
             </select>
-            <select class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                <option>Estado</option>
+            <select id="filter-accion" class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="">Todas las Acciones</option>
+                <option value="ALTA">Alta</option>
+                <option value="BAJA">Baja</option>
             </select>
-            <button class="bg-gray-200 dark:bg-gray-700 dark:text-white p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Limpiar</button>
+            <button onclick="location.reload()" class="bg-gray-200 dark:bg-gray-700 dark:text-white p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Actualizar</button>
         </div>
 
         <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
             <table class="min-w-full table-auto border-collapse">
                 <thead>
-                    <tr class="bg-gray-800 dark:bg-black text-white text-xs uppercase">
+                    <tr class="bg-gray-800 dark:bg-black text-white text-xs uppercase text-center">
                         <th class="p-3 border dark:border-gray-700">Folio</th>
                         <th class="p-3 border dark:border-gray-700">Sucursal</th>
-                        <th class="p-3 border dark:border-gray-700">Empresa</th>
                         <th class="p-3 border dark:border-gray-700">Servidor</th>
-                        <th class="p-3 border dark:border-gray-700">Tipo</th>
-                        <th class="p-3 border dark:border-gray-700">Estado</th>
-                        <th class="p-3 border dark:border-gray-700">Zona</th>
-                        <th class="p-3 border dark:border-gray-700">Usuario</th>
-                        <th class="p-3 border dark:border-gray-700">Nombre</th>
-                        <th class="p-3 border dark:border-gray-700">Puesto</th>
+                        <th class="p-3 border dark:border-gray-700">Acción</th>
+                        <th class="p-3 border dark:border-gray-700">Nombre Usuario</th>
+                        <th class="p-3 border dark:border-gray-700">Usuario ID</th>
                         <th class="p-3 border dark:border-gray-700">Perfil</th>
-                        <th class="p-3 border dark:border-gray-700">U.O.</th>
                         <th class="p-3 border dark:border-gray-700">Inicia Prog.</th>
-                        <th class="p-3 border dark:border-gray-700">Comienza</th>
-                        <th class="p-3 border dark:border-gray-700">Fecha Alta</th>
-                        <th class="p-3 border dark:border-gray-700">Solicita</th>
-                        <th class="p-3 border dark:border-gray-700">Alta por</th>
-                        <th class="p-3 border dark:border-gray-700">Status</th>
+                        <th class="p-3 border dark:border-gray-700">Fecha Registro</th>
+                        <th class="p-3 border dark:border-gray-700">Atendido Por</th>
                     </tr>
                 </thead>
-                <tbody class="text-sm text-gray-700 dark:text-gray-300">
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 bg-white dark:bg-gray-800">
-                        <td class="p-3 border dark:border-gray-700 font-bold">#00124</td>
-                        <td class="p-3 border dark:border-gray-700 text-xs">Ventas / CDMX</td>
-                        <td class="p-3 border dark:border-gray-700">Global S.A.</td>
-                        <td class="p-3 border dark:border-gray-700 text-xs">SRV-PROD</td>
-                        <td class="p-3 border dark:border-gray-700 text-blue-500">Alta</td>
-                        <td class="p-3 border dark:border-gray-700 text-green-500 font-bold">Activo</td>
-                        <td class="p-3 border dark:border-gray-700">Norte</td>
-                        <td class="p-3 border dark:border-gray-700">j.perez</td>
-                        <td class="p-3 border dark:border-gray-700">Juan Pérez</td>
-                        <td class="p-3 border dark:border-gray-700">Analista</td>
-                        <td class="p-3 border dark:border-gray-700">Admin</td>
-                        <td class="p-3 border dark:border-gray-700">RRHH</td>
-                        <td class="p-3 border dark:border-gray-700">SAP</td>
-                        <td class="p-3 border dark:border-gray-700">Remoto</td>
-                        <td class="p-3 border dark:border-gray-700">20/05/24</td>
-                        <td class="p-3 border dark:border-gray-700 text-xs">Martha S.</td>
-                        <td class="p-3 border dark:border-gray-700 text-xs">Sistemas</td>
-                        <td class="p-3 border dark:border-gray-700">
-                            <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 py-1 px-2 rounded text-xs">OK</span>
-                        </td>
-                    </tr>
-                </tbody>
+                <tbody id="tabla-historial" class="text-sm text-gray-700 dark:text-gray-300">
+                    </tbody>
             </table>
         </div>
     </div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Misma configuración de tu archivo anterior
+        const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const tablaBody = document.getElementById('tabla-historial');
+
+        // Función para cargar datos
+        onValue(ref(db, 'movimientos'), (snapshot) => {
+            tablaBody.innerHTML = "";
+            const data = snapshot.val();
+
+            if (data) {
+                // Convertir objeto a array y ordenar por fecha (más reciente arriba)
+                const registros = Object.values(data).reverse();
+
+                registros.forEach(reg => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 bg-white dark:bg-gray-800 text-center";
+                    
+                    // Lógica de color para la acción
+                    const badgeAccion = reg.accion === 'ALTA' 
+                        ? '<span class="text-blue-500 font-bold">ALTA</span>' 
+                        : '<span class="text-red-500 font-bold">BAJA</span>';
+
+                    tr.innerHTML = `
+                        <td class="p-3 border dark:border-gray-700 font-bold text-gray-900 dark:text-white">${reg.folio || 'N/A'}</td>
+                        <td class="p-3 border dark:border-gray-700 text-xs">${reg.sucursal || 'N/A'}</td>
+                        <td class="p-3 border dark:border-gray-700 text-xs">${reg.servidor || 'N/A'}</td>
+                        <td class="p-3 border dark:border-gray-700">${badgeAccion}</td>
+                        <td class="p-3 border dark:border-gray-700">${reg.nombre_usuario_reg || 'N/A'}</td>
+                        <td class="p-3 border dark:border-gray-700 font-mono text-xs">${reg.id_usuario_reg || 'N/A'}</td>
+                        <td class="p-3 border dark:border-gray-700 text-xs">${reg.perfil || 'N/A'}</td>
+                        <td class="p-3 border dark:border-gray-700 text-xs">${reg.programa_inicia || 'N/A'}</td>
+                        <td class="p-3 border dark:border-gray-700 text-xs">${reg.fecha_registro_sistema || 'N/A'}</td>
+                        <td class="p-3 border dark:border-gray-700 text-xs font-semibold">${reg.atendido_por || 'N/A'}</td>
+                    `;
+                    tablaBody.appendChild(tr);
+                });
+            } else {
+                tablaBody.innerHTML = '<tr><td colspan="10" class="p-5 text-center italic">No hay registros encontrados</td></tr>';
+            }
+        });
+    </script>
+
     <script>
+        // Lógica de Dark Mode (Ya la tenías)
         const themeToggleBtn = document.getElementById('theme-toggle');
         const darkIcon = document.getElementById('theme-toggle-dark-icon');
         const lightIcon = document.getElementById('theme-toggle-light-icon');
 
-        // Al cargar, verificar preferencia previa
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
             lightIcon.classList.remove('hidden');
@@ -105,11 +125,9 @@
             darkIcon.classList.remove('hidden');
         }
 
-        // Lógica del botón
         themeToggleBtn.addEventListener('click', function() {
             darkIcon.classList.toggle('hidden');
             lightIcon.classList.toggle('hidden');
-
             if (document.documentElement.classList.contains('dark')) {
                 document.documentElement.classList.remove('dark');
                 localStorage.setItem('color-theme', 'light');
