@@ -232,11 +232,13 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Inicia Programa</label>
-                        <select id="sel_programas" class="form-select" required></select>
+                        <select id="sel_programas" class="form-select" required>
+                            <option value="">Seleccione servidor...</option>
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Comienza en</label>
-                        <input type="date" id="comienza_fecha" class="form-control" required>
+                        <input type="text" id="comienza_fecha" class="form-control" placeholder="Ej. Lunes a Viernes" required>
                     </div>
                 </div>
                 <div class="d-flex gap-2 mt-4">
@@ -281,8 +283,7 @@
             
             document.getElementById('display-info').style.display = 'flex';
 
-            // Al pasar a Fase 2, filtramos todos los campos dependientes del servidor
-            if(f === 2) {
+            if(f === 2 || f === 3) {
                 if (window.filtrarCamposPorServidor) {
                     window.filtrarCamposPorServidor(servidor);
                 }
@@ -337,7 +338,6 @@
         });
     };
 
-    // Función global para filtrar múltiples campos a la vez según el servidor
     window.filtrarCamposPorServidor = (servidor) => {
         cargarCatalogo('empresas', 'sel_empresas', servidor);
         cargarCatalogo('zonas', 'sel_zonas', servidor);
@@ -345,12 +345,11 @@
         cargarCatalogo('tipos', 'sel_tipos', servidor);
         cargarCatalogo('unidades', 'sel_unidades', servidor);
         cargarCatalogo('perfiles', 'sel_perfiles', servidor);
+        cargarCatalogo('programas', 'sel_programas', servidor);
     };
 
-    // Cargas iniciales de catálogos que NO dependen del servidor o que se cargan al inicio
     cargarCatalogo('servidores', 'servidor');
     cargarCatalogo('personal', 'sel_personal');
-    cargarCatalogo('programas', 'sel_programas');
 
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
