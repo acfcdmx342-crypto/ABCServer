@@ -398,20 +398,17 @@
         irFase(4);
     }
 
-    // Nueva función para generar el PDF
     function generarPDF(datos) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const margin = 20;
 
-        // Estilo de encabezado
-        doc.setFillColor(15, 23, 42); // Color oscuro Grupo Roma
+        doc.setFillColor(15, 23, 42); 
         doc.rect(0, 0, 210, 40, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
         doc.text("GRUPO ROMA - REGISTRO DE ACCESO", margin, 25);
         
-        // Cuerpo del documento
         doc.setTextColor(33, 37, 41);
         doc.setFontSize(10);
         doc.text(`Folio de Registro: ${datos.folio}`, 140, 50);
@@ -427,14 +424,14 @@
         const info = [
             ["Servidor:", datos.servidor],
             ["Acción:", datos.accion],
-            ["Solicitante:", datos.personal_solicita],
+            ["Solicitante:", datos.solicitante],
             ["Empresa:", datos.empresa],
             ["Zona / Estado:", `${datos.zona} - ${datos.estado}`],
-            ["Usuario Solicitado:", datos.nombre_usuario_reg],
-            ["ID Usuario:", datos.id_usuario_reg],
-            ["Puesto:", datos.puesto_usuario],
+            ["Usuario Solicitado:", datos.nombre],
+            ["ID Usuario:", datos.usuario],
+            ["Puesto:", datos.puesto],
             ["Perfil Asignado:", datos.perfil],
-            ["Programa:", datos.programa_inicia],
+            ["Programa:", datos.inicia_programa],
             ["Atendido por:", datos.atendido_por]
         ];
 
@@ -450,7 +447,6 @@
         doc.setFont("helvetica", "italic");
         doc.text("Este documento es un comprobante oficial de la solicitud procesada en el sistema GRSIS.", margin, y + 20);
 
-        // Guardar PDF con el nombre del folio
         doc.save(`${datos.folio}.pdf`);
     }
 
@@ -499,33 +495,33 @@
 
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // CORRECCIÓN: Nombres de llaves ajustados para que el Historial los reconozca
         const payload = {
             atendido_por: admin,
             servidor: document.getElementById('res_servidor').innerText,
             accion: document.getElementById('res_accion').innerText,
-            personal_solicita: document.getElementById('res_personal').innerText,
+            solicitante: document.getElementById('res_personal').innerText,
             empresa: document.getElementById('res_empresa').innerText,
             zona: document.getElementById('res_zona').innerText,
             estado: document.getElementById('res_estado').innerText,
             tipo: document.getElementById('res_tipo').innerText,
             unidad_organizativa: document.getElementById('res_unidad').innerText,
             perfil: document.getElementById('res_perfil_usuario').innerText,
-            nombre_usuario_reg: document.getElementById('res_nombre_usuario').innerText,
-            id_usuario_reg: document.getElementById('res_id_usuario').innerText,
-            puesto_usuario: document.getElementById('res_puesto_usuario').innerText,
+            nombre: document.getElementById('res_nombre_usuario').innerText,
+            usuario: document.getElementById('res_id_usuario').innerText,
+            puesto: document.getElementById('res_puesto_usuario').innerText,
             sucursal: document.getElementById('res_sucursal_usuario').innerText,
-            programa_inicia: document.getElementById('res_programa').innerText,
-            comienza_el: document.getElementById('res_comienza').innerText,
+            inicia_programa: document.getElementById('res_programa').innerText,
+            comienza_en: document.getElementById('res_comienza').innerText,
             n_solicitud: document.getElementById('final_n_solicitud').value,
             folio: document.getElementById('final_folio').value,
-            fecha_solicitud_manual: document.getElementById('final_fecha_sol').value,
+            fecha_alta: document.getElementById('final_fecha_sol').value, // El historial suele buscar fecha_alta o similar
             fecha_registro_sistema: new Date().toLocaleString()
         };
 
         try {
             await push(ref(db, 'movimientos'), payload);
-            
-            // Generar PDF automáticamente antes de redireccionar
             generarPDF(payload);
 
             Swal.fire({
@@ -537,7 +533,6 @@
                 background: document.body.classList.contains('dark-mode') ? '#1e293b' : '#fff',
                 color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
             }).then(() => {
-                // Redirigir a la página de historial
                 window.location.href = 'historial.html';
             });
         } catch (err) {
