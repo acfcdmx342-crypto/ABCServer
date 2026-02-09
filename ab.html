@@ -109,11 +109,7 @@
                 <div class="mb-3">
                     <label class="form-label">Servidor</label>
                     <select id="servidor" class="form-select" required>
-                        <option value="">Seleccione servidor...</option>
-                        <option>GROMA146 (SAS)</option>
-                        <option>GROMA58 (SUMMA)</option>
-                        <option>GROMA148ASUMMA FERRE</option>
-                        <option>GROMADW1 (CAS)</option>
+                        <option value="">Cargando servidores...</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -129,7 +125,7 @@
             <div id="fase2" class="fase-section">
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Quién solicita</label>
+                        <label class="form-label">Quién solicita (Personal)</label>
                         <select id="sel_personal" class="form-select" required></select>
                     </div>
                     <div class="col-md-6">
@@ -178,7 +174,7 @@
                         <input type="text" id="usuario_puesto" class="form-control" placeholder="Cargo del usuario" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Sucursal</label>
+                        <label class="form-label">Sucursal / Ubicación</label>
                         <input type="text" id="sucursal" class="form-control" placeholder="Ej. Matriz Pachuca" required>
                     </div>
                     <div class="col-md-6">
@@ -240,21 +236,31 @@
     if(!admin) window.location.href = "index.html";
     document.getElementById('admin-name').innerText = admin;
 
+    // Función de carga genérica con filtro de estado Activo
     const cargarCatalogo = (nodo, elementId) => {
         onValue(ref(db, nodo), (snap) => {
             const select = document.getElementById(elementId);
             select.innerHTML = '<option value="">Seleccione...</option>';
             const data = snap.val();
+            
             if(data) {
                 Object.values(data).forEach(item => {
-                    const nombre = item.nombre || item.nombreCompleto;
-                    select.add(new Option(nombre, nombre));
+                    // Validar si el item está activo (si no existe la propiedad 'activo', se asume activo por defecto)
+                    if (item.activo !== false) {
+                        const nombre = item.nombre || item.nombreCompleto;
+                        if (nombre) {
+                            select.add(new Option(nombre, nombre));
+                        }
+                    }
                 });
             }
         });
     };
 
-    // Cargar todos los catálogos solicitados
+    // Cargar Servidores dinámicamente (Fase 1)
+    cargarCatalogo('servidores', 'servidor');
+
+    // Cargar el resto de catálogos (Fase 2 y 3)
     cargarCatalogo('personal', 'sel_personal');
     cargarCatalogo('empresas', 'sel_empresas');
     cargarCatalogo('zonas', 'sel_zonas');
