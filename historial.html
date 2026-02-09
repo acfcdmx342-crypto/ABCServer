@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Altas y Bajas - Dark Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuración de Tailwind para usar la clase 'dark'
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 p-8 transition-colors duration-300">
+
+    <div class="max-w-7xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+        
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Historial de Usuarios</h2>
+            
+            <div class="flex items-center gap-4">
+                <button id="theme-toggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:ring-2 ring-blue-400 transition-all">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
+                </button>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Exportar</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <input type="text" placeholder="Buscar..." class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option>Sucursal / Depto</option>
+            </select>
+            <select class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option>Estado</option>
+            </select>
+            <button class="bg-gray-200 dark:bg-gray-700 dark:text-white p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Limpiar</button>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+            <table class="min-w-full table-auto border-collapse">
+                <thead>
+                    <tr class="bg-gray-800 dark:bg-black text-white text-xs uppercase">
+                        <th class="p-3 border dark:border-gray-700">Folio</th>
+                        <th class="p-3 border dark:border-gray-700">Sucursal</th>
+                        <th class="p-3 border dark:border-gray-700">Empresa</th>
+                        <th class="p-3 border dark:border-gray-700">Servidor</th>
+                        <th class="p-3 border dark:border-gray-700">Tipo</th>
+                        <th class="p-3 border dark:border-gray-700">Estado</th>
+                        <th class="p-3 border dark:border-gray-700">Zona</th>
+                        <th class="p-3 border dark:border-gray-700">Usuario</th>
+                        <th class="p-3 border dark:border-gray-700">Nombre</th>
+                        <th class="p-3 border dark:border-gray-700">Puesto</th>
+                        <th class="p-3 border dark:border-gray-700">Perfil</th>
+                        <th class="p-3 border dark:border-gray-700">U.O.</th>
+                        <th class="p-3 border dark:border-gray-700">Inicia Prog.</th>
+                        <th class="p-3 border dark:border-gray-700">Comienza</th>
+                        <th class="p-3 border dark:border-gray-700">Fecha Alta</th>
+                        <th class="p-3 border dark:border-gray-700">Solicita</th>
+                        <th class="p-3 border dark:border-gray-700">Alta por</th>
+                        <th class="p-3 border dark:border-gray-700">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm text-gray-700 dark:text-gray-300">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 bg-white dark:bg-gray-800">
+                        <td class="p-3 border dark:border-gray-700 font-bold">#00124</td>
+                        <td class="p-3 border dark:border-gray-700 text-xs">Ventas / CDMX</td>
+                        <td class="p-3 border dark:border-gray-700">Global S.A.</td>
+                        <td class="p-3 border dark:border-gray-700 text-xs">SRV-PROD</td>
+                        <td class="p-3 border dark:border-gray-700 text-blue-500">Alta</td>
+                        <td class="p-3 border dark:border-gray-700 text-green-500 font-bold">Activo</td>
+                        <td class="p-3 border dark:border-gray-700">Norte</td>
+                        <td class="p-3 border dark:border-gray-700">j.perez</td>
+                        <td class="p-3 border dark:border-gray-700">Juan Pérez</td>
+                        <td class="p-3 border dark:border-gray-700">Analista</td>
+                        <td class="p-3 border dark:border-gray-700">Admin</td>
+                        <td class="p-3 border dark:border-gray-700">RRHH</td>
+                        <td class="p-3 border dark:border-gray-700">SAP</td>
+                        <td class="p-3 border dark:border-gray-700">Remoto</td>
+                        <td class="p-3 border dark:border-gray-700">20/05/24</td>
+                        <td class="p-3 border dark:border-gray-700 text-xs">Martha S.</td>
+                        <td class="p-3 border dark:border-gray-700 text-xs">Sistemas</td>
+                        <td class="p-3 border dark:border-gray-700">
