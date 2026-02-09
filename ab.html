@@ -114,16 +114,16 @@
         .resumen-col label { font-weight: bold; color: #64748b; font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: -2px; }
         .resumen-col p { margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid var(--input-border); padding-bottom: 2px; }
 
-        /* Estilos específicos para el mini resumen de Fase 3 */
+        /* Estilos para el mini resumen de Fase 3 */
         .mini-resumen {
             background: var(--info-bg);
             border-radius: 10px;
-            padding: 12px;
-            font-size: 0.8rem;
-            border: 1px dashed var(--input-border);
+            padding: 15px;
+            font-size: 0.85rem;
+            border: 1px solid var(--input-border);
         }
-        .mini-resumen strong { color: #64748b; text-transform: uppercase; font-size: 0.7rem; }
-        .mini-resumen p { margin: 0; color: var(--text); font-weight: 500; }
+        .mini-resumen strong { color: #64748b; text-transform: uppercase; font-size: 0.75rem; display: block; }
+        .mini-resumen p { margin: 0; color: var(--text); font-weight: 600; border-bottom: none; }
     </style>
 </head>
 <body>
@@ -215,14 +215,14 @@
             </div>
 
             <div id="fase3" class="fase-section">
-                <div class="mini-resumen mb-4">
-                    <div class="row g-2">
-                        <div class="col-4"><strong>Solicitante</strong><p id="min_personal">-</p></div>
-                        <div class="col-4"><strong>Empresa</strong><p id="min_empresa">-</p></div>
-                        <div class="col-4"><strong>Zona</strong><p id="min_zona">-</p></div>
-                        <div class="col-4"><strong>Estado</strong><p id="min_estado">-</p></div>
-                        <div class="col-4"><strong>Tipo</strong><p id="min_tipo">-</p></div>
-                        <div class="col-4"><strong>Perfil</strong><p id="min_perfil">-</p></div>
+                <div class="mini-resumen mb-4 shadow-sm">
+                    <div class="row g-3">
+                        <div class="col-md-4"><strong>SOLICITANTE</strong><p id="min_personal">-</p></div>
+                        <div class="col-md-4"><strong>EMPRESA</strong><p id="min_empresa">-</p></div>
+                        <div class="col-md-4"><strong>ZONA</strong><p id="min_zona">-</p></div>
+                        <div class="col-md-4"><strong>ESTADO</strong><p id="min_estado">-</p></div>
+                        <div class="col-md-4"><strong>TIPO</strong><p id="min_tipo">-</p></div>
+                        <div class="col-md-4"><strong>PERFIL</strong><p id="min_perfil">-</p></div>
                     </div>
                 </div>
 
@@ -278,52 +278,23 @@
 
                 <div class="row border rounded p-3 bg-light-subtle">
                     <div class="col-md-6 resumen-col">
-                        <label>Servidor</label>
-                        <p id="res_servidor"></p>
-                        
-                        <label>Solicitante</label>
-                        <p id="res_personal"></p>
-                        
-                        <label>Empresa</label>
-                        <p id="res_empresa"></p>
-                        
-                        <label>Zona</label>
-                        <p id="res_zona"></p>
-                        
-                        <label>Estado</label>
-                        <p id="res_estado"></p>
-                        
-                        <label>Tipo</label>
-                        <p id="res_tipo"></p>
-                        
-                        <label>Unidad Organizativa</label>
-                        <p id="res_unidad"></p>
-                        
-                        <label>Inicia Programa</label>
-                        <p id="res_programa"></p>
-                        
-                        <label>Comienza en</label>
-                        <p id="res_comienza"></p>
+                        <label>Servidor</label><p id="res_servidor"></p>
+                        <label>Solicitante</label><p id="res_personal"></p>
+                        <label>Empresa</label><p id="res_empresa"></p>
+                        <label>Zona</label><p id="res_zona"></p>
+                        <label>Estado</label><p id="res_estado"></p>
+                        <label>Tipo</label><p id="res_tipo"></p>
+                        <label>Unidad Organizativa</label><p id="res_unidad"></p>
+                        <label>Inicia Programa</label><p id="res_programa"></p>
+                        <label>Comienza en</label><p id="res_comienza"></p>
                     </div>
-
                     <div class="col-md-6 resumen-col">
-                        <label>Acción</label>
-                        <p id="res_accion"></p>
-                        
-                        <label>Nombre</label>
-                        <p id="res_nombre_usuario"></p>
-                        
-                        <label>Usuario</label>
-                        <p id="res_id_usuario"></p>
-                        
-                        <label>Puesto</label>
-                        <p id="res_puesto_usuario"></p>
-                        
-                        <label>Sucursal</label>
-                        <p id="res_sucursal_usuario"></p>
-                        
-                        <label>Perfil</label>
-                        <p id="res_perfil_usuario"></p>
+                        <label>Acción</label><p id="res_accion"></p>
+                        <label>Nombre</label><p id="res_nombre_usuario"></p>
+                        <label>Usuario</label><p id="res_id_usuario"></p>
+                        <label>Puesto</label><p id="res_puesto_usuario"></p>
+                        <label>Sucursal</label><p id="res_sucursal_usuario"></p>
+                        <label>Perfil</label><p id="res_perfil_usuario"></p>
                     </div>
                 </div>
 
@@ -348,6 +319,16 @@
         window.location.href = 'index.html';
     }
 
+    // Helper para obtener texto de un select de forma segura
+    function getSafeSelectText(id) {
+        const el = document.getElementById(id);
+        if (el && el.selectedIndex !== -1) {
+            const text = el.options[el.selectedIndex].text;
+            return (text === "Seleccione..." || text === "") ? "No registrado" : text;
+        }
+        return "No registrado";
+    }
+
     function irFase(f) {
         if(f > 1) {
             const servidor = document.getElementById('servidor').value;
@@ -359,32 +340,17 @@
             const accion = document.querySelector('input[name="accion"]:checked').value;
             document.getElementById('label-servidor').innerText = servidor;
             document.getElementById('label-accion').innerText = accion;
-            
-            const tagAccion = document.getElementById('tag-accion');
-            tagAccion.className = accion === 'ALTA' ? 'info-tag text-primary' : 'info-tag text-danger';
-            
             document.getElementById('display-info').style.display = 'flex';
 
-            if(f === 2 || f === 3) {
-                if (window.filtrarCamposPorServidor) window.filtrarCamposPorServidor(servidor);
-            }
-
-            // Si entra a fase 3, cargar los datos de la fase 2 en el mini resumen
+            // Cargar datos en el mini resumen al entrar a la Fase 3
             if(f === 3) {
-                const getSelectText = (id) => {
-                    const el = document.getElementById(id);
-                    return el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : "No seleccionado";
-                };
-                document.getElementById('min_personal').innerText = getSelectText('sel_personal');
-                document.getElementById('min_empresa').innerText = getSelectText('sel_empresas');
-                document.getElementById('min_zona').innerText = getSelectText('sel_zonas');
-                document.getElementById('min_estado').innerText = getSelectText('sel_estados');
-                document.getElementById('min_tipo').innerText = getSelectText('sel_tipos');
-                document.getElementById('min_perfil').innerText = getSelectText('sel_perfiles');
+                document.getElementById('min_personal').innerText = getSafeSelectText('sel_personal');
+                document.getElementById('min_empresa').innerText = getSafeSelectText('sel_empresas');
+                document.getElementById('min_zona').innerText = getSafeSelectText('sel_zonas');
+                document.getElementById('min_estado').innerText = getSafeSelectText('sel_estados');
+                document.getElementById('min_tipo').innerText = getSafeSelectText('sel_tipos');
+                document.getElementById('min_perfil').innerText = getSafeSelectText('sel_perfiles');
             }
-
-        } else {
-            document.getElementById('display-info').style.display = 'none';
         }
 
         document.querySelectorAll('.fase-section').forEach(s => s.classList.remove('fase-active'));
@@ -401,9 +367,7 @@
         const accion = document.querySelector('input[name="accion"]:checked').value;
         const letraAccion = accion === 'ALTA' ? 'A' : 'B';
         const nSolicitud = document.getElementById('final_n_solicitud').value;
-        
-        const folio = `GRSIS-${soloNumerosFecha}-${letraAccion}${nSolicitud}`;
-        document.getElementById('final_folio').value = folio;
+        document.getElementById('final_folio').value = `GRSIS-${soloNumerosFecha}-${letraAccion}${nSolicitud}`;
     }
 
     function prepararResumen() {
@@ -411,39 +375,32 @@
              Swal.fire("Atención", "Complete los campos del usuario", "warning");
              return;
         }
-
+        
         const hoy = new Date();
         const fechaStr = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         document.getElementById('final_fecha_sol').value = fechaStr;
         
-        const getSelectText = (id) => {
-            const el = document.getElementById(id);
-            return el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : "";
-        };
-
         document.getElementById('res_servidor').innerText = document.getElementById('servidor').value;
-        document.getElementById('res_personal').innerText = getSelectText('sel_personal');
-        document.getElementById('res_empresa').innerText = getSelectText('sel_empresas');
-        document.getElementById('res_zona').innerText = getSelectText('sel_zonas');
-        document.getElementById('res_estado').innerText = getSelectText('sel_estados');
-        document.getElementById('res_tipo').innerText = getSelectText('sel_tipos');
-        document.getElementById('res_unidad').innerText = getSelectText('sel_unidades');
-        document.getElementById('res_programa').innerText = getSelectText('sel_programas');
+        document.getElementById('res_personal').innerText = getSafeSelectText('sel_personal');
+        document.getElementById('res_empresa').innerText = getSafeSelectText('sel_empresas');
+        document.getElementById('res_zona').innerText = getSafeSelectText('sel_zonas');
+        document.getElementById('res_estado').innerText = getSafeSelectText('sel_estados');
+        document.getElementById('res_tipo').innerText = getSafeSelectText('sel_tipos');
+        document.getElementById('res_unidad').innerText = getSafeSelectText('sel_unidades');
+        document.getElementById('res_programa').innerText = getSafeSelectText('sel_programas');
         document.getElementById('res_comienza').innerText = document.getElementById('comienza_fecha').value;
-
         document.getElementById('res_accion').innerText = document.querySelector('input[name="accion"]:checked').value;
         document.getElementById('res_nombre_usuario').innerText = document.getElementById('usuario_nombre').value;
         document.getElementById('res_id_usuario').innerText = document.getElementById('usuario_id').value;
         document.getElementById('res_puesto_usuario').innerText = document.getElementById('usuario_puesto').value;
         document.getElementById('res_sucursal_usuario').innerText = document.getElementById('sucursal').value;
-        document.getElementById('res_perfil_usuario').innerText = getSelectText('sel_perfiles');
+        document.getElementById('res_perfil_usuario').innerText = getSafeSelectText('sel_perfiles');
 
         generarFolio();
         irFase(4);
     }
 
     document.getElementById('final_n_solicitud').addEventListener('input', generarFolio);
-    document.getElementById('final_fecha_sol').addEventListener('input', generarFolio);
 </script>
 
 <script type="module">
@@ -464,13 +421,11 @@
             if(!select) return;
             select.innerHTML = '<option value="">Seleccione...</option>';
             const data = snap.val();
-            
             if(data) {
                 Object.values(data).forEach(item => {
                     const estaActivo = item.activo !== false;
                     let cumpleServidor = true;
                     if (filtroServidor) cumpleServidor = item[filtroServidor] === true;
-
                     if (estaActivo && cumpleServidor) {
                         const nombre = item.nombre || item.nombreCompleto;
                         if (nombre) select.add(new Option(nombre, nombre));
@@ -490,7 +445,6 @@
 
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const payload = {
             atendido_por: admin,
             servidor: document.getElementById('res_servidor').innerText,
@@ -518,13 +472,13 @@
             await push(ref(db, 'movimientos'), payload);
             Swal.fire({
                 title: "¡Registro Guardado!",
-                text: "Folio generado: " + payload.folio,
+                text: "Folio: " + payload.folio,
                 icon: "success",
                 background: document.body.classList.contains('dark-mode') ? '#1e293b' : '#fff',
                 color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
             }).then(() => location.reload());
         } catch (err) {
-            Swal.fire("Error", "No se pudo guardar la información", "error");
+            Swal.fire("Error", "No se pudo guardar", "error");
         }
     });
 </script>
