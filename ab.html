@@ -15,6 +15,7 @@
             --info-bg: #f8f9fa;
             --input-bg: #ffffff;
             --input-border: #dee2e6;
+            --title-color: #212529;
         }
 
         body.dark-mode {
@@ -24,9 +25,14 @@
             --info-bg: #334155;
             --input-bg: #0f172a;
             --input-border: #475569;
+            --title-color: #ffffff;
         }
 
         body { background: var(--bg); color: var(--text); padding: 20px; transition: all 0.3s ease; }
+        
+        /* Ajuste para que el nombre y títulos no se pierdan */
+        #admin-name, h4, #fase-titulo { color: var(--title-color); }
+
         .card { 
             max-width: 750px; 
             margin: auto; 
@@ -80,6 +86,15 @@
         .dark-mode .bi-moon-stars-fill { display: none; }
 
         .progress { height: 8px; margin-bottom: 20px; border-radius: 10px; }
+
+        /* Estilo para los radio buttons como botones */
+        .btn-group-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-group-actions .btn {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -106,20 +121,25 @@
 
         <form id="formRegistro">
             <div id="fase1" class="fase-section fase-active">
-                <div class="mb-3">
+                <div class="mb-4">
                     <label class="form-label">Servidor</label>
                     <select id="servidor" class="form-select" required>
                         <option value="">Cargando servidores...</option>
                     </select>
                 </div>
+                
                 <div class="mb-3">
-                    <label class="form-label">Acción a realizar</label>
-                    <select id="accion" class="form-select" required>
-                        <option value="ALTA">ALTA</option>
-                        <option value="BAJA">BAJA</option>
-                    </select>
+                    <label class="form-label d-block">Acción a realizar</label>
+                    <div class="btn-group-actions">
+                        <input type="radio" class="btn-check" name="accion" id="accionAlta" value="ALTA" checked required>
+                        <label class="btn btn-outline-primary" for="accionAlta"><i class="bi bi-person-plus"></i> ALTA</label>
+
+                        <input type="radio" class="btn-check" name="accion" id="accionBaja" value="BAJA">
+                        <label class="btn btn-outline-danger" for="accionBaja"><i class="bi bi-person-dash"></i> BAJA</label>
+                    </div>
                 </div>
-                <button type="button" class="btn btn-primary w-100 py-2 mt-3" onclick="irFase(2)">Siguiente Fase <i class="bi bi-arrow-right-short"></i></button>
+                
+                <button type="button" class="btn btn-primary w-100 py-2 mt-4" onclick="irFase(2)">Siguiente Fase <i class="bi bi-arrow-right-short"></i></button>
             </div>
 
             <div id="fase2" class="fase-section">
@@ -236,7 +256,6 @@
     if(!admin) window.location.href = "index.html";
     document.getElementById('admin-name').innerText = admin;
 
-    // Función de carga genérica con filtro de estado Activo
     const cargarCatalogo = (nodo, elementId) => {
         onValue(ref(db, nodo), (snap) => {
             const select = document.getElementById(elementId);
@@ -245,7 +264,6 @@
             
             if(data) {
                 Object.values(data).forEach(item => {
-                    // Validar si el item está activo (si no existe la propiedad 'activo', se asume activo por defecto)
                     if (item.activo !== false) {
                         const nombre = item.nombre || item.nombreCompleto;
                         if (nombre) {
@@ -257,10 +275,7 @@
         });
     };
 
-    // Cargar Servidores dinámicamente (Fase 1)
     cargarCatalogo('servidores', 'servidor');
-
-    // Cargar el resto de catálogos (Fase 2 y 3)
     cargarCatalogo('personal', 'sel_personal');
     cargarCatalogo('empresas', 'sel_empresas');
     cargarCatalogo('zonas', 'sel_zonas');
@@ -272,10 +287,14 @@
 
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // Obtener valor de la acción desde los radio buttons
+        const accionSeleccionada = document.querySelector('input[name="accion"]:checked').value;
+
         const payload = {
             atendido_por: admin,
             servidor: document.getElementById('servidor').value,
-            accion: document.getElementById('accion').value,
+            accion: accionSeleccionada,
             personal_solicita: document.getElementById('sel_personal').value,
             empresa: document.getElementById('sel_empresas').value,
             zona: document.getElementById('sel_zonas').value,
