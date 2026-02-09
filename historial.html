@@ -1,62 +1,58 @@
 <!DOCTYPE html>
-<html lang="es" class="">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historial de Altas y Bajas - Dark Mode</title>
+    <title>Historial de Usuarios - Control Total</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
+        tailwind.config = { darkMode: 'class' }
     </script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 p-8 transition-colors duration-300">
+<body class="bg-gray-100 dark:bg-gray-900 p-4 transition-colors duration-300">
 
-    <div class="max-w-7xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+    <div class="max-w-[1600px] mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
         
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Historial de Usuarios</h2>
             
             <div class="flex items-center gap-4">
-                <button id="theme-toggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:ring-2 ring-blue-400 transition-all">
+                <button id="theme-toggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:ring-2 ring-blue-400">
                     <svg id="theme-toggle-dark-icon" class="hidden w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     <svg id="theme-toggle-light-icon" class="hidden w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
                 </button>
+                <button id="btn-export-pdf" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">Exportar PDF</button>
                 <button onclick="window.location.href='registro.html'" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">Nuevo Registro</button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <input type="text" id="filter-search" placeholder="Buscar por Folio o Nombre..." class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-            <select id="filter-sucursal" class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                <option value="">Todas las Sucursales</option>
-            </select>
-            <select id="filter-accion" class="border p-2 rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                <option value="">Todas las Acciones</option>
-                <option value="ALTA">Alta</option>
-                <option value="BAJA">Baja</option>
-            </select>
-            <button onclick="location.reload()" class="bg-gray-200 dark:bg-gray-700 dark:text-white p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Actualizar</button>
-        </div>
-
         <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-            <table class="min-w-full table-auto border-collapse">
+            <table id="tabla-datos" class="min-w-full table-auto border-collapse">
                 <thead>
-                    <tr class="bg-gray-800 dark:bg-black text-white text-xs uppercase text-center">
-                        <th class="p-3 border dark:border-gray-700">Folio</th>
-                        <th class="p-3 border dark:border-gray-700">Sucursal</th>
-                        <th class="p-3 border dark:border-gray-700">Servidor</th>
-                        <th class="p-3 border dark:border-gray-700">Acción</th>
-                        <th class="p-3 border dark:border-gray-700">Nombre Usuario</th>
-                        <th class="p-3 border dark:border-gray-700">Usuario ID</th>
-                        <th class="p-3 border dark:border-gray-700">Perfil</th>
-                        <th class="p-3 border dark:border-gray-700">Inicia Prog.</th>
-                        <th class="p-3 border dark:border-gray-700">Fecha Registro</th>
-                        <th class="p-3 border dark:border-gray-700">Atendido Por</th>
+                    <tr class="bg-gray-800 dark:bg-black text-white text-[10px] uppercase text-center">
+                        <th class="p-2 border dark:border-gray-700">Sucursal/Depto</th>
+                        <th class="p-2 border dark:border-gray-700">Empresa</th>
+                        <th class="p-2 border dark:border-gray-700">Servidor</th>
+                        <th class="p-2 border dark:border-gray-700">Tipo</th>
+                        <th class="p-2 border dark:border-gray-700">Estado</th>
+                        <th class="p-2 border dark:border-gray-700">Zona</th>
+                        <th class="p-2 border dark:border-gray-700">Usuario</th>
+                        <th class="p-2 border dark:border-gray-700">Nombre Completo</th>
+                        <th class="p-2 border dark:border-gray-700">Puesto</th>
+                        <th class="p-2 border dark:border-gray-700">Perfil</th>
+                        <th class="p-2 border dark:border-gray-700">U. Org.</th>
+                        <th class="p-2 border dark:border-gray-700">Inicia Prog.</th>
+                        <th class="p-2 border dark:border-gray-700">Comienza en</th>
+                        <th class="p-2 border dark:border-gray-700">Fecha Alta</th>
+                        <th class="p-2 border dark:border-gray-700">N° Folio</th>
+                        <th class="p-2 border dark:border-gray-700">Solicita</th>
+                        <th class="p-2 border dark:border-gray-700">Alta por</th>
+                        <th class="p-2 border dark:border-gray-700">Status</th>
                     </tr>
                 </thead>
-                <tbody id="tabla-historial" class="text-sm text-gray-700 dark:text-gray-300">
+                <tbody id="tabla-historial" class="text-[11px] text-gray-700 dark:text-gray-300">
                     </tbody>
             </table>
         </div>
@@ -66,53 +62,70 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Misma configuración de tu archivo anterior
         const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
         const tablaBody = document.getElementById('tabla-historial');
 
-        // Función para cargar datos
         onValue(ref(db, 'movimientos'), (snapshot) => {
             tablaBody.innerHTML = "";
             const data = snapshot.val();
 
             if (data) {
-                // Convertir objeto a array y ordenar por fecha (más reciente arriba)
                 const registros = Object.values(data).reverse();
 
                 registros.forEach(reg => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 bg-white dark:bg-gray-800 text-center";
                     
-                    // Lógica de color para la acción
-                    const badgeAccion = reg.accion === 'ALTA' 
-                        ? '<span class="text-blue-500 font-bold">ALTA</span>' 
-                        : '<span class="text-red-500 font-bold">BAJA</span>';
+                    const statusClass = reg.accion === 'ALTA' ? 'text-blue-600 font-bold' : 'text-red-600 font-bold';
 
                     tr.innerHTML = `
-                        <td class="p-3 border dark:border-gray-700 font-bold text-gray-900 dark:text-white">${reg.folio || 'N/A'}</td>
-                        <td class="p-3 border dark:border-gray-700 text-xs">${reg.sucursal || 'N/A'}</td>
-                        <td class="p-3 border dark:border-gray-700 text-xs">${reg.servidor || 'N/A'}</td>
-                        <td class="p-3 border dark:border-gray-700">${badgeAccion}</td>
-                        <td class="p-3 border dark:border-gray-700">${reg.nombre_usuario_reg || 'N/A'}</td>
-                        <td class="p-3 border dark:border-gray-700 font-mono text-xs">${reg.id_usuario_reg || 'N/A'}</td>
-                        <td class="p-3 border dark:border-gray-700 text-xs">${reg.perfil || 'N/A'}</td>
-                        <td class="p-3 border dark:border-gray-700 text-xs">${reg.programa_inicia || 'N/A'}</td>
-                        <td class="p-3 border dark:border-gray-700 text-xs">${reg.fecha_registro_sistema || 'N/A'}</td>
-                        <td class="p-3 border dark:border-gray-700 text-xs font-semibold">${reg.atendido_por || 'N/A'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.sucursal || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.empresa || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.servidor || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.tipo || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.estado || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.zona || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700 font-mono">${reg.usuario || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700 font-semibold">${reg.nombre || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.puesto || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.perfil || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.unidad_organizativa || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.inicia_programa || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.comienza_en || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.fecha_solicitud || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700 font-bold text-gray-900 dark:text-white">${reg.folio || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.solicitante || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.atendido_por || 'Sistema'}</td>
+                        <td class="p-2 border dark:border-gray-700 ${statusClass}">${reg.accion || '-'}</td>
                     `;
                     tablaBody.appendChild(tr);
                 });
-            } else {
-                tablaBody.innerHTML = '<tr><td colspan="10" class="p-5 text-center italic">No hay registros encontrados</td></tr>';
             }
+        });
+
+        // Lógica de Exportación a PDF
+        document.getElementById('btn-export-pdf').addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape'); // Horizontal porque son muchas columnas
+
+            doc.text("Historial de Altas y Bajas de Usuarios", 14, 15);
+            
+            doc.autoTable({
+                html: '#tabla-datos',
+                startY: 20,
+                theme: 'grid',
+                styles: { fontSize: 6, cellPadding: 1 },
+                headStyles: { fillColor: [40, 40, 40] }
+            });
+
+            doc.save('historial_usuarios.pdf');
         });
     </script>
 
     <script>
-        // Lógica de Dark Mode (Ya la tenías)
+        // Lógica de Dark Mode
         const themeToggleBtn = document.getElementById('theme-toggle');
         const darkIcon = document.getElementById('theme-toggle-dark-icon');
         const lightIcon = document.getElementById('theme-toggle-light-icon');
