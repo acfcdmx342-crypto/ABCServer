@@ -23,8 +23,8 @@
                     <svg id="theme-toggle-dark-icon" class="hidden w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     <svg id="theme-toggle-light-icon" class="hidden w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
                 </button>
-                <button id="btn-export-pdf" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">Exportar PDF</button>
-                <button onclick="window.location.href='registro.html'" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">Nuevo Registro</button>
+                <button id="btn-export-pdf" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition font-medium">Exportar PDF</button>
+                <button onclick="window.location.href='registro.html'" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition font-medium">Nuevo Registro</button>
             </div>
         </div>
 
@@ -53,7 +53,7 @@
                     </tr>
                 </thead>
                 <tbody id="tabla-historial" class="text-[11px] text-gray-700 dark:text-gray-300">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
@@ -72,13 +72,14 @@
             const data = snapshot.val();
 
             if (data) {
+                // Convertimos a array y revertimos para ver los más nuevos primero
                 const registros = Object.values(data).reverse();
 
                 registros.forEach(reg => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 bg-white dark:bg-gray-800 text-center";
                     
-                    const statusClass = reg.accion === 'ALTA' ? 'text-blue-600 font-bold' : 'text-red-600 font-bold';
+                    const statusClass = reg.accion === 'ALTA' ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-red-600 dark:text-red-400 font-bold';
 
                     tr.innerHTML = `
                         <td class="p-2 border dark:border-gray-700">${reg.sucursal || '-'}</td>
@@ -94,7 +95,7 @@
                         <td class="p-2 border dark:border-gray-700">${reg.unidad_organizativa || '-'}</td>
                         <td class="p-2 border dark:border-gray-700">${reg.inicia_programa || '-'}</td>
                         <td class="p-2 border dark:border-gray-700">${reg.comienza_en || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.fecha_solicitud || '-'}</td>
+                        <td class="p-2 border dark:border-gray-700">${reg.fecha_alta || reg.fecha_solicitud || '-'}</td>
                         <td class="p-2 border dark:border-gray-700 font-bold text-gray-900 dark:text-white">${reg.folio || '-'}</td>
                         <td class="p-2 border dark:border-gray-700">${reg.solicitante || '-'}</td>
                         <td class="p-2 border dark:border-gray-700">${reg.atendido_por || 'Sistema'}</td>
@@ -108,8 +109,9 @@
         // Lógica de Exportación a PDF
         document.getElementById('btn-export-pdf').addEventListener('click', () => {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('landscape'); // Horizontal porque son muchas columnas
+            const doc = new jsPDF('landscape'); 
 
+            doc.setFontSize(16);
             doc.text("Historial de Altas y Bajas de Usuarios", 14, 15);
             
             doc.autoTable({
@@ -117,7 +119,8 @@
                 startY: 20,
                 theme: 'grid',
                 styles: { fontSize: 6, cellPadding: 1 },
-                headStyles: { fillColor: [40, 40, 40] }
+                headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255] },
+                alternateRowStyles: { fillColor: [245, 245, 245] }
             });
 
             doc.save('historial_usuarios.pdf');
