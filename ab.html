@@ -111,6 +111,8 @@
             border: 1px solid var(--input-border);
         }
         .readonly-view { background-color: var(--info-bg) !important; opacity: 1; }
+        .resumen-col label { font-weight: bold; color: #64748b; font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: -2px; }
+        .resumen-col p { margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid var(--input-border); padding-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -252,15 +254,55 @@
                     </div>
                 </div>
 
-                <div class="row g-2 border rounded p-2 bg-light-subtle">
-                    <div class="col-md-6 small"><strong>Servidor:</strong> <span id="res_servidor"></span></div>
-                    <div class="col-md-6 small"><strong>Acción:</strong> <span id="res_accion"></span></div>
-                    <div class="col-md-6 small"><strong>Solicitante:</strong> <span id="res_personal"></span></div>
-                    <div class="col-md-6 small"><strong>Empresa/Zona:</strong> <span id="res_empresa_zona"></span></div>
-                    <div class="col-md-6 small"><strong>Usuario:</strong> <span id="res_usuario"></span></div>
-                    <div class="col-md-6 small"><strong>ID:</strong> <span id="res_id"></span></div>
-                    <div class="col-md-6 small"><strong>Puesto:</strong> <span id="res_puesto"></span></div>
-                    <div class="col-md-6 small"><strong>Programa:</strong> <span id="res_programa"></span></div>
+                <div class="row border rounded p-3 bg-light-subtle">
+                    <div class="col-md-6 resumen-col">
+                        <label>Servidor</label>
+                        <p id="res_servidor"></p>
+                        
+                        <label>Solicitante</label>
+                        <p id="res_personal"></p>
+                        
+                        <label>Empresa</label>
+                        <p id="res_empresa"></p>
+                        
+                        <label>Zona</label>
+                        <p id="res_zona"></p>
+                        
+                        <label>Estado</label>
+                        <p id="res_estado"></p>
+                        
+                        <label>Tipo</label>
+                        <p id="res_tipo"></p>
+                        
+                        <label>Unidad Organizativa</label>
+                        <p id="res_unidad"></p>
+                        
+                        <label>Inicia Programa</label>
+                        <p id="res_programa"></p>
+                        
+                        <label>Comienza en</label>
+                        <p id="res_comienza"></p>
+                    </div>
+
+                    <div class="col-md-6 resumen-col">
+                        <label>Acción</label>
+                        <p id="res_accion"></p>
+                        
+                        <label>Nombre</label>
+                        <p id="res_nombre_usuario"></p>
+                        
+                        <label>Usuario</label>
+                        <p id="res_id_usuario"></p>
+                        
+                        <label>Puesto</label>
+                        <p id="res_puesto_usuario"></p>
+                        
+                        <label>Sucursal</label>
+                        <p id="res_sucursal_usuario"></p>
+                        
+                        <label>Perfil</label>
+                        <p id="res_perfil_usuario"></p>
+                    </div>
                 </div>
 
                 <div class="d-flex gap-2 mt-4">
@@ -316,9 +358,8 @@
         document.getElementById('progreso-bar').style.width = (f * 25) + '%';
     }
 
-    // Lógica para el Folio y Resumen
     function generarFolio() {
-        const fechaRaw = document.getElementById('final_fecha_sol').value; // DD/MM/YYYY
+        const fechaRaw = document.getElementById('final_fecha_sol').value;
         const soloNumerosFecha = fechaRaw.replace(/\//g, '');
         const accion = document.querySelector('input[name="accion"]:checked').value;
         const letraAccion = accion === 'ALTA' ? 'A' : 'B';
@@ -329,32 +370,39 @@
     }
 
     function prepararResumen() {
-        // Validar campos de fase 3 antes de pasar
         if(!document.getElementById('usuario_nombre').value || !document.getElementById('usuario_id').value){
              Swal.fire("Atención", "Complete los campos del usuario", "warning");
              return;
         }
 
-        // Setear fecha actual en campo editable
         const hoy = new Date();
         const fechaStr = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         document.getElementById('final_fecha_sol').value = fechaStr;
         
-        // Llenar datos de texto para el resumen visual
+        // Mapeo de campos a la nueva estructura de resumen
+        // Columna 1
         document.getElementById('res_servidor').innerText = document.getElementById('servidor').value;
-        document.getElementById('res_accion').innerText = document.querySelector('input[name="accion"]:checked').value;
         document.getElementById('res_personal').innerText = document.getElementById('sel_personal').value;
-        document.getElementById('res_empresa_zona').innerText = `${document.getElementById('sel_empresas').value} / ${document.getElementById('sel_zonas').value}`;
-        document.getElementById('res_usuario').innerText = document.getElementById('usuario_nombre').value;
-        document.getElementById('res_id').innerText = document.getElementById('usuario_id').value;
-        document.getElementById('res_puesto').innerText = document.getElementById('usuario_puesto').value;
+        document.getElementById('res_empresa').innerText = document.getElementById('sel_empresas').value;
+        document.getElementById('res_zona').innerText = document.getElementById('sel_zonas').value;
+        document.getElementById('res_estado').innerText = document.getElementById('sel_estados').value;
+        document.getElementById('res_tipo').innerText = document.getElementById('sel_tipos').value;
+        document.getElementById('res_unidad').innerText = document.getElementById('sel_unidades').value;
         document.getElementById('res_programa').innerText = document.getElementById('sel_programas').value;
+        document.getElementById('res_comienza').innerText = document.getElementById('comienza_fecha').value;
+
+        // Columna 2
+        document.getElementById('res_accion').innerText = document.querySelector('input[name="accion"]:checked').value;
+        document.getElementById('res_nombre_usuario').innerText = document.getElementById('usuario_nombre').value;
+        document.getElementById('res_id_usuario').innerText = document.getElementById('usuario_id').value;
+        document.getElementById('res_puesto_usuario').innerText = document.getElementById('usuario_puesto').value;
+        document.getElementById('res_sucursal_usuario').innerText = document.getElementById('sucursal').value;
+        document.getElementById('res_perfil_usuario').innerText = document.getElementById('sel_perfiles').value;
 
         generarFolio();
         irFase(4);
     }
 
-    // Listener para actualizar folio cuando cambie N° Solicitud o Fecha
     document.getElementById('final_n_solicitud').addEventListener('input', generarFolio);
     document.getElementById('final_fecha_sol').addEventListener('input', generarFolio);
 </script>
@@ -421,7 +469,6 @@
             sucursal: document.getElementById('sucursal').value,
             programa_inicia: document.getElementById('sel_programas').value,
             comienza_el: document.getElementById('comienza_fecha').value,
-            // Campos nuevos del resumen
             n_solicitud: document.getElementById('final_n_solicitud').value,
             folio: document.getElementById('final_folio').value,
             fecha_solicitud_manual: document.getElementById('final_fecha_sol').value,
