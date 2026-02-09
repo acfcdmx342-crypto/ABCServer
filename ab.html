@@ -17,7 +17,7 @@
             --input-border: #dee2e6;
         }
 
-        /* Estilos Modo Oscuro */
+        /* Estilos Modo Oscuro Corregidos */
         body.dark-mode {
             --bg: #0f172a;
             --card-bg: #1e293b;
@@ -27,7 +27,18 @@
             --input-border: #475569;
         }
 
+        /* Forzar color de texto en modo oscuro para elementos específicos */
+        body.dark-mode h4, 
+        body.dark-mode strong, 
+        body.dark-mode label, 
+        body.dark-mode span,
+        body.dark-mode .form-select,
+        body.dark-mode .form-control {
+            color: var(--text) !important;
+        }
+
         body { background: var(--bg); color: var(--text); padding: 20px; transition: all 0.3s ease; }
+        
         .card { 
             max-width: 700px; 
             margin: auto; 
@@ -35,6 +46,7 @@
             border: none; 
             background: var(--card-bg);
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            transition: background 0.3s ease;
         }
         
         .session-info { 
@@ -46,12 +58,13 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
+            transition: background 0.3s ease;
         }
 
         .form-label { font-weight: 600; color: var(--text); opacity: 0.9; }
         
         .form-control, .form-select {
-            background-color: var(--input-bg);
+            background-color: var(--input-bg) !important;
             border-color: var(--input-border);
             color: var(--text);
         }
@@ -60,6 +73,7 @@
             background-color: var(--input-bg);
             color: var(--text);
             border-color: #38bdf8;
+            box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25);
         }
 
         /* Switch de tema */
@@ -77,6 +91,11 @@
         .bi-sun-fill { display: none; color: #ffca28; }
         .dark-mode .bi-sun-fill { display: block; }
         .dark-mode .bi-moon-stars-fill { display: none; }
+
+        /* Ajuste de brillo para iconos en modo oscuro */
+        body.dark-mode .bi-person-circle {
+            color: var(--text);
+        }
     </style>
 </head>
 <body>
