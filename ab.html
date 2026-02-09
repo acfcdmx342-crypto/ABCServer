@@ -19,8 +19,7 @@
             --title-color: #212529;
             --badge-bg: #e9ecef;
         }
-
-        body.dark-mode {
+       body.dark-mode {
             --bg: #0f172a;
             --card-bg: #1e293b;
             --text: #f8fafc;
@@ -30,11 +29,8 @@
             --title-color: #ffffff;
             --badge-bg: #334155;
         }
-
         body { background: var(--bg); color: var(--text); padding: 20px; transition: all 0.3s ease; }
-        
         #admin-name, h4, #fase-titulo { color: var(--title-color); }
-
         .card { 
             max-width: 850px; 
             margin: auto; 
@@ -43,7 +39,6 @@
             background: var(--card-bg);
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
         }
-        
         .session-info { 
             background: var(--info-bg); 
             padding: 10px 20px; 
@@ -54,20 +49,17 @@
             justify-content: space-between; 
             align-items: center; 
         }
-
         .form-label { font-weight: 600; color: var(--text); opacity: 0.9; }
         .form-control, .form-select {
             background-color: var(--input-bg);
             border-color: var(--input-border);
             color: var(--text);
         }
-
         .form-control:focus, .form-select:focus {
             background-color: var(--input-bg);
             color: var(--text);
             border-color: #38bdf8;
         }
-
         .fase-section { display: none; animation: fadeIn 0.4s ease; }
         .fase-active { display: block; }
 
@@ -75,20 +67,16 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .theme-btn {
             cursor: pointer;
             font-size: 1.2rem;
             margin-right: 15px;
             color: var(--text);
         }
-        
         .bi-sun-fill { display: none; color: #ffca28; }
         .dark-mode .bi-sun-fill { display: block; }
         .dark-mode .bi-moon-stars-fill { display: none; }
-
         .progress { height: 8px; margin-bottom: 20px; border-radius: 10px; }
-
         .btn-group-actions {
             display: flex;
             gap: 10px;
@@ -96,7 +84,6 @@
         .btn-group-actions .btn {
             flex: 1;
         }
-
         .info-badge-container {
             display: flex;
             justify-content: center;
@@ -114,7 +101,6 @@
         .readonly-view { background-color: var(--info-bg) !important; opacity: 1; }
         .resumen-col label { font-weight: bold; color: #64748b; font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: -2px; }
         .resumen-col p { margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid var(--input-border); padding-bottom: 2px; }
-
         .mini-resumen {
             background: var(--info-bg);
             border-radius: 10px;
@@ -127,7 +113,6 @@
     </style>
 </head>
 <body>
-
 <div class="card">
     <div class="card-body p-4">
         <div class="session-info">
@@ -147,13 +132,10 @@
             <span class="info-tag text-primary"><i class="bi bi-hdd-network"></i> <span id="label-servidor"></span></span>
             <span class="info-tag text-info" id="tag-accion"><i class="bi bi-lightning"></i> <span id="label-accion"></span></span>
         </div>
-
         <p class="text-center text-muted small mb-4" id="fase-titulo">Fase 1: Configuración de Servidor</p>
-        
         <div class="progress">
             <div id="progreso-bar" class="progress-bar bg-primary" style="width: 25%"></div>
         </div>
-
         <form id="formRegistro">
             <div id="fase1" class="fase-section fase-active">
                 <div class="mb-4">
@@ -162,21 +144,17 @@
                         <option value="">Cargando servidores...</option>
                     </select>
                 </div>
-                
                 <div class="mb-3">
                     <label class="form-label d-block">Acción a realizar</label>
                     <div class="btn-group-actions">
                         <input type="radio" class="btn-check" name="accion" id="accionAlta" value="ALTA" checked required>
                         <label class="btn btn-outline-primary" for="accionAlta"><i class="bi bi-person-plus"></i> ALTA</label>
-
                         <input type="radio" class="btn-check" name="accion" id="accionBaja" value="BAJA">
                         <label class="btn btn-outline-danger" for="accionBaja"><i class="bi bi-person-dash"></i> BAJA</label>
                     </div>
                 </div>
-                
                 <button type="button" class="btn btn-primary w-100 py-2 mt-4" onclick="irFase(2)">Siguiente Fase <i class="bi bi-arrow-right-short"></i></button>
             </div>
-
             <div id="fase2" class="fase-section">
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -213,7 +191,6 @@
                     <button type="button" class="btn btn-primary w-50" onclick="irFase(3)">Siguiente Fase <i class="bi bi-arrow-right-short"></i></button>
                 </div>
             </div>
-
             <div id="fase3" class="fase-section">
                 <div class="mini-resumen mb-4 shadow-sm">
                     <div class="row g-3">
@@ -225,7 +202,6 @@
                         <div class="col-md-4"><strong>PERFIL</strong><p id="min_perfil">-</p></div>
                     </div>
                 </div>
-
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Nombre del Usuario</label>
@@ -257,10 +233,8 @@
                     <button type="button" class="btn btn-primary w-50" onclick="prepararResumen()">Revisar Registro</button>
                 </div>
             </div>
-
             <div id="fase4" class="fase-section">
                 <div class="alert alert-info py-2 small text-center">Valide la información antes de finalizar.</div>
-                
                 <div class="row g-2 mb-3">
                     <div class="col-md-4">
                         <label class="form-label small">N° de Solicitud</label>
@@ -275,7 +249,6 @@
                         <input type="text" id="final_fecha_sol" class="form-control form-control-sm">
                     </div>
                 </div>
-
                 <div class="row border rounded p-3 bg-light-subtle">
                     <div class="col-md-6 resumen-col">
                         <label>Servidor</label><p id="res_servidor"></p>
@@ -297,7 +270,6 @@
                         <label>Perfil</label><p id="res_perfil_usuario"></p>
                     </div>
                 </div>
-
                 <div class="d-flex gap-2 mt-4">
                     <button type="button" class="btn btn-secondary w-50" onclick="irFase(3)">Corregir Datos</button>
                     <button type="submit" class="btn btn-success w-50 fw-bold">FINALIZAR Y GUARDAR</button>
@@ -313,12 +285,10 @@
         localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
     }
     if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
-
     function cerrarSesion() {
         localStorage.removeItem('user_name');
         window.location.href = 'index.html';
     }
-
     function getSafeSelectText(id) {
         const el = document.getElementById(id);
         if (el && el.selectedIndex !== -1) {
@@ -335,7 +305,6 @@
                 Swal.fire("Atención", "Debe seleccionar un servidor primero", "warning");
                 return;
             }
-            
             const accion = document.querySelector('input[name="accion"]:checked').value;
             document.getElementById('label-servidor').innerText = servidor;
             document.getElementById('label-accion').innerText = accion;
@@ -360,7 +329,6 @@
         document.getElementById('fase-titulo').innerText = titulos[f];
         document.getElementById('progreso-bar').style.width = (f * 25) + '%';
     }
-
     function generarFolio() {
         const fechaRaw = document.getElementById('final_fecha_sol').value;
         const soloNumerosFecha = fechaRaw.replace(/\//g, '');
@@ -369,17 +337,14 @@
         const nSolicitud = document.getElementById('final_n_solicitud').value;
         document.getElementById('final_folio').value = `GRSIS-${soloNumerosFecha}-${letraAccion}${nSolicitud}`;
     }
-
     function prepararResumen() {
         if(!document.getElementById('usuario_nombre').value || !document.getElementById('usuario_id').value){
              Swal.fire("Atención", "Complete los campos del usuario", "warning");
              return;
         }
-        
         const hoy = new Date();
         const fechaStr = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         document.getElementById('final_fecha_sol').value = fechaStr;
-        
         document.getElementById('res_servidor').innerText = document.getElementById('servidor').value;
         document.getElementById('res_personal').innerText = getSafeSelectText('sel_personal');
         document.getElementById('res_empresa').innerText = getSafeSelectText('sel_empresas');
@@ -395,32 +360,26 @@
         document.getElementById('res_puesto_usuario').innerText = document.getElementById('usuario_puesto').value;
         document.getElementById('res_sucursal_usuario').innerText = document.getElementById('sucursal').value;
         document.getElementById('res_perfil_usuario').innerText = getSafeSelectText('sel_perfiles');
-
         generarFolio();
         irFase(4);
     }
-
     function generarPDF(datos) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const margin = 20;
-
         doc.setFillColor(15, 23, 42); 
         doc.rect(0, 0, 210, 40, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
         doc.text("GRUPO ROMA - REGISTRO DE ACCESO", margin, 25);
-        
         doc.setTextColor(33, 37, 41);
         doc.setFontSize(10);
         doc.text(`Folio de Registro: ${datos.folio}`, 140, 50);
         doc.text(`Fecha de Emisión: ${datos.fecha_registro_sistema}`, 140, 55);
-
         doc.setFontSize(14);
         doc.text("Detalles de la Solicitud", margin, 70);
         doc.setLineWidth(0.5);
         doc.line(margin, 72, 190, 72);
-
         doc.setFontSize(11);
         let y = 82;
         const info = [
@@ -436,7 +395,6 @@
             ["Programa:", datos.inicia_programa],
             ["Atendido por:", datos.atendido_por]
         ];
-
         info.forEach(row => {
             doc.setFont("helvetica", "bold");
             doc.text(row[0], margin, y);
@@ -444,30 +402,23 @@
             doc.text(row[1], margin + 50, y);
             y += 8;
         });
-
         doc.setFontSize(9);
         doc.setFont("helvetica", "italic");
         doc.text("Este documento es un comprobante oficial de la solicitud procesada en el sistema GRSIS.", margin, y + 20);
-
         // ABRE VISTA PREVIA EN PESTAÑA NUEVA
         window.open(doc.output('bloburl'), '_blank');
     }
-
     document.getElementById('final_n_solicitud').addEventListener('input', generarFolio);
 </script>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
     const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
     const admin = localStorage.getItem('user_name');
     if(!admin) window.location.href = "index.html";
     document.getElementById('admin-name').innerText = admin;
-
     const cargarCatalogo = (nodo, elementId, filtroServidor = null) => {
         onValue(ref(db, nodo), (snap) => {
             const select = document.getElementById(elementId);
@@ -487,18 +438,14 @@
             }
         });
     };
-
     window.filtrarCamposPorServidor = (servidor) => {
         const nodos = ['empresas', 'zonas', 'estados', 'tipos', 'unidades', 'perfiles', 'programas'];
         nodos.forEach(n => cargarCatalogo(n, 'sel_' + (n === 'programas' ? 'programas' : n), servidor));
     };
-
     cargarCatalogo('servidores', 'servidor');
     cargarCatalogo('personal', 'sel_personal');
-
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const payload = {
             atendido_por: admin,
             servidor: document.getElementById('res_servidor').innerText,
@@ -521,11 +468,9 @@
             fecha_alta: document.getElementById('final_fecha_sol').value,
             fecha_registro_sistema: new Date().toLocaleString()
         };
-
         try {
             await push(ref(db, 'movimientos'), payload);
             generarPDF(payload);
-
             Swal.fire({
                 title: "¡Registro Guardado!",
                 text: "Folio: " + payload.folio + ". Se ha generado la vista previa del PDF.",
