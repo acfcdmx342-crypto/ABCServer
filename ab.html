@@ -16,6 +16,7 @@
             --input-bg: #ffffff;
             --input-border: #dee2e6;
             --title-color: #212529;
+            --badge-bg: #e9ecef;
         }
 
         body.dark-mode {
@@ -26,11 +27,11 @@
             --input-bg: #0f172a;
             --input-border: #475569;
             --title-color: #ffffff;
+            --badge-bg: #334155;
         }
 
         body { background: var(--bg); color: var(--text); padding: 20px; transition: all 0.3s ease; }
         
-        /* Ajuste para que el nombre y títulos no se pierdan */
         #admin-name, h4, #fase-titulo { color: var(--title-color); }
 
         .card { 
@@ -87,13 +88,28 @@
 
         .progress { height: 8px; margin-bottom: 20px; border-radius: 10px; }
 
-        /* Estilo para los radio buttons como botones */
         .btn-group-actions {
             display: flex;
             gap: 10px;
         }
         .btn-group-actions .btn {
             flex: 1;
+        }
+
+        /* Estilos para etiquetas de información fija */
+        .info-badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .info-tag {
+            background: var(--badge-bg);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid var(--input-border);
         }
     </style>
 </head>
@@ -113,6 +129,12 @@
         </div>
 
         <h4 class="text-center mb-1 fw-bold">REGISTRO DE ACCESO</h4>
+        
+        <div class="info-badge-container" id="display-info" style="display: none;">
+            <span class="info-tag text-primary"><i class="bi bi-hdd-network"></i> <span id="label-servidor"></span></span>
+            <span class="info-tag text-info" id="tag-accion"><i class="bi bi-lightning"></i> <span id="label-accion"></span></span>
+        </div>
+
         <p class="text-center text-muted small mb-4" id="fase-titulo">Fase 1: Configuración de Servidor</p>
         
         <div class="progress">
@@ -234,7 +256,25 @@
                 Swal.fire("Atención", "Debe seleccionar un servidor primero", "warning");
                 return;
             }
+            // Capturar y mostrar información en etiquetas fijas
+            const accion = document.querySelector('input[name="accion"]:checked').value;
+            document.getElementById('label-servidor').innerText = servidor;
+            document.getElementById('label-accion').innerText = accion;
+            
+            // Cambiar color del tag según la acción
+            const tagAccion = document.getElementById('tag-accion');
+            if(accion === 'ALTA') {
+                tagAccion.className = 'info-tag text-primary';
+            } else {
+                tagAccion.className = 'info-tag text-danger';
+            }
+            
+            document.getElementById('display-info').style.display = 'flex';
+        } else {
+            // Ocultar etiquetas si regresa a fase 1
+            document.getElementById('display-info').style.display = 'none';
         }
+
         document.querySelectorAll('.fase-section').forEach(s => s.classList.remove('fase-active'));
         document.getElementById('fase'+f).classList.add('fase-active');
         
@@ -288,7 +328,6 @@
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Obtener valor de la acción desde los radio buttons
         const accionSeleccionada = document.querySelector('input[name="accion"]:checked').value;
 
         const payload = {
