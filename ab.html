@@ -449,7 +449,7 @@
         doc.setFont("helvetica", "italic");
         doc.text("Este documento es un comprobante oficial de la solicitud procesada en el sistema GRSIS.", margin, y + 20);
 
-        // MODIFICACIÓN: En lugar de guardar, abrimos vista previa
+        // ABRE VISTA PREVIA EN PESTAÑA NUEVA
         window.open(doc.output('bloburl'), '_blank');
     }
 
@@ -534,7 +534,7 @@
                 background: document.body.classList.contains('dark-mode') ? '#1e293b' : '#fff',
                 color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
             }).then(() => {
-                // MODIFICACIÓN: Resetear formulario y volver a fase 1 en lugar de ir a historial
+                // RESETEA FORMULARIO Y REGRESA A FASE 1
                 document.getElementById('formRegistro').reset();
                 irFase(1);
             });
