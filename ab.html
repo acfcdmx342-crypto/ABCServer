@@ -96,7 +96,6 @@
             flex: 1;
         }
 
-        /* Estilos para etiquetas de información fija */
         .info-badge-container {
             display: flex;
             justify-content: center;
@@ -172,7 +171,9 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Empresa</label>
-                        <select id="sel_empresas" class="form-select" required></select>
+                        <select id="sel_empresas" class="form-select" required>
+                            <option value="">Seleccione un servidor primero...</option>
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Zona</label>
@@ -256,12 +257,11 @@
                 Swal.fire("Atención", "Debe seleccionar un servidor primero", "warning");
                 return;
             }
-            // Capturar y mostrar información en etiquetas fijas
+            
             const accion = document.querySelector('input[name="accion"]:checked').value;
             document.getElementById('label-servidor').innerText = servidor;
             document.getElementById('label-accion').innerText = accion;
             
-            // Cambiar color del tag según la acción
             const tagAccion = document.getElementById('tag-accion');
             if(accion === 'ALTA') {
                 tagAccion.className = 'info-tag text-primary';
@@ -270,8 +270,12 @@
             }
             
             document.getElementById('display-info').style.display = 'flex';
+
+            // Al pasar a Fase 2, disparamos el filtrado de empresas basado en el servidor
+            if(f === 2) {
+                window.filtrarEmpresasPorServidor(servidor);
+            }
         } else {
-            // Ocultar etiquetas si regresa a fase 1
             document.getElementById('display-info').style.display = 'none';
         }
 
@@ -296,7 +300,8 @@
     if(!admin) window.location.href = "index.html";
     document.getElementById('admin-name').innerText = admin;
 
-    const cargarCatalogo = (nodo, elementId) => {
+    // Función genérica para cargar catálogos con opción de filtrado
+    const cargarCatalogo = (nodo, elementId, filtroServidor = null) => {
         onValue(ref(db, nodo), (snap) => {
             const select = document.getElementById(elementId);
             select.innerHTML = '<option value="">Seleccione...</option>';
@@ -304,7 +309,17 @@
             
             if(data) {
                 Object.values(data).forEach(item => {
-                    if (item.activo !== false) {
+                    // Validar que esté activo
+                    const estaActivo = item.activo !== false;
+                    
+                    // Validar servidor si se requiere filtro
+                    let cumpleServidor = true;
+                    if (filtroServidor) {
+                        // Verifica si el campo con el nombre del servidor es true/marcado
+                        cumpleServidor = item[filtroServidor] === true;
+                    }
+
+                    if (estaActivo && cumpleServidor) {
                         const nombre = item.nombre || item.nombreCompleto;
                         if (nombre) {
                             select.add(new Option(nombre, nombre));
@@ -315,9 +330,14 @@
         });
     };
 
+    // Exponer la función de filtrado al scope global para que irFase pueda llamarla
+    window.filtrarEmpresasPorServidor = (servidor) => {
+        cargarCatalogo('empresas', 'sel_empresas', servidor);
+    };
+
+    // Cargas iniciales de catálogos sin dependencias
     cargarCatalogo('servidores', 'servidor');
     cargarCatalogo('personal', 'sel_personal');
-    cargarCatalogo('empresas', 'sel_empresas');
     cargarCatalogo('zonas', 'sel_zonas');
     cargarCatalogo('estados', 'sel_estados');
     cargarCatalogo('tipos', 'sel_tipos');
@@ -327,7 +347,6 @@
 
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const accionSeleccionada = document.querySelector('input[name="accion"]:checked').value;
 
         const payload = {
