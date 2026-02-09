@@ -113,6 +113,17 @@
         .readonly-view { background-color: var(--info-bg) !important; opacity: 1; }
         .resumen-col label { font-weight: bold; color: #64748b; font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: -2px; }
         .resumen-col p { margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid var(--input-border); padding-bottom: 2px; }
+
+        /* Estilos específicos para el mini resumen de Fase 3 */
+        .mini-resumen {
+            background: var(--info-bg);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.8rem;
+            border: 1px dashed var(--input-border);
+        }
+        .mini-resumen strong { color: #64748b; text-transform: uppercase; font-size: 0.7rem; }
+        .mini-resumen p { margin: 0; color: var(--text); font-weight: 500; }
     </style>
 </head>
 <body>
@@ -204,6 +215,17 @@
             </div>
 
             <div id="fase3" class="fase-section">
+                <div class="mini-resumen mb-4">
+                    <div class="row g-2">
+                        <div class="col-4"><strong>Solicitante</strong><p id="min_personal">-</p></div>
+                        <div class="col-4"><strong>Empresa</strong><p id="min_empresa">-</p></div>
+                        <div class="col-4"><strong>Zona</strong><p id="min_zona">-</p></div>
+                        <div class="col-4"><strong>Estado</strong><p id="min_estado">-</p></div>
+                        <div class="col-4"><strong>Tipo</strong><p id="min_tipo">-</p></div>
+                        <div class="col-4"><strong>Perfil</strong><p id="min_perfil">-</p></div>
+                    </div>
+                </div>
+
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Nombre del Usuario</label>
@@ -346,6 +368,21 @@
             if(f === 2 || f === 3) {
                 if (window.filtrarCamposPorServidor) window.filtrarCamposPorServidor(servidor);
             }
+
+            // Si entra a fase 3, cargar los datos de la fase 2 en el mini resumen
+            if(f === 3) {
+                const getSelectText = (id) => {
+                    const el = document.getElementById(id);
+                    return el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : "No seleccionado";
+                };
+                document.getElementById('min_personal').innerText = getSelectText('sel_personal');
+                document.getElementById('min_empresa').innerText = getSelectText('sel_empresas');
+                document.getElementById('min_zona').innerText = getSelectText('sel_zonas');
+                document.getElementById('min_estado').innerText = getSelectText('sel_estados');
+                document.getElementById('min_tipo').innerText = getSelectText('sel_tipos');
+                document.getElementById('min_perfil').innerText = getSelectText('sel_perfiles');
+            }
+
         } else {
             document.getElementById('display-info').style.display = 'none';
         }
@@ -369,7 +406,6 @@
         document.getElementById('final_folio').value = folio;
     }
 
-    // NUEVA FUNCIÓN MEJORADA PARA LLENAR EL RESUMEN
     function prepararResumen() {
         if(!document.getElementById('usuario_nombre').value || !document.getElementById('usuario_id').value){
              Swal.fire("Atención", "Complete los campos del usuario", "warning");
@@ -380,13 +416,11 @@
         const fechaStr = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         document.getElementById('final_fecha_sol').value = fechaStr;
         
-        // Helper para obtener el texto del select seleccionado
         const getSelectText = (id) => {
             const el = document.getElementById(id);
             return el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : "";
         };
 
-        // Llenar etiquetas de resumen con el texto visible de los selects
         document.getElementById('res_servidor').innerText = document.getElementById('servidor').value;
         document.getElementById('res_personal').innerText = getSelectText('sel_personal');
         document.getElementById('res_empresa').innerText = getSelectText('sel_empresas');
@@ -457,7 +491,6 @@
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Guardar usando el contenido de los párrafos del resumen para asegurar consistencia
         const payload = {
             atendido_por: admin,
             servidor: document.getElementById('res_servidor').innerText,
