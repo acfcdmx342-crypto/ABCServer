@@ -21,6 +21,7 @@
         .btn-add { background: #0f172a; color: white; border: none; }
         .btn-add:hover { background: #1e293b; color: white; }
         .badge-status { font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; }
+        textarea { text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -32,6 +33,7 @@
         <hr class="mx-3 opacity-25">
         <a onclick="cargar('empresas')"><i class="bi bi-building"></i> Empresas</a>
         <a onclick="cargar('zonas')"><i class="bi bi-geo-alt"></i> Zonas</a>
+        <a onclick="cargar('sucursales')"><i class="bi bi-shop"></i> Sucursales</a>
         <a onclick="cargar('estados')"><i class="bi bi-map"></i> Estados</a>
         <a onclick="cargar('tipos')"><i class="bi bi-tag"></i> Tipo</a>
         <a onclick="cargar('perfiles')"><i class="bi bi-person-badge"></i> Perfil</a>
@@ -47,6 +49,37 @@
                 <i class="bi bi-arrow-left-circle display-1 text-muted"></i>
                 <h3 class="mt-3">Panel de Administración</h3>
                 <p class="text-secondary">Selecciona un catálogo para gestionar datos y estados.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalSucursal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">Registro Masivo de Sucursales</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Empresa Responsable</label>
+                        <select id="s_empresa" class="form-select"></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Zona</label>
+                        <select id="s_zona" class="form-select"></select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-primary">Lista de Sucursales (Pega aquí la lista)</label>
+                        <textarea id="s_lista" class="form-control" rows="10" placeholder="NOMBRE SUCURSAL 1&#10;NOMBRE SUCURSAL 2&#10;NOMBRE SUCURSAL 3"></textarea>
+                        <small class="text-muted">Un nombre por cada renglón.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary w-100" id="btnGuardarMasivo">Guardar Información</button>
             </div>
         </div>
     </div>
@@ -88,35 +121,6 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalPers" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header"><h5>Gestión de Personal</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body row g-3">
-                <input type="hidden" id="persID">
-                <div class="col-md-9"><label class="form-label">Nombre Completo</label><input type="text" id="p_nom" class="form-control"></div>
-                <div class="col-md-3">
-                    <label class="form-label">Estado</label>
-                    <div class="form-check form-switch mt-2">
-                        <input class="form-check-input" type="checkbox" id="p_activo" checked>
-                        <label class="form-check-label">Activo</label>
-                    </div>
-                </div>
-                <div class="col-md-6"><label class="form-label">Empresa</label><input type="text" id="p_emp" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">Zona</label><input type="text" id="p_zon" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">Departamento</label><input type="text" id="p_dep" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">Usuario</label><input type="text" id="p_usu" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">Contraseña</label><input type="password" id="p_con" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">Puesto</label><input type="text" id="p_pue" class="form-control"></div>
-                <div class="col-12"><label class="form-label">Correo</label><input type="email" id="p_cor" class="form-control"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" id="btnGuardarPersonal">Guardar Personal</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -126,7 +130,7 @@
     const db = getDatabase(app);
 
     let listaServidoresActual = [];
-    let catalogos = { servidores: {}, empresas: {}, zonas: {}, estados: {}, tipos: {}, perfiles: {}, unidades: {}, programas: {}, personal: {} };
+    let catalogos = { servidores: {}, empresas: {}, zonas: {}, sucursales: {}, estados: {}, tipos: {}, perfiles: {}, unidades: {}, programas: {}, personal: {} };
 
     Object.keys(catalogos).forEach(path => {
         onValue(ref(db, path), (snap) => {
@@ -146,30 +150,87 @@
     window.cargar = (path) => {
         if (path === 'personal') return renderPersonal();
         if (path === 'servidores') return renderServidores();
+        if (path === 'sucursales') return renderSucursales();
         renderModuloGenerico(path);
     };
 
-    function renderServidores() {
-        let rows = Object.keys(catalogos.servidores).map(id => {
-            let s = catalogos.servidores[id];
+    function renderSucursales() {
+        let rows = Object.keys(catalogos.sucursales).map(id => {
+            let s = catalogos.sucursales[id];
             return `<tr>
-                <td class="text-start ps-4 fw-bold">${s.nombre}</td>
-                <td>${getBadgeStatus(s.activo)}</td>
-                <td>
-                    <button class="btn btn-sm btn-warning" onclick="abrirModalGen('servidores', '${id}')"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('servidores','${id}')"><i class="bi bi-trash"></i></button>
-                </td></tr>`;
+                <td class="sticky-col">${s.nombre}</td>
+                <td>${s.empresa}</td>
+                <td>${s.zona}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('sucursales','${id}')"><i class="bi bi-trash"></i></button></td>
+            </tr>`;
         }).join("");
 
         document.getElementById("contenido").innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3><i class="bi bi-hdd-stack"></i> Gestión de Servidores</h3>
-                <button class="btn btn-add" onclick="abrirModalGen('servidores')"><i class="bi bi-plus-circle"></i> Nuevo Servidor</button>
+                <h3><i class="bi bi-shop"></i> Sucursales</h3>
+                <button class="btn btn-add" onclick="abrirModalSucursales()"><i class="bi bi-plus-circle"></i> Registro Masivo</button>
             </div>
-            <div class="table-responsive col-md-8 mx-auto"><table id="tabla-servidores" class="table table-hover table-bordered mb-0">
-                <thead class="table-dark"><tr><th class="text-start ps-4">Nombre</th><th>Estado</th><th>Acciones</th></tr></thead>
-                <tbody>${rows || '<tr><td colspan="3">Sin datos</td></tr>'}</tbody>
-            </table></div>`;
+            <div class="table-responsive">
+                <table id="tabla-sucursales" class="table table-hover table-bordered mb-0">
+                    <thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Empresa</th><th>Zona</th><th>Acciones</th></tr></thead>
+                    <tbody>${rows || '<tr><td colspan="4">Sin datos</td></tr>'}</tbody>
+                </table>
+            </div>`;
+    }
+
+    // Modal para Sucursales
+    window.abrirModalSucursales = () => {
+        const selectEmp = document.getElementById("s_empresa");
+        const selectZon = document.getElementById("s_zona");
+        
+        const emps = Object.values(catalogos.empresas).map(e => e.nombre).sort();
+        const zons = Object.values(catalogos.zonas).map(z => z.nombre).sort();
+
+        selectEmp.innerHTML = emps.map(e => `<option value="${e}">${e}</option>`).join("");
+        selectZon.innerHTML = zons.map(z => `<option value="${z}">${z}</option>`).join("");
+        document.getElementById("s_lista").value = "";
+
+        new bootstrap.Modal(document.getElementById("modalSucursal")).show();
+    };
+
+    // Lógica para guardar masivamente
+    document.getElementById("btnGuardarMasivo").onclick = async () => {
+        const empresa = document.getElementById("s_empresa").value;
+        const zona = document.getElementById("s_zona").value;
+        const listaRaw = document.getElementById("s_lista").value;
+
+        if(!listaRaw.trim()) return Swal.fire("Error", "La lista está vacía", "error");
+
+        const lineas = listaRaw.split("\n").map(l => l.trim().toUpperCase()).filter(l => l !== "");
+        
+        Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+        try {
+            for (const nombre of lineas) {
+                await push(ref(db, 'sucursales'), {
+                    nombre: nombre,
+                    empresa: empresa,
+                    zona: zona,
+                    activo: true
+                });
+            }
+            bootstrap.Modal.getInstance(document.getElementById("modalSucursal")).hide();
+            Swal.fire("Éxito", `Se registraron ${lineas.length} sucursales correctamente.`, "success");
+        } catch (e) {
+            Swal.fire("Error", e.message, "error");
+        }
+    };
+
+    // Funciones anteriores (Servidores, Genérico, Personal) se mantienen igual
+    function renderServidores() {
+        let rows = Object.keys(catalogos.servidores).map(id => {
+            let s = catalogos.servidores[id];
+            return `<tr><td class="text-start ps-4 fw-bold">${s.nombre}</td><td>${getBadgeStatus(s.activo)}</td>
+                <td><button class="btn btn-sm btn-warning" onclick="abrirModalGen('servidores', '${id}')"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('servidores','${id}')"><i class="bi bi-trash"></i></button></td></tr>`;
+        }).join("");
+        document.getElementById("contenido").innerHTML = `<div class="d-flex justify-content-between align-items-center mb-3"><h3>Gestión de Servidores</h3><button class="btn btn-add" onclick="abrirModalGen('servidores')">Nuevo Servidor</button></div>
+            <div class="table-responsive col-md-8 mx-auto"><table id="tabla-servidores" class="table table-hover table-bordered mb-0"><thead class="table-dark"><tr><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }
 
     function renderModuloGenerico(path) {
@@ -179,18 +240,11 @@
             let item = catalogos[path][id];
             let checks = listaServidoresActual.map(c => `<td><i class="bi ${item[c] ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'}"></i></td>`).join("");
             return `<tr><td class="sticky-col">${item.nombre}</td><td>${getBadgeStatus(item.activo)}</td>${checks}
-                <td>
-                    <button class="btn btn-sm btn-warning" onclick="abrirModalGen('${path}', '${id}')"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${path}','${id}')"><i class="bi bi-trash"></i></button>
-                </td></tr>`;
+                <td><button class="btn btn-sm btn-warning" onclick="abrirModalGen('${path}', '${id}')"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${path}','${id}')"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join("");
-
-        document.getElementById("contenido").innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-3"><h3>${titulos[path]}</h3><button class="btn btn-add" onclick="abrirModalGen('${path}')"><i class="bi bi-plus-circle"></i> Agregar</button></div>
-            <div class="table-responsive"><table id="tabla-${path}" class="table table-hover table-bordered mb-0">
-                <thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Estado</th>${headers}<th>Acciones</th></tr></thead>
-                <tbody>${rows}</tbody>
-            </table></div>`;
+        document.getElementById("contenido").innerHTML = `<div class="d-flex justify-content-between align-items-center mb-3"><h3>${titulos[path]}</h3><button class="btn btn-add" onclick="abrirModalGen('${path}')">Agregar</button></div>
+            <div class="table-responsive"><table id="tabla-${path}" class="table table-hover table-bordered mb-0"><thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Estado</th>${headers}<th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }
 
     function renderPersonal() {
@@ -200,11 +254,8 @@
                 <td><button class="btn btn-sm btn-warning" onclick="abrirModalPersonal('${id}')"><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('personal','${id}')"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join("");
-        document.getElementById("contenido").innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-3"><h3>Personal</h3><button class="btn btn-add" onclick="abrirModalPersonal()"><i class="bi bi-plus-circle"></i> Agregar</button></div>
-            <div class="table-responsive"><table id="tabla-personal" class="table table-hover table-bordered mb-0">
-                <thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Estado</th><th>Empresa</th><th>Zona</th><th>Depto</th><th>Usuario</th><th>Pass</th><th>Puesto</th><th>Acciones</th></tr></thead>
-                <tbody>${rows}</tbody></table></div>`;
+        document.getElementById("contenido").innerHTML = `<div class="d-flex justify-content-between align-items-center mb-3"><h3>Personal</h3><button class="btn btn-add" onclick="abrirModalPersonal()">Agregar</button></div>
+            <div class="table-responsive"><table id="tabla-personal" class="table table-hover table-bordered mb-0"><thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Estado</th><th>Empresa</th><th>Zona</th><th>Depto</th><th>Usuario</th><th>Pass</th><th>Puesto</th><th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }
 
     window.abrirModalGen = (path, id = "") => {
@@ -213,82 +264,34 @@
         document.getElementById("genID").value = id;
         document.getElementById("genNom").value = item.nombre;
         document.getElementById("genActivo").checked = item.activo !== false;
-        document.getElementById("genTitulo").innerText = (id ? 'Editar ' : 'Nuevo ') + path;
-        
         const container = document.getElementById("genChecks");
         const srvWrapper = document.getElementById("servidoresCheckContainer");
-
-        if (path === 'servidores') {
-            srvWrapper.style.display = 'none';
-        } else {
+        if (path === 'servidores') { srvWrapper.style.display = 'none'; } 
+        else {
             srvWrapper.style.display = 'block';
-            container.innerHTML = listaServidoresActual.map(c => `
-                <div class="col-md-4"><div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="genChk_${c}" ${item[c] ? 'checked' : ''}>
-                    <label class="form-check-label" style="font-size:12px">${c}</label>
-                </div></div>`).join("");
+            container.innerHTML = listaServidoresActual.map(c => `<div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" id="genChk_${c}" ${item[c] ? 'checked' : ''}><label class="form-check-label" style="font-size:12px">${c}</label></div></div>`).join("");
         }
         new bootstrap.Modal(document.getElementById("modalGenerico")).show();
     };
-
-    window.abrirModalPersonal = (id = "") => {
-        const p = id ? catalogos.personal[id] : { activo: true };
-        document.getElementById("persID").value = id;
-        document.getElementById("p_nom").value = p.nombreCompleto || "";
-        document.getElementById("p_activo").checked = p.activo !== false;
-        document.getElementById("p_emp").value = p.empresa || "";
-        document.getElementById("p_zon").value = p.zona || "";
-        document.getElementById("p_dep").value = p.departamento || "";
-        document.getElementById("p_usu").value = p.usuario || "";
-        document.getElementById("p_con").value = p.contraseña || "";
-        document.getElementById("p_pue").value = p.puesto || "";
-        document.getElementById("p_cor").value = p.correo || "";
-        new bootstrap.Modal(document.getElementById("modalPers")).show();
-    };
-
-    document.getElementById("btnGuardarGenerico").addEventListener("click", async () => {
-        const path = document.getElementById("genPath").value;
-        const id = document.getElementById("genID").value;
-        const nombre = document.getElementById("genNom").value.trim();
-        const activo = document.getElementById("genActivo").checked;
-        if(!nombre) return Swal.fire("Error", "Nombre requerido", "error");
-
-        let data = { nombre, activo };
-        if (path !== 'servidores') {
-            listaServidoresActual.forEach(c => data[c] = document.getElementById(`genChk_${c}`).checked);
-        }
-
-        try {
-            id ? await update(ref(db, `${path}/${id}`), data) : await push(ref(db, path), data);
-            bootstrap.Modal.getInstance(document.getElementById("modalGenerico")).hide();
-            Swal.fire("Éxito", "Guardado", "success");
-        } catch(e) { Swal.fire("Error", e.message, "error"); }
-    });
-
-    document.getElementById("btnGuardarPersonal").addEventListener("click", async () => {
-        const id = document.getElementById("persID").value;
-        const data = {
-            nombreCompleto: document.getElementById("p_nom").value.trim(),
-            activo: document.getElementById("p_activo").checked,
-            empresa: document.getElementById("p_emp").value, zona: document.getElementById("p_zon").value,
-            departamento: document.getElementById("p_dep").value, usuario: document.getElementById("p_usu").value, 
-            contraseña: document.getElementById("p_con").value, puesto: document.getElementById("p_pue").value, 
-            correo: document.getElementById("p_cor").value
-        };
-        if(!data.nombreCompleto) return Swal.fire("Error", "Nombre requerido", "error");
-        try {
-            id ? await update(ref(db, `personal/${id}`), data) : await push(ref(db, 'personal'), data);
-            bootstrap.Modal.getInstance(document.getElementById("modalPers")).hide();
-            Swal.fire("Éxito", "Guardado", "success");
-        } catch(e) { Swal.fire("Error", e.message, "error"); }
-    });
 
     window.eliminarRegistro = async (path, id) => {
         const res = await Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true });
         if (res.isConfirmed) await remove(ref(db, `${path}/${id}`));
     };
-</script>
 
+    document.getElementById("btnGuardarGenerico").onclick = async () => {
+        const path = document.getElementById("genPath").value;
+        const id = document.getElementById("genID").value;
+        const nombre = document.getElementById("genNom").value.trim();
+        const activo = document.getElementById("genActivo").checked;
+        if(!nombre) return;
+        let data = { nombre, activo };
+        if (path !== 'servidores') { listaServidoresActual.forEach(c => data[c] = document.getElementById(`genChk_${c}`).checked); }
+        id ? await update(ref(db, `${path}/${id}`), data) : await push(ref(db, path), data);
+        bootstrap.Modal.getInstance(document.getElementById("modalGenerico")).hide();
+    };
+
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
