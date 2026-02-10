@@ -21,7 +21,7 @@
         .btn-add { background: #0f172a; color: white; border: none; }
         .btn-add:hover { background: #1e293b; color: white; }
         .badge-status { font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; }
-        textarea { text-transform: uppercase; }
+        textarea { text-transform: uppercase; font-family: monospace; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -42,7 +42,8 @@
         <hr class="mx-3 opacity-25">
         <a onclick="cargar('personal')"><i class="bi bi-people"></i> Personal</a>
     </div>
-   <div class="flex-grow-1 content">
+
+    <div class="flex-grow-1 content">
         <div id="contenido">
             <div class="text-center mt-5">
                 <i class="bi bi-arrow-left-circle display-1 text-muted"></i>
@@ -52,6 +53,7 @@
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="modalSucursal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -72,16 +74,18 @@
                     <div class="col-12">
                         <label class="form-label fw-bold text-primary">Lista de Sucursales (Pega aquí la lista)</label>
                         <textarea id="s_lista" class="form-control" rows="10" placeholder="NOMBRE SUCURSAL 1&#10;NOMBRE SUCURSAL 2&#10;NOMBRE SUCURSAL 3"></textarea>
-                        <small class="text-muted">Un nombre por cada renglón.</small>
+                        <small class="text-muted">Un nombre por cada renglón. Se guardarán automáticamente con la empresa y zona seleccionada.</small>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary w-100" id="btnGuardarMasivo">Guardar Información</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary px-5" id="btnGuardarMasivo">Guardar Información</button>
             </div>
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="modalGenerico" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -95,28 +99,27 @@
                 <div class="row mb-3">
                     <div class="col-md-8">
                         <label class="form-label fw-bold">Nombre / Descripción</label>
-                        <input type="text" id="genNom" class="form-control" placeholder="Ej. Registro ABC">
+                        <input type="text" id="genNom" class="form-control">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Estado del Registro</label>
+                        <label class="form-label fw-bold">Estado</label>
                         <div class="form-check form-switch mt-2">
                             <input class="form-check-input" type="checkbox" id="genActivo" checked>
-                            <label class="form-check-label" for="genActivo">¿Está Activo?</label>
                         </div>
                     </div>
                 </div>
                 <div id="servidoresCheckContainer">
-                    <hr>
-                    <label class="form-label fw-bold mb-3">Asociar a Servidores:</label>
+                    <hr><label class="form-label fw-bold">Servidores:</label>
                     <div class="row g-2" id="genChecks"></div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary px-4" id="btnGuardarGenerico">Guardar Datos</button>
+                <button class="btn btn-primary" id="btnGuardarGenerico">Guardar</button>
             </div>
         </div>
     </div>
 </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -128,6 +131,7 @@
     let listaServidoresActual = [];
     let catalogos = { servidores: {}, empresas: {}, zonas: {}, sucursales: {}, estados: {}, tipos: {}, perfiles: {}, unidades: {}, programas: {}, personal: {} };
 
+    // Escucha de datos
     Object.keys(catalogos).forEach(path => {
         onValue(ref(db, path), (snap) => {
             catalogos[path] = snap.val() || {};
@@ -138,22 +142,26 @@
             if (tablaActiva === path) window.cargar(path);
         });
     });
+
     const getBadgeStatus = (activo) => activo ? 
         '<span class="badge bg-success badge-status"><i class="bi bi-check-circle"></i> Activo</span>' : 
         '<span class="badge bg-danger badge-status"><i class="bi bi-x-circle"></i> Inactivo</span>';
+
+    // Funciones Globales
     window.cargar = (path) => {
         if (path === 'personal') return renderPersonal();
         if (path === 'servidores') return renderServidores();
         if (path === 'sucursales') return renderSucursales();
         renderModuloGenerico(path);
     };
+
     function renderSucursales() {
         let rows = Object.keys(catalogos.sucursales).map(id => {
             let s = catalogos.sucursales[id];
             return `<tr>
                 <td class="sticky-col">${s.nombre}</td>
-                <td>${s.empresa}</td>
-                <td>${s.zona}</td>
+                <td>${s.empresa || 'N/A'}</td>
+                <td>${s.zona || 'N/A'}</td>
                 <td><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('sucursales','${id}')"><i class="bi bi-trash"></i></button></td>
             </tr>`;
         }).join("");
@@ -170,7 +178,7 @@
                 </table>
             </div>`;
     }
-    // Modal para Sucursales
+
     window.abrirModalSucursales = () => {
         const selectEmp = document.getElementById("s_empresa");
         const selectZon = document.getElementById("s_zona");
@@ -182,36 +190,54 @@
         selectZon.innerHTML = zons.map(z => `<option value="${z}">${z}</option>`).join("");
         document.getElementById("s_lista").value = "";
 
-        new bootstrap.Modal(document.getElementById("modalSucursal")).show();
+        const modal = new bootstrap.Modal(document.getElementById("modalSucursal"));
+        modal.show();
     };
-    // Lógica para guardar masivamente
-    document.getElementById("btnGuardarMasivo").onclick = async () => {
+
+    // --- LÓGICA DE GUARDADO MASIVO ---
+    document.getElementById("btnGuardarMasivo").addEventListener("click", async () => {
         const empresa = document.getElementById("s_empresa").value;
         const zona = document.getElementById("s_zona").value;
-        const listaRaw = document.getElementById("s_lista").value;
+        const textoLista = document.getElementById("s_lista").value;
 
-        if(!listaRaw.trim()) return Swal.fire("Error", "La lista está vacía", "error");
+        if(!textoLista.trim()) {
+            return Swal.fire("Atención", "Por favor pega una lista de sucursales", "warning");
+        }
 
-        const lineas = listaRaw.split("\n").map(l => l.trim().toUpperCase()).filter(l => l !== "");
-        
-        Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        // Limpiar la lista: separar por saltos de línea, quitar espacios y omitir vacíos
+        const nombres = textoLista.split(/\r?\n/)
+                            .map(n => n.trim().toUpperCase())
+                            .filter(n => n.length > 0);
+
+        Swal.fire({
+            title: 'Registrando sucursales',
+            text: `Procesando ${nombres.length} registros...`,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
         try {
-            for (const nombre of lineas) {
-                await push(ref(db, 'sucursales'), {
+            const promesas = nombres.map(nombre => {
+                return push(ref(db, 'sucursales'), {
                     nombre: nombre,
                     empresa: empresa,
                     zona: zona,
-                    activo: true
+                    activo: true,
+                    fecha_registro: new Date().toISOString()
                 });
-            }
-            bootstrap.Modal.getInstance(document.getElementById("modalSucursal")).hide();
-            Swal.fire("Éxito", `Se registraron ${lineas.length} sucursales correctamente.`, "success");
-        } catch (e) {
-            Swal.fire("Error", e.message, "error");
-        }
-    };
+            });
 
-    // Funciones anteriores (Servidores, Genérico, Personal) se mantienen igual
+            await Promise.all(promesas);
+            
+            bootstrap.Modal.getInstance(document.getElementById("modalSucursal")).hide();
+            Swal.fire("¡Éxito!", `Se han registrado ${nombres.length} sucursales.`, "success");
+        } catch (error) {
+            console.error(error);
+            Swal.fire("Error", "No se pudieron guardar los datos", "error");
+        }
+    });
+
+    // Renderizadores estándar
     function renderServidores() {
         let rows = Object.keys(catalogos.servidores).map(id => {
             let s = catalogos.servidores[id];
@@ -219,63 +245,40 @@
                 <td><button class="btn btn-sm btn-warning" onclick="abrirModalGen('servidores', '${id}')"><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('servidores','${id}')"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join("");
-        document.getElementById("contenido").innerHTML = `<div class="d-flex justify-content-between align-items-center mb-3"><h3>Gestión de Servidores</h3><button class="btn btn-add" onclick="abrirModalGen('servidores')">Nuevo Servidor</button></div>
-            <div class="table-responsive col-md-8 mx-auto"><table id="tabla-servidores" class="table table-hover table-bordered mb-0"><thead class="table-dark"><tr><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+        document.getElementById("contenido").innerHTML = `<h3>Servidores</h3><div class="table-responsive"><table id="tabla-servidores" class="table table-hover table-bordered"><tbody>${rows}</tbody></table></div>`;
     }
+
     function renderModuloGenerico(path) {
-        const titulos = { empresas: 'Empresas', zonas: 'Zonas', estados: 'Estados', tipos: 'Tipos', perfiles: 'Perfiles', unidades: 'Unidades', programas: 'Inicia Programa' };
-        let headers = listaServidoresActual.map(c => `<th>${c}</th>`).join("");
         let rows = Object.keys(catalogos[path]).map(id => {
             let item = catalogos[path][id];
-            let checks = listaServidoresActual.map(c => `<td><i class="bi ${item[c] ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'}"></i></td>`).join("");
-            return `<tr><td class="sticky-col">${item.nombre}</td><td>${getBadgeStatus(item.activo)}</td>${checks}
-                <td><button class="btn btn-sm btn-warning" onclick="abrirModalGen('${path}', '${id}')"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${path}','${id}')"><i class="bi bi-trash"></i></button></td></tr>`;
+            return `<tr><td class="sticky-col">${item.nombre}</td><td>${getBadgeStatus(item.activo)}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${path}','${id}')"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join("");
-        document.getElementById("contenido").innerHTML = `<div class="d-flex justify-content-between align-items-center mb-3"><h3>${titulos[path]}</h3><button class="btn btn-add" onclick="abrirModalGen('${path}')">Agregar</button></div>
-            <div class="table-responsive"><table id="tabla-${path}" class="table table-hover table-bordered mb-0"><thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Estado</th>${headers}<th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+        document.getElementById("contenido").innerHTML = `<h3>${path.toUpperCase()}</h3><div class="table-responsive"><table id="tabla-${path}" class="table table-hover table-bordered"><tbody>${rows}</tbody></table></div>`;
     }
 
     function renderPersonal() {
         let rows = Object.keys(catalogos.personal).map(id => {
             let p = catalogos.personal[id];
-            return `<tr><td class="sticky-col">${p.nombreCompleto}</td><td>${getBadgeStatus(p.activo)}</td><td>${p.empresa}</td><td>${p.zona}</td><td>${p.departamento}</td><td>${p.usuario}</td><td>***</td><td>${p.puesto}</td>
-                <td><button class="btn btn-sm btn-warning" onclick="abrirModalPersonal('${id}')"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('personal','${id}')"><i class="bi bi-trash"></i></button></td></tr>`;
+            return `<tr><td class="sticky-col">${p.nombreCompleto}</td><td>${p.empresa}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('personal','${id}')"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join("");
-        document.getElementById("contenido").innerHTML = `<div class="d-flex justify-content-between align-items-center mb-3"><h3>Personal</h3><button class="btn btn-add" onclick="abrirModalPersonal()">Agregar</button></div>
-            <div class="table-responsive"><table id="tabla-personal" class="table table-hover table-bordered mb-0"><thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Estado</th><th>Empresa</th><th>Zona</th><th>Depto</th><th>Usuario</th><th>Pass</th><th>Puesto</th><th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+        document.getElementById("contenido").innerHTML = `<h3>Personal</h3><div class="table-responsive"><table id="tabla-personal" class="table table-hover table-bordered"><tbody>${rows}</tbody></table></div>`;
     }
+
+    window.eliminarRegistro = async (path, id) => {
+        const res = await Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true });
+        if (res.isConfirmed) await remove(ref(db, `${path}/${id}`));
+    };
+
     window.abrirModalGen = (path, id = "") => {
         const item = id ? catalogos[path][id] : { nombre: "", activo: true };
         document.getElementById("genPath").value = path;
         document.getElementById("genID").value = id;
         document.getElementById("genNom").value = item.nombre;
-        document.getElementById("genActivo").checked = item.activo !== false;
-        const container = document.getElementById("genChecks");
-        const srvWrapper = document.getElementById("servidoresCheckContainer");
-        if (path === 'servidores') { srvWrapper.style.display = 'none'; } 
-        else {
-            srvWrapper.style.display = 'block';
-            container.innerHTML = listaServidoresActual.map(c => `<div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" id="genChk_${c}" ${item[c] ? 'checked' : ''}><label class="form-check-label" style="font-size:12px">${c}</label></div></div>`).join("");
-        }
         new bootstrap.Modal(document.getElementById("modalGenerico")).show();
     };
-    window.eliminarRegistro = async (path, id) => {
-        const res = await Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true });
-        if (res.isConfirmed) await remove(ref(db, `${path}/${id}`));
-    };
-    document.getElementById("btnGuardarGenerico").onclick = async () => {
-        const path = document.getElementById("genPath").value;
-        const id = document.getElementById("genID").value;
-        const nombre = document.getElementById("genNom").value.trim();
-        const activo = document.getElementById("genActivo").checked;
-        if(!nombre) return;
-        let data = { nombre, activo };
-        if (path !== 'servidores') { listaServidoresActual.forEach(c => data[c] = document.getElementById(`genChk_${c}`).checked); }
-        id ? await update(ref(db, `${path}/${id}`), data) : await push(ref(db, path), data);
-        bootstrap.Modal.getInstance(document.getElementById("modalGenerico")).hide();
-    };
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
