@@ -60,19 +60,19 @@
                 <input type="hidden" id="genID">
                 <input type="hidden" id="genPath">
                 
+                <div id="genToggleMasivo" class="form-check form-switch mb-3 d-none">
+                    <input class="form-check-input" type="checkbox" id="chkMasivo">
+                    <label class="form-check-label fw-bold">Activar Carga Masiva (Copiar de Excel/Lista)</label>
+                </div>
+
                 <div id="secIndividual">
                     <label class="form-label fw-bold">Nombre / Descripción</label>
-                    <input type="text" id="genNom" class="form-control mb-3" placeholder="Ej. GROMA-01">
+                    <input type="text" id="genNom" class="form-control mb-3" placeholder="Ej. DATO-01">
                 </div>
 
                 <div id="secMasiva" class="d-none">
-                    <div class="alert alert-info py-2 small"><i class="bi bi-info-circle"></i> Pega una lista de servidores (uno por renglón) desde tu archivo.</div>
-                    <textarea id="genMasivo" class="form-control mb-3" rows="8" placeholder="SERVIDOR 1&#10;SERVIDOR 2&#10;SERVIDOR 3"></textarea>
-                </div>
-
-                <div id="genToggleMasivo" class="form-check form-switch mb-3 d-none">
-                    <input class="form-check-input" type="checkbox" id="chkMasivo">
-                    <label class="form-check-label fw-bold">Activar Carga Masiva</label>
+                    <div class="alert alert-warning py-2 small"><i class="bi bi-info-circle"></i> Pega tu lista (un elemento por renglón). Nota: Se guardarán sin activaciones iniciales.</div>
+                    <textarea id="genMasivo" class="form-control mb-3" rows="10" placeholder="NOMBRE 1&#10;NOMBRE 2&#10;NOMBRE 3"></textarea>
                 </div>
 
                 <div class="row g-2" id="genChecks"></div>
@@ -148,7 +148,7 @@
         document.getElementById("contenido").innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3><i class="bi bi-hdd-stack"></i> Gestión de Servidores</h3>
-                <button class="btn btn-add" onclick="abrirModalGen('servidores')"><i class="bi bi-plus-circle"></i> Nuevo Servidor</button>
+                <button class="btn btn-add" onclick="abrirModalGen('servidores')"><i class="bi bi-plus-circle"></i> Agregar</button>
             </div>
             <div class="table-responsive col-md-6 mx-auto"><table id="tabla-servidores" class="table table-hover table-bordered mb-0">
                 <thead class="table-dark"><tr><th class="text-start ps-4">Nombre del Servidor</th><th>Acciones</th></tr></thead>
@@ -189,11 +189,10 @@
         document.getElementById("contenido").innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-3"><h3>Personal</h3><button class="btn btn-add" onclick="abrirModalPersonal()"><i class="bi bi-plus-circle"></i> Agregar</button></div>
             <div class="table-responsive"><table id="tabla-personal" class="table table-hover table-bordered mb-0">
-                <thead class="table-dark"><tr><th class="sticky-col">Empresas</th><th>Empresa</th><th>Zona</th><th>Depto</th><th>Usuario</th><th>Pass</th><th>Puesto</th><th>Correo</th><th>Acciones</th></tr></thead>
+                <thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Empresa</th><th>Zona</th><th>Depto</th><th>Usuario</th><th>Pass</th><th>Puesto</th><th>Correo</th><th>Acciones</th></tr></thead>
                 <tbody>${rows}</tbody></table></div>`;
     }
 
-    // LÓGICA DEL MODAL CON CARGA MASIVA
     window.abrirModalGen = (path, id = "") => {
         const item = id ? catalogos[path][id] : { nombre: "" };
         document.getElementById("genPath").value = path;
@@ -201,23 +200,26 @@
         document.getElementById("genNom").value = item.nombre;
         document.getElementById("genTitulo").innerText = (id ? 'Editar ' : 'Nuevo ') + (path === 'servidores' ? 'Servidor' : path.slice(0,-1));
         
-        // Reset de carga masiva
+        // Carga Masiva Reset
         const chkMasivo = document.getElementById("chkMasivo");
         chkMasivo.checked = false;
         document.getElementById("secMasiva").classList.add("d-none");
         document.getElementById("secIndividual").classList.remove("d-none");
         document.getElementById("genMasivo").value = "";
 
-        const container = document.getElementById("genChecks");
         const toggleMasivo = document.getElementById("genToggleMasivo");
+        const container = document.getElementById("genChecks");
+
+        // Habilitar carga masiva para todos excepto personal y empresas (aunque empresas podrías si quisieras)
+        if (!id && path !== 'personal' && path !== 'empresas') {
+            toggleMasivo.classList.remove("d-none");
+        } else {
+            toggleMasivo.classList.add("d-none");
+        }
 
         if (path === 'servidores') {
             container.innerHTML = "";
-            // Mostrar opción de masiva solo si es nuevo registro
-            if(!id) toggleMasivo.classList.remove("d-none");
-            else toggleMasivo.classList.add("d-none");
         } else {
-            toggleMasivo.classList.add("d-none");
             container.innerHTML = listaServidoresActual.map(c => `
                 <div class="col-md-4"><div class="form-check">
                     <input class="form-check-input" type="checkbox" id="genChk_${c}" ${item[c] ? 'checked' : ''}>
@@ -227,14 +229,18 @@
         new bootstrap.Modal(document.getElementById("modalGenerico")).show();
     };
 
-    // Toggle para Carga Masiva
     document.getElementById("chkMasivo").addEventListener("change", (e) => {
+        const masiva = document.getElementById("secMasiva");
+        const individual = document.getElementById("secIndividual");
+        const checks = document.getElementById("genChecks");
         if(e.target.checked) {
-            document.getElementById("secIndividual").classList.add("d-none");
-            document.getElementById("secMasiva").classList.remove("d-none");
+            masiva.classList.remove("d-none");
+            individual.classList.add("d-none");
+            checks.classList.add("d-none");
         } else {
-            document.getElementById("secIndividual").classList.remove("d-none");
-            document.getElementById("secMasiva").classList.add("d-none");
+            masiva.classList.add("d-none");
+            individual.classList.remove("d-none");
+            checks.classList.remove("d-none");
         }
     });
 
@@ -244,21 +250,22 @@
         const isMasivo = document.getElementById("chkMasivo").checked;
         
         try {
-            if (path === 'servidores' && isMasivo) {
+            if (isMasivo) {
                 const texto = document.getElementById("genMasivo").value.trim();
                 if(!texto) return Swal.fire("Error", "No hay datos para cargar", "error");
-                
                 const lineas = texto.split(/\r?\n/).map(l => l.trim()).filter(l => l !== "");
                 
-                // Carga secuencial
                 for (let nombre of lineas) {
-                    await push(ref(db, path), { nombre: nombre.toUpperCase() });
+                    let data = { nombre: nombre.toUpperCase() };
+                    // En carga masiva de otros módulos, se guardan todos los checks en falso por defecto
+                    if (path !== 'servidores') {
+                        listaServidoresActual.forEach(c => data[c] = false);
+                    }
+                    await push(ref(db, path), data);
                 }
             } else {
-                // Proceso normal (Individual)
                 const nombre = document.getElementById("genNom").value.trim();
                 if(!nombre) return Swal.fire("Error", "Nombre requerido", "error");
-                
                 let data = { nombre: nombre.toUpperCase() };
                 if (path !== 'servidores') {
                     listaServidoresActual.forEach(c => data[c] = document.getElementById(`genChk_${c}`).checked);
@@ -267,13 +274,13 @@
             }
 
             bootstrap.Modal.getInstance(document.getElementById("modalGenerico")).hide();
-            Swal.fire("Éxito", "Operación finalizada correctamente", "success");
+            Swal.fire("Éxito", "Datos procesados correctamente", "success");
         } catch(e) { Swal.fire("Error", e.message, "error"); }
     });
 
-    // Guardado de Personal y Eliminar (Sin cambios)
+    // Código de Personal y Eliminar (Sin cambios)
     document.getElementById("btnGuardarPersonal").addEventListener("click", async () => {
-       const id = document.getElementById("persID").value;
+        const id = document.getElementById("persID").value;
         const data = {
             empresa: document.getElementById("p_emp").value, zona: document.getElementById("p_zon").value,
             departamento: document.getElementById("p_dep").value, nombreCompleto: document.getElementById("p_nom").value.trim(),
