@@ -2,163 +2,189 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Control de Empresas - Matriz</title>
+    <title>Catálogos Administrativos - Empresas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root { --dark: #0f172a; --accent: #38bdf8; --orange-header: #ffb100; }
-        body { background: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
+        :root { --dark: #0f172a; --accent: #38bdf8; --orange-excel: #ffb100; }
+        body { background: #f1f5f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
         
-        .main-content { padding: 20px; transition: all 0.3s; }
-        .table-container { 
-            background: white; 
-            border-radius: 8px; 
-            padding: 0; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            overflow: hidden;
+        /* Estilos Sidebar Original */
+        .sidebar { 
+            width: 240px; 
+            min-height: 100vh; 
+            background: var(--dark); 
+            color: white; 
+            position: fixed; 
+            z-index: 1000; 
+            transition: all 0.3s;
+            left: 0;
         }
+        .sidebar a { color: #94a3b8; text-decoration: none; padding: 12px 20px; display: block; transition: 0.3s; cursor: pointer; font-size: 0.9rem; }
+        .sidebar a:hover { background: #1e293b; color: var(--accent); }
+        .sidebar a.active { color: white; border-left: 4px solid var(--accent); background: #1e293b; }
+        
+        .main-content { margin-left: 240px; padding: 20px; transition: all 0.3s; }
 
-        /* Estilo similar a la imagen */
-        .header-orange {
-            background-color: var(--orange-header);
-            color: black;
-            font-weight: bold;
-            text-align: center;
-            padding: 5px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        .table-matriz { margin-bottom: 0; }
-        .table-matriz th { 
-            background: #eeeeee !important; 
-            font-size: 0.65rem; 
-            border: 1px solid #dee2e6;
-            vertical-align: middle;
-            text-align: center;
-            min-width: 100px;
-        }
-        .table-matriz td { 
-            border: 1px solid #dee2e6; 
+        /* Estilos Tabla Matriz */
+        .table-container { background: white; border-radius: 12px; padding: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
+        .header-empresa { background: var(--orange-excel); color: black; font-weight: bold; text-align: center; padding: 8px; font-size: 0.85rem; }
+        
+        .table-matriz { margin-bottom: 0; font-size: 0.8rem; }
+        .table-matriz thead th { 
+            background: #f8fafc !important; 
             text-align: center; 
-            padding: 4px;
-            font-size: 0.75rem;
+            vertical-align: middle; 
+            border: 1px solid #e2e8f0;
+            min-width: 120px;
+            padding: 10px;
         }
+        .table-matriz td { border: 1px solid #e2e8f0; text-align: center; vertical-align: middle; padding: 5px; }
+        
         .sticky-col { 
             position: sticky; 
             left: 0; 
-            background: #f8fafc !important; 
+            background: white !important; 
             font-weight: bold; 
-            z-index: 2;
-            min-width: 150px !important;
+            z-index: 10; 
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            text-align: left !important;
+            padding-left: 15px !important;
         }
-        
-        .form-check-input { cursor: pointer; width: 1.2em; height: 1.2em; }
-        .form-check-input:checked { background-color: #198754; border-color: #198754; }
+
+        .form-check-input { width: 1.25em; height: 1.25em; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .sidebar { left: -240px; }
+            .sidebar.active { left: 0; }
+            .main-content { margin-left: 0; }
+        }
     </style>
 </head>
 <body>
 
-<div class="main-content">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold m-0"><i class="bi bi-building me-2"></i>MATRIZ DE EMPRESAS</h4>
-        <div>
-            <button class="btn btn-sm btn-outline-dark" onclick="addCol()"><i class="bi bi-plus-lg"></i> Añadir Empresa</button>
-        </div>
+<div class="sidebar" id="sidebar">
+    <div class="text-center py-4 border-bottom border-secondary mb-2">
+        <h6 class="mb-0 fw-bold text-white">SISTEMA CONTROL</h6>
+    </div>
+    <a class="active"><i class="bi bi-building me-2"></i> Matriz Empresas</a>
+</div>
+
+<div class="main-content" id="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold m-0 text-dark">GESTIÓN DE ACTIVACIONES</h4>
+        <button class="btn btn-dark btn-sm" onclick="addNewEmpresa()">
+            <i class="bi bi-plus-lg me-1"></i> Nueva Columna
+        </button>
     </div>
 
     <div class="table-container">
-        <div class="header-orange">EMPRESA</div>
+        <div class="header-empresa">EMPRESA</div>
         <div class="table-responsive">
-            <table class="table table-sm table-matriz table-hover">
-                <thead id="thead-empresas">
+            <table class="table table-hover table-matriz">
+                <thead id="headMatriz">
                     </thead>
-                <tbody id="tbody-parametros">
+                <tbody id="bodyMatriz">
                     </tbody>
             </table>
         </div>
     </div>
-    <p class="text-muted mt-2 small">* Los cambios se guardan automáticamente al marcar/desmarcar.</p>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const config = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const db = getDatabase(initializeApp(config));
 
-    // Lista de parámetros fija según tu imagen
+    // Parámetros basados en tu imagen
     const PARAMETROS = [
         "FRANQUICIA", "ACF", "GR", "OMA", "P57", "PINGOL", "PINPJ", "PPJ", "PUMO", "SERMID", "PASO PAINT"
     ];
 
-    let empresas = {};
+    let dataEmpresas = {};
 
-    // Escuchar cambios en Firebase
-    onValue(ref(db, 'empresas_matriz'), (snapshot) => {
-        empresas = snapshot.val() || {};
+    // Escuchar datos de Firebase
+    onValue(ref(db, 'matriz_empresas'), (snapshot) => {
+        dataEmpresas = snapshot.val() || {};
         renderMatriz();
     });
 
     function renderMatriz() {
-        const thead = document.getElementById("thead-empresas");
-        const tbody = document.getElementById("tbody-parametros");
-        const empKeys = Object.keys(empresas);
+        const head = document.getElementById("headMatriz");
+        const body = document.getElementById("bodyMatriz");
+        const keys = Object.keys(dataEmpresas);
 
-        // Render Encabezados
-        let headHtml = `<tr><th class="sticky-col">PARÁMETRO / EMPRESA</th>`;
-        empKeys.forEach(key => {
-            headHtml += `<th>${empresas[key].nombre}</th>`;
+        // Renderizar Cabecera
+        let headHtml = `<tr><th class="sticky-col">CATEGORÍA / ETIQUETA</th>`;
+        keys.forEach(key => {
+            headHtml += `
+                <th>
+                    <div class="d-flex flex-column align-items-center">
+                        <span class="mb-1">${dataEmpresas[key].nombre}</span>
+                        <button class="btn btn-link btn-sm text-danger p-0" onclick="deleteEmpresa('${key}')" style="font-size: 0.7rem;">Eliminar</button>
+                    </div>
+                </th>`;
         });
         headHtml += `</tr>`;
-        thead.innerHTML = headHtml;
+        head.innerHTML = headHtml;
 
-        // Render Filas
+        // Renderizar Filas
         let bodyHtml = "";
         PARAMETROS.forEach(param => {
-            bodyHtml += `<tr><td class="sticky-col text-start">${param}</td>`;
-            empKeys.forEach(empId => {
-                const isActive = empresas[empId].activos && empresas[empId].activos[param];
+            bodyHtml += `<tr><td class="sticky-col">${param}</td>`;
+            keys.forEach(empId => {
+                const checked = dataEmpresas[empId].activos?.[param] ? 'checked' : '';
                 bodyHtml += `
                     <td>
-                        <input class="form-check-input" type="checkbox" 
-                            ${isActive ? 'checked' : ''} 
-                            onchange="toggleParam('${empId}', '${param}', this.checked)">
+                        <div class="form-check d-flex justify-content-center">
+                            <input class="form-check-input" type="checkbox" ${checked} 
+                                onchange="toggleCheck('${empId}', '${param}', this.checked)">
+                        </div>
                     </td>`;
             });
             bodyHtml += `</tr>`;
         });
-        tbody.innerHTML = bodyHtml;
+        body.innerHTML = bodyHtml;
     }
 
-    // Guardar estado del checkbox
-    window.toggleParam = (empId, param, value) => {
-        const updates = {};
-        updates[`/empresas_matriz/${empId}/activos/${param}`] = value;
-        update(ref(db), updates);
+    // Funciones globales para los eventos onchange/onclick
+    window.toggleCheck = (empId, param, status) => {
+        update(ref(db, `matriz_empresas/${empId}/activos`), { [param]: status });
     };
 
-    // Función para añadir nueva empresa (Columna)
-    window.addCol = async () => {
+    window.addNewEmpresa = async () => {
         const { value: name } = await Swal.fire({
-            title: 'Nueva Empresa',
+            title: 'Nombre de la Empresa',
             input: 'text',
-            inputLabel: 'Nombre de la columna (Empresa)',
-            showCancelButton: true
+            inputPlaceholder: 'Ej: GROMA146 (SAS)',
+            showCancelButton: true,
+            confirmButtonColor: '#0f172a'
         });
 
         if (name) {
-            const newEmpRef = push(ref(db, 'empresas_matriz'));
-            update(newEmpRef, {
+            push(ref(db, 'matriz_empresas'), {
                 nombre: name.toUpperCase(),
                 activos: {}
             });
         }
     };
+
+    window.deleteEmpresa = async (id) => {
+        const res = await Swal.fire({
+            title: '¿Eliminar columna?',
+            text: "Se perderán las activaciones de esta empresa",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33'
+        });
+        if (res.isConfirmed) remove(ref(db, `matriz_empresas/${id}`));
+    };
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
