@@ -71,7 +71,9 @@
                 </div>
 
                 <div id="secMasiva" class="d-none">
-                    <div class="alert alert-warning py-2 small"><i class="bi bi-info-circle"></i> Pega tu lista (un elemento por renglón). Nota: Se guardarán sin activaciones iniciales.</div>
+                    <div class="alert alert-warning py-2 small">
+                        <i class="bi bi-info-circle"></i> Pega tu lista. El sistema <strong>eliminará automáticamente nombres duplicados</strong>.
+                    </div>
                     <textarea id="genMasivo" class="form-control mb-3" rows="10" placeholder="NOMBRE 1&#10;NOMBRE 2&#10;NOMBRE 3"></textarea>
                 </div>
 
@@ -200,7 +202,6 @@
         document.getElementById("genNom").value = item.nombre;
         document.getElementById("genTitulo").innerText = (id ? 'Editar ' : 'Nuevo ') + (path === 'servidores' ? 'Servidor' : path.slice(0,-1));
         
-        // Carga Masiva Reset
         const chkMasivo = document.getElementById("chkMasivo");
         chkMasivo.checked = false;
         document.getElementById("secMasiva").classList.add("d-none");
@@ -210,7 +211,6 @@
         const toggleMasivo = document.getElementById("genToggleMasivo");
         const container = document.getElementById("genChecks");
 
-        // Habilitar carga masiva para todos excepto personal y empresas (aunque empresas podrías si quisieras)
         if (!id && path !== 'personal' && path !== 'empresas') {
             toggleMasivo.classList.remove("d-none");
         } else {
@@ -253,11 +253,17 @@
             if (isMasivo) {
                 const texto = document.getElementById("genMasivo").value.trim();
                 if(!texto) return Swal.fire("Error", "No hay datos para cargar", "error");
-                const lineas = texto.split(/\r?\n/).map(l => l.trim()).filter(l => l !== "");
                 
-                for (let nombre of lineas) {
-                    let data = { nombre: nombre.toUpperCase() };
-                    // En carga masiva de otros módulos, se guardan todos los checks en falso por defecto
+                // --- LÓGICA DE FILTRADO DE DUPLICADOS ---
+                // 1. Dividir por saltos de línea
+                // 2. Limpiar espacios y convertir a Mayúsculas
+                // 3. Filtrar líneas vacías
+                // 4. Utilizar Set para eliminar duplicados
+                const lineasRaw = texto.split(/\r?\n/).map(l => l.trim().toUpperCase()).filter(l => l !== "");
+                const lineasUnicas = [...new Set(lineasRaw)];
+                
+                for (let nombre of lineasUnicas) {
+                    let data = { nombre: nombre };
                     if (path !== 'servidores') {
                         listaServidoresActual.forEach(c => data[c] = false);
                     }
@@ -278,7 +284,6 @@
         } catch(e) { Swal.fire("Error", e.message, "error"); }
     });
 
-    // Código de Personal y Eliminar (Sin cambios)
     document.getElementById("btnGuardarPersonal").addEventListener("click", async () => {
         const id = document.getElementById("persID").value;
         const data = {
