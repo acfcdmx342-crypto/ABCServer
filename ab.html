@@ -67,12 +67,14 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .theme-btn {
+        .theme-btn, .history-btn {
             cursor: pointer;
             font-size: 1.2rem;
             margin-right: 15px;
             color: var(--text);
+            transition: transform 0.2s;
         }
+        .history-btn:hover { transform: scale(1.1); color: #38bdf8; }
         .bi-sun-fill { display: none; color: #ffca28; }
         .dark-mode .bi-sun-fill { display: block; }
         .dark-mode .bi-moon-stars-fill { display: none; }
@@ -118,10 +120,13 @@
         <div class="session-info">
             <span><i class="bi bi-person-circle"></i> Atiende: <strong id="admin-name">...</strong></span>
             <div class="d-flex align-items-center">
-                <div class="theme-btn" onclick="toggleTheme()">
+                <div class="theme-btn" onclick="toggleTheme()" title="Cambiar Tema">
                     <i class="bi bi-moon-stars-fill"></i>
                     <i class="bi bi-sun-fill"></i>
                 </div>
+                <a href="historial.html" class="history-btn" title="Ver Historial">
+                    <i class="bi bi-clock-history"></i>
+                </a>
                 <button class="btn btn-sm btn-outline-danger" onclick="cerrarSesion()">Salir</button>
             </div>
         </div>
@@ -348,9 +353,9 @@
         document.getElementById('res_servidor').innerText = document.getElementById('servidor').value;
         document.getElementById('res_personal').innerText = getSafeSelectText('sel_personal');
         document.getElementById('res_empresa').innerText = getSafeSelectText('sel_empresas');
-        document.getElementById('res_zona').innerText = getSafeSelectText('sel_zonas');
-        document.getElementById('res_estado').innerText = getSafeSelectText('sel_estados');
-        document.getElementById('res_tipo').innerText = getSafeSelectText('sel_tipos');
+        document.getElementById('res_zona').innerText = document.getElementById('min_zona').innerText;
+        document.getElementById('res_estado').innerText = document.getElementById('min_estado').innerText;
+        document.getElementById('res_tipo').innerText = document.getElementById('min_tipo').innerText;
         document.getElementById('res_unidad').innerText = getSafeSelectText('sel_unidades');
         document.getElementById('res_programa').innerText = getSafeSelectText('sel_programas');
         document.getElementById('res_comienza').innerText = document.getElementById('comienza_fecha').value;
@@ -359,7 +364,7 @@
         document.getElementById('res_id_usuario').innerText = document.getElementById('usuario_id').value;
         document.getElementById('res_puesto_usuario').innerText = document.getElementById('usuario_puesto').value;
         document.getElementById('res_sucursal_usuario').innerText = document.getElementById('sucursal').value;
-        document.getElementById('res_perfil_usuario').innerText = getSafeSelectText('sel_perfiles');
+        document.getElementById('res_perfil_usuario').innerText = document.getElementById('min_perfil').innerText;
         generarFolio();
         irFase(4);
     }
@@ -405,7 +410,6 @@
         doc.setFontSize(9);
         doc.setFont("helvetica", "italic");
         doc.text("Este documento es un comprobante oficial de la solicitud procesada en el sistema GRSIS.", margin, y + 20);
-        // ABRE VISTA PREVIA EN PESTAÑA NUEVA
         window.open(doc.output('bloburl'), '_blank');
     }
     document.getElementById('final_n_solicitud').addEventListener('input', generarFolio);
@@ -479,7 +483,6 @@
                 background: document.body.classList.contains('dark-mode') ? '#1e293b' : '#fff',
                 color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
             }).then(() => {
-                // RESETEA FORMULARIO Y REGRESA A FASE 1
                 document.getElementById('formRegistro').reset();
                 irFase(1);
             });
