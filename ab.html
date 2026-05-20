@@ -116,28 +116,26 @@
 .banner-img{
     width: 100%;
     max-width: 815px;
-    height: auto;
+    height: 75px;
+    object-fit: cover;
     border-radius: 12px;
     display: block;
     margin: auto;
-    object-fit: cover;
-}
-
-/* Opcional: mejora visual en móviles */
-@media (max-width: 768px){
-    .banner-img{
-        max-width: 100%;
-    }
-}      
+}    
     </style>
 </head>
 <body>
 <div class="card">
     <div class="card-body p-4">
 <!-- CABECERA / BANNER -->
-<div class="text-center mb-4">
-    <img src="http://soporte.gruporoma.com/Imagenes/Negocios.png" alt="empresas" id="banner" class="img-fluid banner-img">
-</div>    
+<div class="text-center mb-3">
+    <img 
+        src="Imagenes/Negocios.png"
+        alt="empresas"
+        id="banner"
+        class="banner-img"
+    >
+</div>  
         <div class="session-info">
             <span><i class="bi bi-person-circle"></i> Atiende: <strong id="admin-name">...</strong></span>
             <div class="d-flex align-items-center">
