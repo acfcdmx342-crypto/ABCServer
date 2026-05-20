@@ -112,11 +112,32 @@
         }
         .mini-resumen strong { color: #64748b; text-transform: uppercase; font-size: 0.75rem; display: block; }
         .mini-resumen p { margin: 0; color: var(--text); font-weight: 600; border-bottom: none; }
+  /* ===== BANNER ===== */
+.banner-img{
+    width: 100%;
+    max-width: 815px;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+    margin: auto;
+    object-fit: cover;
+}
+
+/* Opcional: mejora visual en móviles */
+@media (max-width: 768px){
+    .banner-img{
+        max-width: 100%;
+    }
+}      
     </style>
 </head>
 <body>
 <div class="card">
     <div class="card-body p-4">
+<!-- CABECERA / BANNER -->
+<div class="text-center mb-4">
+    <img src="/Imagenes/Negocios.png" alt="empresas" id="banner" class="img-fluid banner-img">
+</div>    
         <div class="session-info">
             <span><i class="bi bi-person-circle"></i> Atiende: <strong id="admin-name">...</strong></span>
             <div class="d-flex align-items-center">
