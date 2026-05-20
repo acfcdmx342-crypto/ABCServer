@@ -49,6 +49,17 @@
             justify-content: space-between; 
             align-items: center; 
         }
+/* Texto e icono de Atiende */
+.session-info span,
+.session-info span i {
+    color: var(--text);
+}
+
+/* Nombre del usuario */
+#admin-name {
+    color: var(--text);
+    font-weight: 700;
+}
         .form-label { font-weight: 600; color: var(--text); opacity: 0.9; }
         .form-control, .form-select {
             background-color: var(--input-bg);
@@ -131,7 +142,7 @@
 <img src="https://i.imgur.com/kgJVnJD.png" alt="empresas" class="banner-img">
 </div>  
            <div class="session-info">
-           <span><i class="bi bi-bank"></i>Atiende:<strong id="admin-name">...</strong></span>
+           <span><i class="bi bi-bank"></i> Atiende: <strong id="admin-name">...</strong></span>
             <div class="d-flex align-items-center">
                 <div class="theme-btn" onclick="toggleTheme()" title="Cambiar Tema">
                     <i class="bi bi-moon-stars-fill"></i>
