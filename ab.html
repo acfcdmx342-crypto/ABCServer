@@ -491,53 +491,56 @@ function generarPDF(datos) {
     cargarCatalogo('servidores', 'servidor');
     cargarCatalogo('personal', 'sel_personal');
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const payload = {
-            atendido_por: admin,
-            servidor: document.getElementById('res_servidor').innerText,
-            accion: document.getElementById('res_accion').innerText,
-            solicitante: document.getElementById('res_personal').innerText,
-            empresa: document.getElementById('res_empresa').innerText,
-            zona: document.getElementById('res_zona').innerText,
-            estado: document.getElementById('res_estado').innerText,
-            tipo: document.getElementById('res_tipo').innerText,
-            unidad_organizativa: document.getElementById('res_unidad').innerText,
-            perfil: document.getElementById('res_perfil_usuario').innerText,
-            nombre: document.getElementById('res_nombre_usuario').innerText,
-            usuario: document.getElementById('res_id_usuario').innerText,
-            puesto: document.getElementById('res_puesto_usuario').innerText,
-            sucursal: document.getElementById('res_sucursal_usuario').innerText,
-            inicia_programa: document.getElementById('res_programa').innerText,
-            comienza_en: document.getElementById('res_comienza').innerText,
-            n_solicitud: document.getElementById('final_n_solicitud').value,
-            folio: document.getElementById('final_folio').value,
-            fecha_alta: document.getElementById('final_fecha_sol').value,
-            fecha_registro_sistema: new Date().toLocaleString()
-        };
-     const pdfBase64 = generarPDF(payload);
-
-payload.pdfBase64 = pdfBase64;
-
-await push(ref(db, 'movimientos'), payload);   
-        try {
-            await push(ref(db, 'movimientos'), payload);
-            generarPDF(payload);
-            Swal.fire({
-                title: "¡Registro Guardado!",
-                text: "Folio: " + payload.folio + ". Se ha generado la vista previa del PDF.",
-                icon: "success",
-                confirmButtonText: "Nuevo Registro",
-                background: document.body.classList.contains('dark-mode') ? '#1e293b' : '#fff',
-                color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
-            }).then(() => {
-                document.getElementById('formRegistro').reset();
-                irFase(1);
-            });
-        } catch (err) {
-            Swal.fire("Error", "No se pudo guardar", "error");
-        }
-    });
-    
+    e.preventDefault();
+    const payload = {
+        atendido_por: admin,
+        servidor: document.getElementById('res_servidor').innerText,
+        accion: document.getElementById('res_accion').innerText,
+        solicitante: document.getElementById('res_personal').innerText,
+        empresa: document.getElementById('res_empresa').innerText,
+        zona: document.getElementById('res_zona').innerText,
+        estado: document.getElementById('res_estado').innerText,
+        tipo: document.getElementById('res_tipo').innerText,
+        unidad_organizativa: document.getElementById('res_unidad').innerText,
+        perfil: document.getElementById('res_perfil_usuario').innerText,
+        nombre: document.getElementById('res_nombre_usuario').innerText,
+        usuario: document.getElementById('res_id_usuario').innerText,
+        puesto: document.getElementById('res_puesto_usuario').innerText,
+        sucursal: document.getElementById('res_sucursal_usuario').innerText,
+        inicia_programa: document.getElementById('res_programa').innerText,
+        comienza_en: document.getElementById('res_comienza').innerText,
+        n_solicitud: document.getElementById('final_n_solicitud').value,
+        folio: document.getElementById('final_folio').value,
+        fecha_alta: document.getElementById('final_fecha_sol').value,
+        fecha_registro_sistema: new Date().toLocaleString()
+    };
+    try {
+        // Generar PDF y guardarlo dentro del registro
+        const pdfBase64 = generarPDF(payload);
+        payload.pdfBase64 = pdfBase64;
+        // Guardar UNA SOLA VEZ
+        await push(ref(db, 'movimientos'), payload);
+        Swal.fire({
+            title: "¡Registro Guardado!",
+            text: "Folio: " + payload.folio,
+            icon: "success",
+            confirmButtonText: "Nuevo Registro",
+            background: document.body.classList.contains('dark-mode') ? '#1e293b' : '#fff',
+            color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
+        }).then(() => {
+            document.getElementById('formRegistro').reset();
+            document.getElementById('display-info').style.display = 'none';
+            irFase(1);
+        });
+    } catch (err) {
+        console.error(err);
+        Swal.fire(
+            "Error",
+            "No se pudo guardar el registro",
+            "error"
+        );
+    }
+});    
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
