@@ -394,50 +394,66 @@
         generarFolio();
         irFase(4);
     }
-    function generarPDF(datos) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const margin = 20;
-        doc.setFillColor(15, 23, 42); 
-        doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(22);
-        doc.text("GRUPO ROMA - REGISTRO DE ACCESO", margin, 25);
-        doc.setTextColor(33, 37, 41);
-        doc.setFontSize(10);
-        doc.text(`Folio de Registro: ${datos.folio}`, 140, 50);
-        doc.text(`Fecha de Emisión: ${datos.fecha_registro_sistema}`, 140, 55);
-        doc.setFontSize(14);
-        doc.text("Detalles de la Solicitud", margin, 70);
-        doc.setLineWidth(0.5);
-        doc.line(margin, 72, 190, 72);
-        doc.setFontSize(11);
-        let y = 82;
-        const info = [
-            ["Servidor:", datos.servidor],
-            ["Acción:", datos.accion],
-            ["Solicitante:", datos.solicitante],
-            ["Empresa:", datos.empresa],
-            ["Zona / Estado:", `${datos.zona} - ${datos.estado}`],
-            ["Usuario Solicitado:", datos.nombre],
-            ["ID Usuario:", datos.usuario],
-            ["Puesto:", datos.puesto],
-            ["Perfil Asignado:", datos.perfil],
-            ["Programa:", datos.inicia_programa],
-            ["Atendido por:", datos.atendido_por]
-        ];
-        info.forEach(row => {
-            doc.setFont("helvetica", "bold");
-            doc.text(row[0], margin, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(row[1], margin + 50, y);
-            y += 8;
-        });
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "italic");
-        doc.text("Este documento es un comprobante oficial de la solicitud procesada en el sistema GRSIS.", margin, y + 20);
-        window.open(doc.output('bloburl'), '_blank');
-    }
+function generarPDF(datos) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const margin = 20;
+
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, 210, 40, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text("GRUPO ROMA - REGISTRO DE ACCESO", margin, 25);
+
+    doc.setTextColor(33, 37, 41);
+    doc.setFontSize(10);
+    doc.text(`Folio de Registro: ${datos.folio}`, 140, 50);
+    doc.text(`Fecha de Emisión: ${datos.fecha_registro_sistema}`, 140, 55);
+
+    doc.setFontSize(14);
+    doc.text("Detalles de la Solicitud", margin, 70);
+
+    doc.line(margin, 72, 190, 72);
+
+    let y = 82;
+
+    const info = [
+        ["Servidor:", datos.servidor],
+        ["Acción:", datos.accion],
+        ["Solicitante:", datos.solicitante],
+        ["Empresa:", datos.empresa],
+        ["Zona / Estado:", `${datos.zona} - ${datos.estado}`],
+        ["Usuario Solicitado:", datos.nombre],
+        ["ID Usuario:", datos.usuario],
+        ["Puesto:", datos.puesto],
+        ["Perfil Asignado:", datos.perfil],
+        ["Programa:", datos.inicia_programa],
+        ["Atendido por:", datos.atendido_por]
+    ];
+
+    info.forEach(row => {
+        doc.setFont("helvetica", "bold");
+        doc.text(row[0], margin, y);
+
+        doc.setFont("helvetica", "normal");
+        doc.text(row[1], margin + 50, y);
+
+        y += 8;
+    });
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+
+    doc.text(
+        "Este documento es un comprobante oficial de la solicitud procesada en el sistema GRSIS.",
+        margin,
+        y + 20
+    );
+
+    return doc.output('datauristring');
+}
     document.getElementById('final_n_solicitud').addEventListener('input', generarFolio);
 </script>
 <script type="module">
@@ -498,6 +514,11 @@
             fecha_alta: document.getElementById('final_fecha_sol').value,
             fecha_registro_sistema: new Date().toLocaleString()
         };
+     const pdfBase64 = generarPDF(payload);
+
+payload.pdfBase64 = pdfBase64;
+
+await push(ref(db, 'movimientos'), payload);   
         try {
             await push(ref(db, 'movimientos'), payload);
             generarPDF(payload);
