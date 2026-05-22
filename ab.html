@@ -269,7 +269,7 @@
                 <div class="row g-2 mb-3">
                     <div class="col-md-4">
                         <label class="form-label small">N° de Solicitud</label>
-                        <input type="number" id="final_n_solicitud" class="form-control form-control-sm" value="1" min="1">
+                        <input type="number" id="final_n_solicitud" class="form-control form-control-sm readonly-view" readonly>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small">N° de Folio</label>
@@ -368,7 +368,7 @@
         const nSolicitud = document.getElementById('final_n_solicitud').value;
         document.getElementById('final_folio').value = `GRSIS-${soloNumerosFecha}-${letraAccion}${nSolicitud}`;
     }
-    function prepararResumen() {
+   async function prepararResumen() {
         if(!document.getElementById('usuario_nombre').value || !document.getElementById('usuario_id').value){
              Swal.fire("Atención", "Complete los campos del usuario", "warning");
              return;
@@ -391,8 +391,8 @@
         document.getElementById('res_puesto_usuario').innerText = document.getElementById('usuario_puesto').value;
         document.getElementById('res_sucursal_usuario').innerText = document.getElementById('sucursal').value;
         document.getElementById('res_perfil_usuario').innerText = document.getElementById('min_perfil').innerText;
-        generarFolio();
-        irFase(4);
+       irFase(4);
+await obtenerSiguienteConsecutivo();
     }
 function generarPDF(datos) {
     const { jsPDF } = window.jspdf;
@@ -458,7 +458,7 @@ function generarPDF(datos) {
 </script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -490,6 +490,43 @@ function generarPDF(datos) {
     };
     cargarCatalogo('servidores', 'servidor');
     cargarCatalogo('personal', 'sel_personal');
+    async function obtenerSiguienteConsecutivo() {
+
+    const fechaRaw = document.getElementById('final_fecha_sol').value;
+    const fecha = fechaRaw.replace(/\//g, '');
+
+    const accion = document.querySelector('input[name="accion"]:checked').value;
+    const letraAccion = accion === 'ALTA' ? 'A' : 'B';
+
+    const movimientosRef = ref(db, 'movimientos');
+
+    const snapshot = await get(movimientosRef);
+
+    let consecutivo = 1;
+
+    if (snapshot.exists()) {
+
+        const movimientos = Object.values(snapshot.val());
+
+        const foliosHoy = movimientos.filter(item => {
+
+            if (!item.folio) return false;
+
+            return item.folio.startsWith(
+                `GRSIS-${fecha}-${letraAccion}`
+            );
+
+        });
+
+        consecutivo = foliosHoy.length + 1;
+    }
+
+    document.getElementById('final_n_solicitud').value = consecutivo;
+
+    generarFolio();
+
+    return consecutivo;
+}
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
     e.preventDefault();
     const payload = {
@@ -518,6 +555,25 @@ function generarPDF(datos) {
         // Generar PDF y guardarlo dentro del registro
         const pdfBase64 = generarPDF(payload);
         payload.pdfBase64 = pdfBase64;
+        const movimientosSnap = await get(ref(db, 'movimientos'));
+
+if (movimientosSnap.exists()) {
+
+    const existe = Object.values(movimientosSnap.val()).some(
+        item => item.folio === payload.folio
+    );
+
+    if (existe) {
+
+        Swal.fire(
+            "Folio duplicado",
+            `El folio ${payload.folio} ya existe.`,
+            "error"
+        );
+
+        return;
+    }
+}
         // Guardar UNA SOLA VEZ
         await push(ref(db, 'movimientos'), payload);
         Swal.fire({
