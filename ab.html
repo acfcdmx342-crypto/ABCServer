@@ -142,7 +142,7 @@
 <img src="https://i.imgur.com/kgJVnJD.png" alt="empresas" class="banner-img">
 </div>  
            <div class="session-info">
-           <span><i class="bi bi-bank" me-3" style="font-size:1.4rem;"></i> Atiende:
+           <span><i class="bi bi-bank me-3" style="font-size:1.4rem;"></i> Atiende:
                
             <strong id="admin-name">...</strong></span>
             <div class="d-flex align-items-center">
@@ -690,7 +690,6 @@ async function loadImageBase64(url) {
     cargarCatalogo('personal', 'sel_personal');
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
     e.preventDefault();
-  accion: tipoAccion,  
       const payload = {
         atendido_por: admin,
         servidor: document.getElementById('res_servidor').innerText,
