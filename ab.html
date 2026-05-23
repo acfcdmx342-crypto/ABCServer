@@ -184,7 +184,9 @@
                         <label class="btn btn-outline-danger" for="accionBaja"><i class="bi bi-person-dash"></i> BAJA</label>
                     </div>
                 </div>
-                <button type="button" class="btn btn-primary w-100 py-2 mt-4" onclick="irFase(2)">Siguiente Fase <i class="bi bi-arrow-right-short"></i></button>
+               <button type="button" class="btn btn-primary w-100 py-2 mt-4" onclick="controlFlujo()">
+    Siguiente Fase <i class="bi bi-arrow-right-short"></i>
+</button>
             </div>
             <div id="fase2" class="fase-section">
                 <div class="row g-3">
@@ -311,6 +313,7 @@
 </div>
 
 <script>
+    let tipoAccion = "ALTA";
     function toggleTheme() {
         document.body.classList.toggle('dark-mode');
         localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
@@ -328,7 +331,13 @@
         }
         return "No registrado";
     }
+document.getElementById("accionAlta").addEventListener("change", () => {
+    tipoAccion = "ALTA";
+});
 
+document.getElementById("accionBaja").addEventListener("change", () => {
+    tipoAccion = "BAJA";
+});
     function irFase(f) {
         if(f > 1) {
             const servidor = document.getElementById('servidor').value;
@@ -681,7 +690,8 @@ async function loadImageBase64(url) {
     cargarCatalogo('personal', 'sel_personal');
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const payload = {
+  accion: tipoAccion,  
+      const payload = {
         atendido_por: admin,
         servidor: document.getElementById('res_servidor').innerText,
         accion: document.getElementById('res_accion').innerText,
@@ -709,6 +719,13 @@ async function loadImageBase64(url) {
         payload.pdfBase64 = pdfBase64;
         // Guardar UNA SOLA VEZ
         await push(ref(db, 'movimientos'), payload);
+        if (tipoAccion === "BAJA") {
+    Swal.fire("BAJA registrada", "Se envió al historial", "success")
+    .then(() => {
+        window.location.href = "historial.html";
+    });
+    return;
+}
         Swal.fire({
             title: "¡Registro Guardado!",
             text: "Folio: " + payload.folio,
@@ -730,6 +747,28 @@ async function loadImageBase64(url) {
         );
     }
 });    
+function controlFlujo() {
+
+    const servidor = document.getElementById('servidor').value;
+
+    if (!servidor) {
+        Swal.fire("Atención", "Debe seleccionar un servidor primero", "warning");
+        return;
+    }
+
+    if (tipoAccion === "BAJA") {
+
+        // 🔴 FLUJO BAJA (SALTA FASES)
+        irFase(3);
+        prepararResumen();
+        return;
+    }
+
+    // 🔵 FLUJO ALTA NORMAL
+    irFase(2);
+}
+
+    
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
