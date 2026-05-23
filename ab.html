@@ -396,61 +396,215 @@
     }
 function generarPDF(datos) {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const doc = new jsPDF('p', 'mm', 'letter');
 
-    const margin = 20;
+    // =========================
+    // CONFIGURACIÓN GENERAL
+    // =========================
+    const azul = [63, 99, 181];
+    const azulClaro = [219, 234, 254];
+    const amarillo = [255, 242, 0];
 
-    doc.setFillColor(15, 23, 42);
-    doc.rect(0, 0, 210, 40, 'F');
+    // Fondo
+    doc.setFillColor(240, 240, 240);
+    doc.rect(0, 0, 216, 279, 'F');
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.text("GRUPO ROMA - REGISTRO DE ACCESO", margin, 25);
+    // =========================
+    // TITULO
+    // =========================
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(0,0,0);
+    doc.text("ALTAS Y BAJAS DE USUARIOS EN", 108, 15, { align: "center" });
+    doc.text("SERVIDORES", 108, 23, { align: "center" });
 
-    doc.setTextColor(33, 37, 41);
+    // Empresa
     doc.setFontSize(10);
-    doc.text(`Folio de Registro: ${datos.folio}`, 140, 50);
-    doc.text(`Fecha de Emisión: ${datos.fecha_registro_sistema}`, 140, 55);
+    doc.text("Administradora de Comercios y Franquicias S.A. de C.V.", 108, 33, { align: "center" });
 
-    doc.setFontSize(14);
-    doc.text("Detalles de la Solicitud", margin, 70);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.text("Huatusco #37, Col. Roma Sur, Cuauhtémoc, Ciudad de México, México, C.P. 06760", 108, 38, { align: "center" });
+    doc.text("Tel. (55) 52 64 76 62", 108, 42, { align: "center" });
+    doc.text("www.gruporoma.com", 108, 46, { align: "center" });
 
-    doc.line(margin, 72, 190, 72);
+    // =========================
+    // LOGOS
+    // =========================
 
-    let y = 82;
+    // Logo izquierdo (texto)
+    doc.setDrawColor(...azul);
+    doc.rect(8, 20, 22, 22);
 
-    const info = [
-        ["Servidor:", datos.servidor],
-        ["Acción:", datos.accion],
-        ["Solicitante:", datos.solicitante],
-        ["Empresa:", datos.empresa],
-        ["Zona / Estado:", `${datos.zona} - ${datos.estado}`],
-        ["Usuario Solicitado:", datos.nombre],
-        ["ID Usuario:", datos.usuario],
-        ["Puesto:", datos.puesto],
-        ["Perfil Asignado:", datos.perfil],
-        ["Programa:", datos.inicia_programa],
-        ["Atendido por:", datos.atendido_por]
+    doc.setFontSize(8);
+    doc.text("GRUPO", 19, 37, { align: "center" });
+
+    // Logo derecho
+    doc.rect(165, 23, 22, 12);
+    doc.text("AC&F", 176, 31, { align: "center" });
+
+    // =========================
+    // TABLA SUPERIOR DERECHA
+    // =========================
+
+    // Encabezados
+    doc.setFillColor(...azul);
+    doc.setTextColor(255,255,255);
+
+    doc.rect(135, 80, 20, 6, 'F');
+    doc.rect(155, 80, 35, 6, 'F');
+    doc.rect(190, 80, 20, 6, 'F');
+
+    doc.setFontSize(6);
+    doc.text("N° DE SOLICITUD", 145, 84, { align: "center" });
+    doc.text("N° DE FOLIO", 172, 84, { align: "center" });
+    doc.text("FECHA DE SOLICITUD", 200, 84, { align: "center" });
+
+    // Datos
+    doc.setTextColor(0,0,0);
+
+    doc.rect(135, 86, 20, 6);
+    doc.rect(155, 86, 35, 6);
+    doc.rect(190, 86, 20, 6);
+
+    doc.text(String(datos.n_solicitud), 145, 90, { align: "center" });
+    doc.text(datos.folio, 172, 90, { align: "center" });
+    doc.text(datos.fecha_alta, 200, 90, { align: "center" });
+
+    // =========================
+    // COLUMNA IZQUIERDA
+    // =========================
+
+    const camposIzq = [
+        ["SERVIDOR", datos.servidor],
+        ["SOLICITADO POR", datos.solicitante],
+        ["EMPRESA", datos.empresa],
+        ["ZONA", datos.zona],
+        ["ESTADO", datos.estado],
+        ["TIPO", datos.tipo],
+        ["UNIDAD ORGANIZATIVA", datos.unidad_organizativa]
     ];
 
-    info.forEach(row => {
-        doc.setFont("helvetica", "bold");
-        doc.text(row[0], margin, y);
+    let y = 86;
 
-        doc.setFont("helvetica", "normal");
-        doc.text(row[1], margin + 50, y);
+    camposIzq.forEach((c, i) => {
 
-        y += 8;
+        if(i === 2) y += 12;
+
+        // Etiqueta azul
+        doc.setFillColor(...azul);
+        doc.rect(7, y, 38, 6, 'F');
+
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(6);
+        doc.text(c[0], 8, y + 4);
+
+        // Campo
+        doc.setTextColor(0,0,0);
+        doc.rect(45, y, 42, 6);
+
+        doc.setFontSize(7);
+        doc.text(String(c[1] || "-----"), 46, y + 4);
+
+        y += 6;
     });
 
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "italic");
+    // =========================
+    // PROGRAMAS
+    // =========================
 
-    doc.text(
-        "Este documento es un comprobante oficial de la solicitud procesada en el sistema GRSIS.",
-        margin,
-        y + 20
-    );
+    y += 8;
+
+    doc.setFillColor(...azul);
+    doc.rect(7, y, 38, 6, 'F');
+
+    doc.setTextColor(255,255,255);
+    doc.text("INICIA PROGRAMA", 25, y + 4, { align: "center" });
+
+    doc.setDrawColor(0,153,255);
+    doc.setLineWidth(1);
+
+    doc.line(45, y + 5, 110, y + 5);
+
+    y += 10;
+
+    doc.setFillColor(...azul);
+    doc.rect(7, y, 38, 6, 'F');
+
+    doc.setTextColor(255,255,255);
+    doc.text("COMIENZA EN", 25, y + 4, { align: "center" });
+
+    doc.line(45, y + 5, 110, y + 5);
+
+    doc.setTextColor(0,0,0);
+    doc.setFontSize(8);
+
+    doc.text(datos.inicia_programa || "", 60, y - 5);
+    doc.text(datos.comienza_en || "", 60, y + 5);
+
+    // =========================
+    // BLOQUE DERECHO
+    // =========================
+
+    // Encabezado amarillo
+    doc.setFillColor(...amarillo);
+    doc.rect(145, 98, 32, 6, 'F');
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(datos.accion || "ALTA", 161, 102, { align: "center" });
+
+    const camposDer = [
+        ["USUARIO", datos.usuario],
+        ["NOM. COMPLETO", datos.nombre],
+        ["PUESTO", datos.puesto],
+        ["Sucursal", datos.sucursal],
+        ["PERFIL", datos.perfil],
+        ["ALTA POR", datos.atendido_por]
+    ];
+
+    let y2 = 104;
+
+    camposDer.forEach(c => {
+
+        doc.setFillColor(...azul);
+        doc.rect(135, y2, 20, 6, 'F');
+
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(6);
+        doc.text(c[0], 145, y2 + 4, { align: "center" });
+
+        doc.setTextColor(0,0,0);
+        doc.rect(155, y2, 55, 6);
+
+        doc.setFontSize(7);
+        doc.text(String(c[1] || ""), 157, y2 + 4);
+
+        y2 += 6;
+    });
+
+    // =========================
+    // FIRMAS
+    // =========================
+
+    doc.setDrawColor(0,0,0);
+    doc.setLineWidth(0.5);
+
+    // Izquierda
+    doc.line(30, 240, 110, 240);
+
+    doc.setFontSize(6);
+    doc.text("NOMBRE Y FIRMA (QUIEN DA EL ALTA)", 70, 245, { align: "center" });
+
+    // Derecha
+    doc.line(130, 240, 180, 240);
+
+    doc.text("LUIS ENRIQUE BALLINA HERNANDEZ", 155, 245, { align: "center" });
+    doc.text("(AUTORIZA)", 155, 249, { align: "center" });
+
+    // =========================
+    // EXPORTAR
+    // =========================
 
     return doc.output('datauristring');
 }
