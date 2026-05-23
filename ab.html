@@ -149,7 +149,7 @@
                     <i class="bi bi-moon-stars-fill"></i>
                     <i class="bi bi-sun-fill"></i>
                 </div>
-<button class="history-btn" title="Buscar registros" data-bs-toggle="modal" data-bs-target="#modalBusqueda">
+<button class="btn btn-primary" onclick="cargarTablaRegistros()">
    <i class="bi bi-search"></i>
 </button>
                 <a href="historial.html" class="history-btn" title="Ver Historial">
@@ -651,6 +651,7 @@ async function loadImageBase64(url) {
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     import { get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { get, ref, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     let cacheRegistros = {};
     const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
@@ -766,43 +767,76 @@ document.onkeydown = e => {
         }
     });
 };
-window.cargarParaEditar = (key, data) => {
-    document.getElementById('edit_key').value = key;
-    document.getElementById('edit_nombre').value = data.nombre;
-    document.getElementById('edit_usuario').value = data.usuario;
-    document.getElementById('edit_puesto').value = data.puesto;
-    document.getElementById('edit_sucursal').value = data.sucursal;
+window.cargarParaEditar = (data) => {
+
+    document.getElementById('edit_nombre').value = data.nombre || "";
+    document.getElementById('edit_usuario').value = data.usuario || "";
+    document.getElementById('edit_puesto').value = data.puesto || "";
+    document.getElementById('edit_sucursal').value = data.sucursal || "";
+
+    document.getElementById('edit_original').value = JSON.stringify(data);
 };  
     window.guardarEdicion = async () => {
 
+    const original = JSON.parse(document.getElementById('edit_original').value || "{}");
+
     const nuevoRegistro = {
+        ...original, // copia todo el original
         nombre: document.getElementById('edit_nombre').value,
         usuario: document.getElementById('edit_usuario').value,
         puesto: document.getElementById('edit_puesto').value,
         sucursal: document.getElementById('edit_sucursal').value,
+
         fecha_registro_sistema: new Date().toLocaleString(),
-        editado_desde: document.getElementById('edit_key').value,
+        editado_desde: original.folio || "MODIFICADO",
         atendido_por: admin
     };
 
     try {
-        // Generar PDF con tu función actual
+
         const pdf = await generarPDF(nuevoRegistro);
         nuevoRegistro.pdfBase64 = pdf;
 
         await push(ref(db, 'movimientos'), nuevoRegistro);
 
-        Swal.fire("OK", "Nuevo registro creado", "success");
+        Swal.fire("OK", "Registro duplicado con cambios + PDF", "success");
 
-        document.getElementById('modalBusqueda').querySelector('.btn-close').click();
+        document.getElementById('modalBusqueda')
+            .querySelector('.btn-close').click();
 
     } catch (e) {
         console.error(e);
         Swal.fire("Error", "No se pudo guardar", "error");
     }
 };
+    window.cargarTablaRegistros = async () => {
+
+    const cont = document.getElementById('tablaRegistros');
+    cont.innerHTML = "";
+
+    const snap = await get(ref(db, 'movimientos'));
+    const data = snap.val() || {};
+
+    Object.entries(data).forEach(([key, val]) => {
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${val.nombre || ""}</td>
+            <td>${val.usuario || ""}</td>
+            <td>
+                <button class="btn btn-sm btn-primary">Editar</button>
+            </td>
+        `;
+
+        tr.querySelector("button").onclick = () => cargarParaEditar(val);
+
+        cont.appendChild(tr);
+    });
+};
 </script>
 <!-- MODAL BUSQUEDA -->
+  <input type="hidden" id="edit_original">  
 <div class="modal fade" id="modalBusqueda" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -820,9 +854,18 @@ window.cargarParaEditar = (key, data) => {
             <i class="bi bi-search"></i>
           </button>
         </div>
-
-        <div id="resultadosBusqueda" class="list-group"></div>
-
+<div class="table-responsive">
+<table class="table table-sm table-hover">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Usuario</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody id="tablaRegistros"></tbody>
+</table>
+</div>       
         <hr>
 
         <h6>Editar Registro</h6>
