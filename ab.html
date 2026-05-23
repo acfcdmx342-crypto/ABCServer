@@ -142,16 +142,14 @@
 <img src="https://i.imgur.com/kgJVnJD.png" alt="empresas" class="banner-img">
 </div>  
            <div class="session-info">
-           <span><i class="bi bi-bank me-3" style="font-size:1.4rem;"></i> Atiende:
-           <strong id="admin-name">...</strong></span>
+           <span><i class="bi bi-bank" me-3" style="font-size:1.4rem;"></i> Atiende:
+               
+            <strong id="admin-name">...</strong></span>
             <div class="d-flex align-items-center">
                 <div class="theme-btn" onclick="toggleTheme()" title="Cambiar Tema">
                     <i class="bi bi-moon-stars-fill"></i>
                     <i class="bi bi-sun-fill"></i>
                 </div>
-<button class="btn btn-primary" onclick="cargarTablaRegistros()">
-   <i class="bi bi-search"></i>
-</button>
                 <a href="historial.html" class="history-btn" title="Ver Historial">
                     <i class="bi bi-clock-history"></i>
                 </a>
@@ -649,9 +647,7 @@ async function loadImageBase64(url) {
 </script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get, push} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    let cacheRegistros = {};
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -738,152 +734,6 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
 };
-   window.buscarRegistros = async () => {
-    const q = document.getElementById('txtBusqueda').value.toLowerCase();
-    const cont = document.getElementById('resultadosBusqueda');
-
-    cont.innerHTML = "";
-
-    const snap = await get(ref(db, 'movimientos'));
-    const data = snap.val() || {};
-
-    Object.entries(data).forEach(([key, val]) => {
-
-        if(
-            (val.nombre && val.nombre.toLowerCase().includes(q)) ||
-            (val.usuario && val.usuario.toLowerCase().includes(q))
-        ){
-            const item = document.createElement("button");
-            item.className = "list-group-item list-group-item-action";
-
-            item.innerHTML = `
-                <strong>${val.nombre}</strong><br>
-                <small>${val.usuario}</small>
-            `;
-
-            item.onclick = () => cargarParaEditar(key, val);
-            cont.appendChild(item);
-        }
-    });
-};
-window.cargarParaEditar = (key, data) => {
-    document.getElementById('edit_key').value = key;
-    document.getElementById('edit_nombre').value = data.nombre || "";
-    document.getElementById('edit_usuario').value = data.usuario || "";
-    document.getElementById('edit_puesto').value = data.puesto || "";
-    document.getElementById('edit_sucursal').value = data.sucursal || "";
-    document.getElementById('edit_original').value = JSON.stringify(data);
-};
-
-    window.guardarEdicion = async () => {
-    const original = JSON.parse(document.getElementById('edit_original').value || "{}");
-    const nuevoRegistro = {
-        ...original, // copia todo el original
-        nombre: document.getElementById('edit_nombre').value,
-        usuario: document.getElementById('edit_usuario').value,
-        puesto: document.getElementById('edit_puesto').value,
-        sucursal: document.getElementById('edit_sucursal').value,
-
-        fecha_registro_sistema: new Date().toLocaleString(),
-        editado_desde: original.folio || "MODIFICADO",
-        atendido_por: admin
-    };
-
-    try {
-
-        const pdf = await generarPDF(nuevoRegistro);
-        nuevoRegistro.pdfBase64 = pdf;
-
-        await push(ref(db, 'movimientos'), nuevoRegistro);
-
-        Swal.fire("OK", "Registro duplicado con cambios + PDF", "success");
-
-        document.getElementById('modalBusqueda')
-            .querySelector('.btn-close').click();
-
-    } catch (e) {
-        console.error(e);
-        Swal.fire("Error", "No se pudo guardar", "error");
-    }
-};
-    window.cargarTablaRegistros = async () => {
-
-    const cont = document.getElementById('tablaRegistros');
-    cont.innerHTML = "";
-
-    const snap = await get(ref(db, 'movimientos'));
-    const data = snap.val() || {};
-
-    Object.entries(data).forEach(([key, val]) => {
-
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-            <td>${val.nombre || ""}</td>
-            <td>${val.usuario || ""}</td>
-            <td>
-                <button class="btn btn-sm btn-primary">Editar</button>
-            </td>
-        `;
-
-       tr.querySelector("button").onclick = () => cargarParaEditar(key, val);
-
-        cont.appendChild(tr);
-    });
-  new bootstrap.Modal(document.getElementById('modalBusqueda')).show();      
-};
 </script>
-<!-- MODAL BUSQUEDA -->
-  <input type="hidden" id="edit_original">  
-<div class="modal fade" id="modalBusqueda" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title">Buscar Registro</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-
-        <div class="input-group mb-3">
-          <input type="text" id="txtBusqueda" class="form-control" placeholder="Buscar por nombre o usuario">
-          <button class="btn btn-primary" onclick="buscarRegistros()">
-            <i class="bi bi-search"></i>
-          </button>
-        </div>
-<div class="table-responsive">
-<table class="table table-sm table-hover">
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Usuario</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
-    <tbody id="tablaRegistros"></tbody>
-</table>
-</div>       
-        <hr>
-
-        <h6>Editar Registro</h6>
-
-        <input type="hidden" id="edit_key">
-
-        <input type="text" id="edit_nombre" class="form-control mb-2" placeholder="Nombre">
-        <input type="text" id="edit_usuario" class="form-control mb-2" placeholder="Usuario">
-        <input type="text" id="edit_puesto" class="form-control mb-2" placeholder="Puesto">
-        <input type="text" id="edit_sucursal" class="form-control mb-2" placeholder="Sucursal">
-
-        <button class="btn btn-success w-100" onclick="guardarEdicion()">
-          Guardar como nuevo registro + PDF
-        </button>
-
-      </div>
-
-    </div>
-  </div>
-</div> 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
