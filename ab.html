@@ -649,9 +649,8 @@ async function loadImageBase64(url) {
 </script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { get, ref, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, get, push} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     let cacheRegistros = {};
     const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
@@ -767,19 +766,17 @@ document.onkeydown = e => {
         }
     });
 };
-window.cargarParaEditar = (data) => {
-
+window.cargarParaEditar = (key, data) => {
+    document.getElementById('edit_key').value = key;
     document.getElementById('edit_nombre').value = data.nombre || "";
     document.getElementById('edit_usuario').value = data.usuario || "";
     document.getElementById('edit_puesto').value = data.puesto || "";
     document.getElementById('edit_sucursal').value = data.sucursal || "";
-
     document.getElementById('edit_original').value = JSON.stringify(data);
-};  
+};
+
     window.guardarEdicion = async () => {
-
     const original = JSON.parse(document.getElementById('edit_original').value || "{}");
-
     const nuevoRegistro = {
         ...original, // copia todo el original
         nombre: document.getElementById('edit_nombre').value,
@@ -829,10 +826,11 @@ window.cargarParaEditar = (data) => {
             </td>
         `;
 
-        tr.querySelector("button").onclick = () => cargarParaEditar(val);
+       tr.querySelector("button").onclick = () => cargarParaEditar(key, val);
 
         cont.appendChild(tr);
     });
+  new bootstrap.Modal(document.getElementById('modalBusqueda')).show();      
 };
 </script>
 <!-- MODAL BUSQUEDA -->
