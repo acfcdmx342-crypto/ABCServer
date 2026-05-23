@@ -394,7 +394,7 @@
         generarFolio();
         irFase(4);
     }
-function generarPDF(datos) {
+async function generarPDF(datos) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'letter');
 
@@ -428,23 +428,14 @@ function generarPDF(datos) {
     doc.text("Tel. (55) 52 64 76 62", 108, 42, { align: "center" });
     doc.text("www.gruporoma.com", 108, 46, { align: "center" });
 
-    // =========================
-    // LOGOS
-    // =========================
-
-    // Logo izquierdo (texto)
-    doc.setDrawColor(...azul);
-    doc.rect(8, 20, 22, 22);
-
-    doc.setFontSize(8);
-    doc.text("GRUPO", 19, 37, { align: "center" });
-<div class="flex items-center justify-center mx-4">
-    <img src="URL_DE_TU_NUEVO_LOGO_AZUL_PNG" alt="Logo Grupo Roma - Azul Trueno" class="h-14 w-auto object-contain">
-</div>
-    // Logo derecho
-    doc.rect(165, 23, 22, 12);
-    doc.text("AC&F", 176, 31, { align: "center" });
-
+   // =========================
+// LOGOS
+// =========================
+const logoGrupo = await loadImageBase64("https://i.imgur.com/azDvthM.jpeg");
+const logoACF = await loadImageBase64("https://i.imgur.com/CWJQAEt.png");
+// Insertar imágenes
+doc.addImage(logoGrupo, 'PNG', 8, 18, 22, 22);
+doc.addImage(logoACF, 'PNG', 165, 20, 28, 14);
     // =========================
     // TABLA SUPERIOR DERECHA
     // =========================
@@ -611,6 +602,37 @@ function generarPDF(datos) {
     return doc.output('datauristring');
 }
     document.getElementById('final_n_solicitud').addEventListener('input', generarFolio);
+async function loadImageBase64(url) {
+
+    return new Promise((resolve, reject) => {
+
+        const img = new Image();
+
+        img.crossOrigin = 'Anonymous';
+
+        img.onload = function () {
+
+            const canvas = document.createElement('canvas');
+
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            const ctx = canvas.getContext('2d');
+
+            ctx.drawImage(img, 0, 0);
+
+            const dataURL = canvas.toDataURL('image/png');
+
+            resolve(dataURL);
+        };
+
+        img.onerror = function (error) {
+            reject(error);
+        };
+
+        img.src = url;
+    });
+}    
 </script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -672,7 +694,7 @@ function generarPDF(datos) {
     };
     try {
         // Generar PDF y guardarlo dentro del registro
-        const pdfBase64 = generarPDF(payload);
+     const pdfBase64 = await generarPDF(payload);
         payload.pdfBase64 = pdfBase64;
         // Guardar UNA SOLA VEZ
         await push(ref(db, 'movimientos'), payload);
