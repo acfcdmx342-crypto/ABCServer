@@ -650,6 +650,7 @@ async function loadImageBase64(url) {
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     let cacheRegistros = {};
     const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
@@ -740,7 +741,7 @@ document.onkeydown = e => {
    window.buscarRegistros = async () => {
     const q = document.getElementById('txtBusqueda').value.toLowerCase();
     const cont = document.getElementById('resultadosBusqueda');
-import { get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
     cont.innerHTML = "";
 
     const snap = await get(ref(db, 'movimientos'));
