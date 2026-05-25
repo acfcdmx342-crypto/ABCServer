@@ -132,6 +132,23 @@
     display: block;
     margin: auto;
 }
+#tablaHistorial {
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+#tablaHistorial tbody tr {
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#tablaHistorial tbody tr:hover {
+    background: #dbeafe !important;
+}
+
+.modal-xl {
+    max-width: 98%;
+}        
     </style>
 </head>
 <body>
@@ -670,115 +687,41 @@ async function loadImageBase64(url) {
 
       <!-- BODY -->
       <div class="modal-body">
-
         <div class="row">
+<div class="table-responsive" style="max-height:70vh; overflow:auto;">
 
-          <!-- TABLA -->
-          <div class="col-md-5">
+    <table class="table table-hover table-bordered table-striped align-middle" id="tablaHistorial">
 
-            <div class="table-responsive border rounded" style="height:500px; overflow:auto;">
+        <thead class="table-dark sticky-top">
 
-              <table class="table table-sm table-hover table-bordered align-middle" id="tablaHistorial">
-                <thead class="table-dark sticky-top">
-                  <tr>
-                    <th>Folio</th>
-                    <th>Usuario</th>
-                    <th>Servidor</th>
-                    <th>Tipo</th>
-                    <th>Estado</th>
-                  </tr>
-                </thead>
+            <tr>
+                <th>Folio</th>
+                <th>Usuario</th>
+                <th>Nombre</th>
+                <th>Puesto</th>
+                <th>Servidor</th>
+                <th>Solicitante</th>
+                <th>Empresa</th>
+                <th>Zona</th>
+                <th>Estado</th>
+                <th>Tipo</th>
+                <th>Unidad</th>
+                <th>Sucursal</th>
+                <th>Perfil</th>
+                <th>Programa</th>
+                <th>Comienza En</th>
+                <th>Registrado Por</th>
+                <th>Fecha</th>
+            </tr>
 
-                <tbody id="tbodyHistorial">
-                </tbody>
+        </thead>
 
-              </table>
+        <tbody id="tbodyHistorial">
+        </tbody>
 
-            </div>
+    </table>
 
-          </div>
-
-          <!-- DETALLE -->
-          <div class="col-md-7">
-
-            <div class="border rounded p-3 bg-light">
-
-              <div class="row g-3">
-
-                <div class="col-md-6">
-                  <label class="fw-bold">SERVIDOR</label>
-                  <div id="det_servidor">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">FOLIO</label>
-                  <div id="det_folio">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">SOLICITADO POR</label>
-                  <div id="det_solicitante">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">USUARIO</label>
-                  <div id="det_usuario">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">NOMBRE</label>
-                  <div id="det_nombre">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">PUESTO</label>
-                  <div id="det_puesto">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">EMPRESA</label>
-                  <div id="det_empresa">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">ZONA</label>
-                  <div id="det_zona">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">ESTADO</label>
-                  <div id="det_estado">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">TIPO</label>
-                  <div id="det_tipo">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">SUCURSAL</label>
-                  <div id="det_sucursal">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">PERFIL</label>
-                  <div id="det_perfil">-</div>
-                </div>
-
-                <div class="col-md-12">
-                  <label class="fw-bold">REGISTRADO POR</label>
-                  <div id="det_registrado">-</div>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
+</div>   
 
       <!-- FOOTER -->
       <div class="modal-footer">
@@ -894,13 +837,25 @@ const q = query(
 
             tr.style.cursor = "pointer";
 
-            tr.innerHTML = `
-                <td>${reg.folio || ''}</td>
-                <td>${reg.usuario || ''}</td>
-                <td>${reg.servidor || ''}</td>
-                <td>${reg.tipo || ''}</td>
-                <td>${reg.estado || ''}</td>
-            `;
+           tr.innerHTML = `
+    <td>${reg.folio || ''}</td>
+    <td>${reg.usuario || ''}</td>
+    <td>${reg.nombre || ''}</td>
+    <td>${reg.puesto || ''}</td>
+    <td>${reg.servidor || ''}</td>
+    <td>${reg.solicitante || ''}</td>
+    <td>${reg.empresa || ''}</td>
+    <td>${reg.zona || ''}</td>
+    <td>${reg.estado || ''}</td>
+    <td>${reg.tipo || ''}</td>
+    <td>${reg.unidad_organizativa || ''}</td>
+    <td>${reg.sucursal || ''}</td>
+    <td>${reg.perfil || ''}</td>
+    <td>${reg.inicia_programa || ''}</td>
+    <td>${reg.comienza_en || ''}</td>
+    <td>${reg.atendido_por || ''}</td>
+    <td>${reg.fecha_alta || ''}</td>
+`;
 
     tr.onclick = () => seleccionarUsuarioBaja(reg);
             tbody.appendChild(tr);
