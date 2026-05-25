@@ -218,14 +218,11 @@
             }
         });
 const nombreSesion = localStorage.getItem('user_name');
-const puestoSesion = localStorage.getItem('user_puesto') || 'PUESTO NO DEFINIDO';
-
 if (!nombreSesion) {
     window.location.href = 'index.html';
 }
 
 document.getElementById('nombre-sesion').textContent = nombreSesion;
-document.getElementById('puesto-sesion').textContent = `Puesto: ${puestoSesion}`;
   
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
