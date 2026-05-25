@@ -864,28 +864,11 @@ const q = query(
 
     });
 }; 
-    window.cargarDetalleHistorial = (reg) => {
-    document.getElementById('det_servidor').innerText = reg.servidor || '-';
-    document.getElementById('det_folio').innerText = reg.folio || '-';
-    document.getElementById('det_solicitante').innerText = reg.solicitante || '-';
-    document.getElementById('det_usuario').innerText = reg.usuario || '-';
-    document.getElementById('det_nombre').innerText = reg.nombre || '-';
-    document.getElementById('det_puesto').innerText = reg.puesto || '-';
-    document.getElementById('det_empresa').innerText = reg.empresa || '-';
-    document.getElementById('det_zona').innerText = reg.zona || '-';
-    document.getElementById('det_estado').innerText = reg.estado || '-';
-    document.getElementById('det_tipo').innerText = reg.tipo || '-';
-    document.getElementById('det_sucursal').innerText = reg.sucursal || '-';
-    document.getElementById('det_perfil').innerText = reg.perfil || '-';
-    document.getElementById('det_registrado').innerText = reg.atendido_por || '-';
 
-};
+
     window.seleccionarUsuarioBaja = (reg) => {
 
-    // MOSTRAR DETALLE
-    cargarDetalleHistorial(reg);
-
-    // LLENAR FASE 2
+        // LLENAR FASE 2
     document.getElementById('sel_personal').value = reg.solicitante || '';
     document.getElementById('sel_empresas').value = reg.empresa || '';
     document.getElementById('sel_zonas').value = reg.zona || '';
