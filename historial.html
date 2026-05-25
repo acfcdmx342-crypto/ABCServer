@@ -222,12 +222,16 @@
                 localStorage.setItem('color-theme', 'dark');
             }
         });
-    const nombreSesion = localStorage.getItem('nombreSesion') || 'USUARIO NO IDENTIFICADO';
-    const puestoSesion = localStorage.getItem('puestoSesion') || 'PUESTO NO DEFINIDO';
+const nombreSesion = localStorage.getItem('user_name');
+const puestoSesion = localStorage.getItem('user_puesto') || 'PUESTO NO DEFINIDO';
 
-    document.getElementById('nombre-sesion').textContent = nombreSesion;
-    document.getElementById('puesto-sesion').textContent = `Puesto: ${puestoSesion}`;
+if (!nombreSesion) {
+    window.location.href = 'index.html';
+}
 
+document.getElementById('nombre-sesion').textContent = nombreSesion;
+document.getElementById('puesto-sesion').textContent = `Puesto: ${puestoSesion}`;
+  
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
