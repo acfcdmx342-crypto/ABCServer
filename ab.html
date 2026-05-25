@@ -342,7 +342,6 @@ if(accion === 'BAJA' && f === 2){
                 Swal.fire("Atención", "Debe seleccionar un servidor primero", "warning");
                 return;
             }
-            const accion = document.querySelector('input[name="accion"]:checked').value;
             document.getElementById('label-servidor').innerText = servidor;
             document.getElementById('label-accion').innerText = accion;
             document.getElementById('display-info').style.display = 'flex';
