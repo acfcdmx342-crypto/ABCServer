@@ -44,6 +44,10 @@
     </h2>
 
     <div class="flex items-center gap-4">
+        <button id="btn-borrar-seleccionados"
+        class="hidden bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition font-medium">
+    Borrar seleccionados
+</button>
                 <button id="theme-toggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:ring-2 ring-blue-400">
                     <svg id="theme-toggle-dark-icon" class="hidden w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     <svg id="theme-toggle-light-icon" class="hidden w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
@@ -73,6 +77,7 @@
             <table id="tabla-datos" class="min-w-full table-auto border-collapse">
                 <thead>
                     <tr class="bg-gray-800 dark:bg-black text-white text-[10px] uppercase text-center">
+                        <th id="th-seleccionar" class="hidden p-2 border dark:border-gray-700">Sel.</th>
                         <th class="p-2 border dark:border-gray-700">Sucursal/Depto</th>
                         <th class="p-2 border dark:border-gray-700">Empresa</th>
                         <th class="p-2 border dark:border-gray-700">Servidor</th>
@@ -101,24 +106,34 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+       import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const tablaBody = document.getElementById('tabla-historial');
-
+const usuarioAutorizado = 'LUIS ALBERTO GARCIA SANCHEZ';
+const nombreSesion = (localStorage.getItem('user_name') || '').trim().toUpperCase();
+const puedeBorrar = nombreSesion === usuarioAutorizado;
+const registrosSeleccionados = new Set();
         onValue(ref(db, 'movimientos'), (snapshot) => {
             tablaBody.innerHTML = "";
             const data = snapshot.val();
             if (data) {
-                const registros = Object.values(data).reverse();
-                registros.forEach(reg => {
+    const registros = Object.entries(data).reverse();
+    registros.forEach(([id, reg]) => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 bg-white dark:bg-gray-800 text-center";
                     const statusClass = reg.accion === 'ALTA' ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-red-600 dark:text-red-400 font-bold';
                     tr.innerHTML = `
+                    ${puedeBorrar ? `
+    <td class="p-2 border dark:border-gray-700">
+        <input type="checkbox"
+               class="chk-borrar w-4 h-4"
+               data-id="${id}">
+    </td>
+` : ''}
                         <td class="p-2 border dark:border-gray-700">${reg.sucursal || '-'}</td>
                         <td class="p-2 border dark:border-gray-700">${reg.empresa || '-'}</td>
                         <td class="p-2 border dark:border-gray-700">${reg.servidor || '-'}</td>
@@ -146,6 +161,17 @@
                 });
             }
         });
+        if (puedeBorrar) {
+    const checkbox = tr.querySelector('.chk-borrar');
+
+    checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+            registrosSeleccionados.add(checkbox.dataset.id);
+        } else {
+            registrosSeleccionados.delete(checkbox.dataset.id);
+        }
+    });
+}
 
         // Lógica de Exportación
         const menu = document.getElementById('dropdownMenu');
@@ -227,6 +253,38 @@
 const nombreSesion = localStorage.getItem('user_name');
 if (!nombreSesion) {
     window.location.href = 'index.html';
+}
+        if (puedeBorrar) {
+    document.getElementById('btn-borrar-seleccionados').classList.remove('hidden');
+    document.getElementById('th-seleccionar').classList.remove('hidden');
+
+    document.getElementById('btn-borrar-seleccionados').addEventListener('click', async () => {
+        if (registrosSeleccionados.size === 0) {
+            alert('Selecciona al menos un registro para borrar.');
+            return;
+        }
+
+        const confirmar = confirm(`¿Seguro que deseas borrar ${registrosSeleccionados.size} registro(s)?`);
+
+        if (!confirmar) return;
+
+        try {
+            const eliminaciones = [];
+
+            registrosSeleccionados.forEach(id => {
+                eliminaciones.push(remove(ref(db, `movimientos/${id}`)));
+            });
+
+            await Promise.all(eliminaciones);
+
+            registrosSeleccionados.clear();
+
+            alert('Registro(s) eliminado(s) correctamente.');
+        } catch (error) {
+            console.error(error);
+            alert('No se pudieron borrar los registros.');
+        }
+    });
 }
 
 document.getElementById('nombre-sesion').textContent = nombreSesion;
