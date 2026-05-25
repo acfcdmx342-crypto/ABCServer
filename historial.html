@@ -18,9 +18,29 @@
 <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
     <img src="https://i.imgur.com/kgJVnJD.png" alt="empresas" class="w-full h-[75px] object-contain bg-white">
 </div>      
-        <div class="flex justify-between items-center mb-6">
-            <img src="https://i.imgur.com/CWJQAEt.png">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">HISTORIAL DE ACCESOS</h2>
+<div class="flex justify-between items-center mb-6">
+    <img src="https://i.imgur.com/CWJQAEt.png">
+
+    <!-- RECUADRO DE IDENTIFICACION -->
+    <div id="usuario-identificacion"
+         class="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 shadow-sm min-w-[260px]">
+        <div class="text-gray-700 dark:text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z"/>
+            </svg>
+        </div>
+
+        <div class="leading-tight">
+            <p id="nombre-sesion" class="text-sm font-bold text-blue-700 dark:text-blue-400 uppercase">
+                Usuario
+            </p>
+            <p id="puesto-sesion" class="text-xs text-gray-600 dark:text-gray-300">
+                Puesto
+            </p>
+        </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">HISTORIAL DE ACCESOS</h2>
              <div class="flex items-center gap-4">
                 <button id="theme-toggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:ring-2 ring-blue-400">
                     <svg id="theme-toggle-dark-icon" class="hidden w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
@@ -202,6 +222,14 @@
                 localStorage.setItem('color-theme', 'dark');
             }
         });
+  <script>
+    const nombreSesion = localStorage.getItem('nombreSesion') || 'USUARIO NO IDENTIFICADO';
+    const puestoSesion = localStorage.getItem('puestoSesion') || 'PUESTO NO DEFINIDO';
+
+    document.getElementById('nombre-sesion').textContent = nombreSesion;
+    document.getElementById('puesto-sesion').textContent = `Puesto: ${puestoSesion}`;
+</script>  
+    <script>
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
