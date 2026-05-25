@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>  
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Sistemas - Grupo Roma</title>
@@ -98,6 +99,22 @@
         .bi-sun-fill { display: none; color: #ffca28; }
         .dark-mode .bi-sun-fill { display: block; }
         .dark-mode .bi-moon-stars-fill { display: none; }
+        .btn-recover {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn-recover:hover {
+    background: var(--accent);
+    color: white;
+}
     </style>
 </head>
 <body>
@@ -114,6 +131,9 @@
             <input type="text" id="user" placeholder="USUARIO" required style="text-transform: uppercase;">
             <input type="password" id="pass" placeholder="CONTRASEÑA" required>
             <button type="submit" class="btn-login" id="btnEntrar">ENTRAR</button>
+            <button type="button" class="btn-recover" id="btnRecuperar">
+    Recuperar contraseña
+</button>
         </form>
         <div id="message"></div>
     </div>
@@ -177,6 +197,81 @@
                 btn.innerText = "ENTRAR";
             }
         });
+document.getElementById('btnRecuperar').addEventListener('click', async () => {
+    const userIn = document.getElementById('user').value.trim().toUpperCase();
+
+    if (!userIn) {
+        Swal.fire("Atención", "Escribe primero tu usuario para recuperar la contraseña", "warning");
+        return;
+    }
+
+    try {
+        const snapshot = await get(child(ref(db), 'personal'));
+
+        if (!snapshot.exists()) {
+            Swal.fire("Error", "No hay personal registrado", "error");
+            return;
+        }
+
+        const personal = snapshot.val();
+
+        const encontrado = Object.values(personal).find(p =>
+            p.usuario?.toUpperCase() === userIn
+        );
+
+        if (!encontrado) {
+            Swal.fire("No encontrado", "El usuario no existe en el módulo de personal", "error");
+            return;
+        }
+
+        const nombre = encontrado.nombreCompleto || "Usuario";
+        const correo = encontrado.correo || "";
+        const password = encontrado.contraseña || "";
+
+        const telefono = encontrado.telefono || encontrado.whatsapp || encontrado.celular || "";
+
+        const mensaje = `Hola ${nombre}, tu contraseña de acceso al sistema es: ${password}`;
+
+        const opcion = await Swal.fire({
+            title: "Recuperar contraseña",
+            text: `Usuario encontrado: ${nombre}`,
+            icon: "info",
+            showCancelButton: true,
+            showDenyButton: true,
+            confirmButtonText: "Enviar por correo",
+            denyButtonText: "Enviar por WhatsApp",
+            cancelButtonText: "Cancelar"
+        });
+
+        if (opcion.isConfirmed) {
+            if (!correo) {
+                Swal.fire("Sin correo", "Este usuario no tiene correo registrado", "warning");
+                return;
+            }
+
+            const asunto = encodeURIComponent("Recuperación de contraseña - Sistemas Grupo Roma");
+            const cuerpo = encodeURIComponent(mensaje);
+
+            window.location.href = `mailto:${correo}?subject=${asunto}&body=${cuerpo}`;
+        }
+
+        if (opcion.isDenied) {
+            if (!telefono) {
+                Swal.fire("Sin WhatsApp", "Este usuario no tiene teléfono o WhatsApp registrado", "warning");
+                return;
+            }
+
+            const numeroLimpio = telefono.replace(/\D/g, "");
+            const texto = encodeURIComponent(mensaje);
+
+            window.open(`https://wa.me/52${numeroLimpio}?text=${texto}`, "_blank");
+        }
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire("Error", "No se pudo recuperar la contraseña", "error");
+    }
+});    
   
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
