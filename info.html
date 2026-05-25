@@ -185,14 +185,14 @@
     function renderPersonal() {
         let rows = Object.keys(catalogos.personal).map(id => {
             let p = catalogos.personal[id];
-            return `<tr><td class="sticky-col">${p.nombreCompleto}</td><td>${p.empresa}</td><td>${p.zona}</td><td>${p.departamento}</td><td>${p.usuario}</td><td>***</td><td>${p.puesto}</td><td>${p.correo}</td>
+            return `<tr><td class="sticky-col">${p.nombreCompleto}</td><td>${p.empresa}</td><td>${p.zona}</td><td>${p.departamento}</td><td>${p.usuario}</td><td>***</td><td>${p.puesto}</td><td>${p.correo}<td>${p.telefono || ''}</td>
                 <td><button class="btn btn-sm btn-warning" onclick="abrirModalPersonal('${id}')"><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('personal','${id}')"><i class="bi bi-trash"></i></button></td></tr>`;
         }).join("");
         document.getElementById("contenido").innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-3"><h3>Personal</h3><button class="btn btn-add" onclick="abrirModalPersonal()"><i class="bi bi-plus-circle"></i> Agregar</button></div>
             <div class="table-responsive"><table id="tabla-personal" class="table table-hover table-bordered mb-0">
-                <thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Empresa</th><th>Zona</th><th>Depto</th><th>Usuario</th><th>Pass</th><th>Puesto</th><th>Correo</th><th>Acciones</th></tr></thead>
+                <thead class="table-dark"><tr><th class="sticky-col">Nombre</th><th>Empresa</th><th>Zona</th><th>Depto</th><th>Usuario</th><th>Pass</th><th>Puesto</th><th>Correo</th><th>Telefono</th><th>Acciones</th></tr></thead>
                 <tbody>${rows}</tbody></table></div>`;
     }
 
@@ -291,8 +291,8 @@
             empresa: document.getElementById("p_emp").value, zona: document.getElementById("p_zon").value,
             departamento: document.getElementById("p_dep").value, nombreCompleto: document.getElementById("p_nom").value.trim(),
             usuario: document.getElementById("p_usu").value, contraseña: document.getElementById("p_con").value,
-            puesto: document.getElementById("p_pue").value, correo: document.getElementById("p_cor").value
-        };
+            puesto: document.getElementById("p_pue").value, correo: document.getElementById("p_cor").value, telefono: document.getElementById("p_tel").value
+                    };
         if(!data.nombreCompleto) return Swal.fire("Error", "Nombre requerido", "error");
         try {
             id ? await update(ref(db, `personal/${id}`), data) : await push(ref(db, 'personal'), data);
@@ -317,6 +317,7 @@
         document.getElementById("p_con").value = p.contraseña || "";
         document.getElementById("p_pue").value = p.puesto || "";
         document.getElementById("p_cor").value = p.correo || "";
+        document.getElementById("p_tel").value = p.telefono || "";
         new bootstrap.Modal(document.getElementById("modalPers")).show();
     };
     
