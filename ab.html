@@ -651,6 +651,154 @@ async function loadImageBase64(url) {
     });
 }    
 </script>
+    <!-- MODAL HISTORIAL BAJA -->
+<div class="modal fade" id="modalBaja" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <!-- HEADER -->
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-person-dash"></i>
+          BAJA DE USUARIO
+        </h5>
+
+        <button type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal">
+        </button>
+      </div>
+
+      <!-- BODY -->
+      <div class="modal-body">
+
+        <div class="row">
+
+          <!-- TABLA -->
+          <div class="col-md-5">
+
+            <div class="table-responsive border rounded" style="height:500px; overflow:auto;">
+
+              <table class="table table-sm table-hover table-bordered align-middle" id="tablaHistorial">
+                <thead class="table-dark sticky-top">
+                  <tr>
+                    <th>Folio</th>
+                    <th>Usuario</th>
+                    <th>Servidor</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+
+                <tbody id="tbodyHistorial">
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+          <!-- DETALLE -->
+          <div class="col-md-7">
+
+            <div class="border rounded p-3 bg-light">
+
+              <div class="row g-3">
+
+                <div class="col-md-6">
+                  <label class="fw-bold">SERVIDOR</label>
+                  <div id="det_servidor">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">FOLIO</label>
+                  <div id="det_folio">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">SOLICITADO POR</label>
+                  <div id="det_solicitante">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">USUARIO</label>
+                  <div id="det_usuario">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">NOMBRE</label>
+                  <div id="det_nombre">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">PUESTO</label>
+                  <div id="det_puesto">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">EMPRESA</label>
+                  <div id="det_empresa">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">ZONA</label>
+                  <div id="det_zona">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">ESTADO</label>
+                  <div id="det_estado">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">TIPO</label>
+                  <div id="det_tipo">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">SUCURSAL</label>
+                  <div id="det_sucursal">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">PERFIL</label>
+                  <div id="det_perfil">-</div>
+                </div>
+
+                <div class="col-md-12">
+                  <label class="fw-bold">REGISTRADO POR</label>
+                  <div id="det_registrado">-</div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+          Cerrar
+        </button>
+
+        <button type="button"
+                class="btn btn-danger"
+                id="btnConfirmarBaja">
+          Confirmar Baja
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>    
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -843,159 +991,12 @@ async function loadImageBase64(url) {
         );
     }
 });    
-    <!-- MODAL HISTORIAL BAJA -->
-<div class="modal fade" id="modalBaja" tabindex="-1">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
-    <div class="modal-content">
 
-      <!-- HEADER -->
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">
-          <i class="bi bi-person-dash"></i>
-          BAJA DE USUARIO
-        </h5>
-
-        <button type="button"
-                class="btn-close btn-close-white"
-                data-bs-dismiss="modal">
-        </button>
-      </div>
-
-      <!-- BODY -->
-      <div class="modal-body">
-
-        <div class="row">
-
-          <!-- TABLA -->
-          <div class="col-md-5">
-
-            <div class="table-responsive border rounded" style="height:500px; overflow:auto;">
-
-              <table class="table table-sm table-hover table-bordered align-middle" id="tablaHistorial">
-                <thead class="table-dark sticky-top">
-                  <tr>
-                    <th>Folio</th>
-                    <th>Usuario</th>
-                    <th>Servidor</th>
-                    <th>Tipo</th>
-                    <th>Estado</th>
-                  </tr>
-                </thead>
-
-                <tbody id="tbodyHistorial">
-                </tbody>
-
-              </table>
-
-            </div>
-
-          </div>
-
-          <!-- DETALLE -->
-          <div class="col-md-7">
-
-            <div class="border rounded p-3 bg-light">
-
-              <div class="row g-3">
-
-                <div class="col-md-6">
-                  <label class="fw-bold">SERVIDOR</label>
-                  <div id="det_servidor">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">FOLIO</label>
-                  <div id="det_folio">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">SOLICITADO POR</label>
-                  <div id="det_solicitante">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">USUARIO</label>
-                  <div id="det_usuario">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">NOMBRE</label>
-                  <div id="det_nombre">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">PUESTO</label>
-                  <div id="det_puesto">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">EMPRESA</label>
-                  <div id="det_empresa">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">ZONA</label>
-                  <div id="det_zona">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">ESTADO</label>
-                  <div id="det_estado">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">TIPO</label>
-                  <div id="det_tipo">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">SUCURSAL</label>
-                  <div id="det_sucursal">-</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="fw-bold">PERFIL</label>
-                  <div id="det_perfil">-</div>
-                </div>
-
-                <div class="col-md-12">
-                  <label class="fw-bold">REGISTRADO POR</label>
-                  <div id="det_registrado">-</div>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- FOOTER -->
-      <div class="modal-footer">
-        <button type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal">
-          Cerrar
-        </button>
-
-        <button type="button"
-                class="btn btn-danger"
-                id="btnConfirmarBaja">
-          Confirmar Baja
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
 };
 </script>
-    
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> 
 </body>
 </html>
