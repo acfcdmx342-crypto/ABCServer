@@ -401,9 +401,9 @@ if(accion === 'BAJA' && f === 2){
         document.getElementById('res_servidor').innerText = document.getElementById('servidor').value;
         document.getElementById('res_personal').innerText = getSafeSelectText('sel_personal');
         document.getElementById('res_empresa').innerText = getSafeSelectText('sel_empresas');
-        document.getElementById('res_zona').innerText = document.getElementById('min_zona').innerText;
-        document.getElementById('res_estado').innerText = document.getElementById('min_estado').innerText;
-        document.getElementById('res_tipo').innerText = document.getElementById('min_tipo').innerText;
+        document.getElementById('res_zona').innerText = getSafeSelectText('sel_zonas');
+        document.getElementById('res_estado').innerText = getSafeSelectText('sel_estados');
+        document.getElementById('res_tipo').innerText = getSafeSelectText('sel_tipos');
         document.getElementById('res_unidad').innerText = getSafeSelectText('sel_unidades');
         document.getElementById('res_programa').innerText = getSafeSelectText('sel_programas');
         document.getElementById('res_comienza').innerText = document.getElementById('comienza_fecha').value;
@@ -412,7 +412,7 @@ if(accion === 'BAJA' && f === 2){
         document.getElementById('res_id_usuario').innerText = document.getElementById('usuario_id').value;
         document.getElementById('res_puesto_usuario').innerText = document.getElementById('usuario_puesto').value;
         document.getElementById('res_sucursal_usuario').innerText = document.getElementById('sucursal').value;
-        document.getElementById('res_perfil_usuario').innerText = document.getElementById('min_perfil').innerText;
+        document.getElementById('res_perfil_usuario').innerText = getSafeSelectText('sel_perfiles');
         generarFolio();
         irFase(4);
     }
