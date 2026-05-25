@@ -832,18 +832,6 @@ async function loadImageBase64(url) {
         nodos.forEach(n => cargarCatalogo(n, 'sel_' + (n === 'programas' ? 'programas' : n), servidor));
     };
   window.abrirModalBaja = async () => {
-
-    const usuario = document.getElementById('usuario_id').value.trim();
-
-    if(!usuario){
-        Swal.fire(
-            "Atención",
-            "Debe capturar primero el usuario",
-            "warning"
-        );
-        return;
-    }
-
     const tbody = document.getElementById('tbodyHistorial');
 
     tbody.innerHTML = `
@@ -862,11 +850,13 @@ async function loadImageBase64(url) {
     modal.show();
 
     // CONSULTA FIREBASE
-    const q = query(
-        ref(db, 'movimientos'),
-        orderByChild('usuario'),
-        equalTo(usuario)
-    );
+    const servidor = document.getElementById('servidor').value;
+
+const q = query(
+    ref(db, 'movimientos'),
+    orderByChild('servidor'),
+    equalTo(servidor)
+);
 
     onValue(q, (snap) => {
 
@@ -912,8 +902,7 @@ async function loadImageBase64(url) {
                 <td>${reg.estado || ''}</td>
             `;
 
-            tr.onclick = () => cargarDetalleHistorial(reg);
-
+    tr.onclick = () => seleccionarUsuarioBaja(reg);
             tbody.appendChild(tr);
 
         });
@@ -921,7 +910,6 @@ async function loadImageBase64(url) {
     });
 }; 
     window.cargarDetalleHistorial = (reg) => {
-
     document.getElementById('det_servidor').innerText = reg.servidor || '-';
     document.getElementById('det_folio').innerText = reg.folio || '-';
     document.getElementById('det_solicitante').innerText = reg.solicitante || '-';
@@ -936,6 +924,46 @@ async function loadImageBase64(url) {
     document.getElementById('det_perfil').innerText = reg.perfil || '-';
     document.getElementById('det_registrado').innerText = reg.atendido_por || '-';
 
+};
+    window.seleccionarUsuarioBaja = (reg) => {
+
+    // MOSTRAR DETALLE
+    cargarDetalleHistorial(reg);
+
+    // LLENAR FASE 2
+    document.getElementById('sel_personal').value = reg.solicitante || '';
+    document.getElementById('sel_empresas').value = reg.empresa || '';
+    document.getElementById('sel_zonas').value = reg.zona || '';
+    document.getElementById('sel_estados').value = reg.estado || '';
+    document.getElementById('sel_tipos').value = reg.tipo || '';
+    document.getElementById('sel_unidades').value = reg.unidad_organizativa || '';
+    document.getElementById('sel_perfiles').value = reg.perfil || '';
+
+    // LLENAR FASE 3
+    document.getElementById('usuario_nombre').value = reg.nombre || '';
+    document.getElementById('usuario_id').value = reg.usuario || '';
+    document.getElementById('usuario_puesto').value = reg.puesto || '';
+    document.getElementById('sucursal').value = reg.sucursal || '';
+    document.getElementById('comienza_fecha').value = reg.comienza_en || '';
+
+    // PROGRAMA
+    const programaSelect = document.getElementById('sel_programas');
+
+    for(let i = 0; i < programaSelect.options.length; i++){
+
+        if(programaSelect.options[i].text === reg.inicia_programa){
+            programaSelect.selectedIndex = i;
+            break;
+        }
+    }
+
+    // CERRAR MODAL
+    bootstrap.Modal.getInstance(
+        document.getElementById('modalBaja')
+    ).hide();
+
+    // IR A RESUMEN
+    prepararResumen();
 };
     cargarCatalogo('servidores', 'servidor');
     cargarCatalogo('personal', 'sel_personal');
