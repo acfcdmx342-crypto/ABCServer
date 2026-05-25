@@ -112,67 +112,123 @@
         const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const tablaBody = document.getElementById('tabla-historial');
+  const tablaBody = document.getElementById('tabla-historial');
+
 const usuarioAutorizado = 'LUIS ALBERTO GARCIA SANCHEZ';
-const nombreSesion = (localStorage.getItem('user_name') || '').trim().toUpperCase();
-const puedeBorrar = nombreSesion === usuarioAutorizado;
+const nombreSesion = (localStorage.getItem('user_name') || '').trim();
+
+if (!nombreSesion) {
+    window.location.href = 'index.html';
+}
+
+document.getElementById('nombre-sesion').textContent = nombreSesion;
+
+const puedeBorrar = nombreSesion.toUpperCase() === usuarioAutorizado;
 const registrosSeleccionados = new Set();
-        onValue(ref(db, 'movimientos'), (snapshot) => {
-            tablaBody.innerHTML = "";
-            const data = snapshot.val();
-            if (data) {
-    const registros = Object.entries(data).reverse();
-    registros.forEach(([id, reg]) => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 bg-white dark:bg-gray-800 text-center";
-                    const statusClass = reg.accion === 'ALTA' ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-red-600 dark:text-red-400 font-bold';
-                    tr.innerHTML = `
-                    ${puedeBorrar ? `
-    <td class="p-2 border dark:border-gray-700">
-        <input type="checkbox"
-               class="chk-borrar w-4 h-4"
-               data-id="${id}">
-    </td>
-` : ''}
-                        <td class="p-2 border dark:border-gray-700">${reg.sucursal || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.empresa || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.servidor || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.tipo || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.estado || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.zona || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700 font-mono">${reg.usuario || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700 font-semibold">${reg.nombre || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.puesto || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.perfil || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.unidad_organizativa || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.inicia_programa || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.comienza_en || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.fecha_alta || reg.fecha_solicitud || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700 font-bold text-gray-900 dark:text-white">${reg.folio || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.solicitante || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.atendido_por || 'Sistema'}</td>
-                        <td class="p-2 border dark:border-gray-700 ${statusClass}">${reg.accion || '-'}</td>
-                        <td class="p-2 border dark:border-gray-700">${reg.pdfBase64 ? `<button onclick="abrirPDF('${reg.pdfBase64}')"class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">PDF</button>`
+
+if (puedeBorrar) {
+    document.getElementById('btn-borrar-seleccionados').classList.remove('hidden');
+    document.getElementById('th-seleccionar').classList.remove('hidden');
+}
+
+onValue(ref(db, 'movimientos'), (snapshot) => {
+    tablaBody.innerHTML = "";
+    registrosSeleccionados.clear();
+
+    const data = snapshot.val();
+
+    if (data) {
+        const registros = Object.entries(data).reverse();
+
+        registros.forEach(([id, reg]) => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 bg-white dark:bg-gray-800 text-center";
+
+            const statusClass = reg.accion === 'ALTA'
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-red-600 dark:text-red-400 font-bold';
+
+            tr.innerHTML = `
+                ${puedeBorrar ? `
+                    <td class="p-2 border dark:border-gray-700">
+                        <input type="checkbox"
+                               class="chk-borrar w-4 h-4"
+                               data-id="${id}">
+                    </td>
+                ` : ''}
+
+                <td class="p-2 border dark:border-gray-700">${reg.sucursal || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.empresa || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.servidor || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.tipo || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.estado || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.zona || '-'}</td>
+                <td class="p-2 border dark:border-gray-700 font-mono">${reg.usuario || '-'}</td>
+                <td class="p-2 border dark:border-gray-700 font-semibold">${reg.nombre || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.puesto || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.perfil || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.unidad_organizativa || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.inicia_programa || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.comienza_en || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.fecha_alta || reg.fecha_solicitud || '-'}</td>
+                <td class="p-2 border dark:border-gray-700 font-bold text-gray-900 dark:text-white">${reg.folio || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.solicitante || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">${reg.atendido_por || 'Sistema'}</td>
+                <td class="p-2 border dark:border-gray-700 ${statusClass}">${reg.accion || '-'}</td>
+                <td class="p-2 border dark:border-gray-700">
+                    ${reg.pdfBase64
+                        ? `<button onclick="abrirPDF('${reg.pdfBase64}')" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">PDF</button>`
                         : '-'
-                         }
-                        </td>
-                    `;
-                    tablaBody.appendChild(tr);
+                    }
+                </td>
+            `;
+
+            tablaBody.appendChild(tr);
+
+            if (puedeBorrar) {
+                const checkbox = tr.querySelector('.chk-borrar');
+
+                checkbox.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        registrosSeleccionados.add(checkbox.dataset.id);
+                    } else {
+                        registrosSeleccionados.delete(checkbox.dataset.id);
+                    }
                 });
             }
         });
-        if (puedeBorrar) {
-    const checkbox = tr.querySelector('.chk-borrar');
+    }
+});
 
-    checkbox.addEventListener('change', () => {
-        if (checkbox.checked) {
-            registrosSeleccionados.add(checkbox.dataset.id);
-        } else {
-            registrosSeleccionados.delete(checkbox.dataset.id);
-        }
-    });
-}
+document.getElementById('btn-borrar-seleccionados').addEventListener('click', async () => {
+    if (!puedeBorrar) return;
 
+    if (registrosSeleccionados.size === 0) {
+        alert('Selecciona al menos un registro para borrar.');
+        return;
+    }
+
+    const confirmar = confirm(`¿Seguro que deseas borrar ${registrosSeleccionados.size} registro(s)?`);
+
+    if (!confirmar) return;
+
+    try {
+        const eliminaciones = [];
+
+        registrosSeleccionados.forEach(id => {
+            eliminaciones.push(remove(ref(db, `movimientos/${id}`)));
+        });
+
+        await Promise.all(eliminaciones);
+
+        registrosSeleccionados.clear();
+
+        alert('Registro(s) eliminado(s) correctamente.');
+    } catch (error) {
+        console.error(error);
+        alert('No se pudieron borrar los registros.');
+    }
+});
         // Lógica de Exportación
         const menu = document.getElementById('dropdownMenu');
         
@@ -250,45 +306,6 @@ const registrosSeleccionados = new Set();
                 localStorage.setItem('color-theme', 'dark');
             }
         });
-const nombreSesion = localStorage.getItem('user_name');
-if (!nombreSesion) {
-    window.location.href = 'index.html';
-}
-        if (puedeBorrar) {
-    document.getElementById('btn-borrar-seleccionados').classList.remove('hidden');
-    document.getElementById('th-seleccionar').classList.remove('hidden');
-
-    document.getElementById('btn-borrar-seleccionados').addEventListener('click', async () => {
-        if (registrosSeleccionados.size === 0) {
-            alert('Selecciona al menos un registro para borrar.');
-            return;
-        }
-
-        const confirmar = confirm(`¿Seguro que deseas borrar ${registrosSeleccionados.size} registro(s)?`);
-
-        if (!confirmar) return;
-
-        try {
-            const eliminaciones = [];
-
-            registrosSeleccionados.forEach(id => {
-                eliminaciones.push(remove(ref(db, `movimientos/${id}`)));
-            });
-
-            await Promise.all(eliminaciones);
-
-            registrosSeleccionados.clear();
-
-            alert('Registro(s) eliminado(s) correctamente.');
-        } catch (error) {
-            console.error(error);
-            alert('No se pudieron borrar los registros.');
-        }
-    });
-}
-
-document.getElementById('nombre-sesion').textContent = nombreSesion;
-  
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
