@@ -331,6 +331,12 @@
 
     function irFase(f) {
         if(f > 1) {
+const accion = document.querySelector('input[name="accion"]:checked').value;
+// SI ES BAJA Y VA A FASE 2
+if(accion === 'BAJA' && f === 2){
+    abrirModalBaja();
+    return;
+}
             const servidor = document.getElementById('servidor').value;
             if(!servidor) {
                 Swal.fire("Atención", "Debe seleccionar un servidor primero", "warning");
@@ -651,6 +657,7 @@ async function loadImageBase64(url) {
     const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    import {query, orderByChild, equalTo} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     const admin = localStorage.getItem('user_name');
     if(!admin) window.location.href = "index.html";
     document.getElementById('admin-name').innerText = admin;
@@ -677,6 +684,112 @@ async function loadImageBase64(url) {
         const nodos = ['empresas', 'zonas', 'estados', 'tipos', 'unidades', 'perfiles', 'programas'];
         nodos.forEach(n => cargarCatalogo(n, 'sel_' + (n === 'programas' ? 'programas' : n), servidor));
     };
+  window.abrirModalBaja = async () => {
+
+    const usuario = document.getElementById('usuario_id').value.trim();
+
+    if(!usuario){
+        Swal.fire(
+            "Atención",
+            "Debe capturar primero el usuario",
+            "warning"
+        );
+        return;
+    }
+
+    const tbody = document.getElementById('tbodyHistorial');
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="5" class="text-center">
+                Cargando historial...
+            </td>
+        </tr>
+    `;
+
+    // ABRIR MODAL
+    const modal = new bootstrap.Modal(
+        document.getElementById('modalBaja')
+    );
+
+    modal.show();
+
+    // CONSULTA FIREBASE
+    const q = query(
+        ref(db, 'movimientos'),
+        orderByChild('usuario'),
+        equalTo(usuario)
+    );
+
+    onValue(q, (snap) => {
+
+        tbody.innerHTML = "";
+
+        if(!snap.exists()){
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-danger">
+                        Sin historial
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        const registros = [];
+
+        snap.forEach(item => {
+
+            registros.push({
+                id: item.key,
+                ...item.val()
+            });
+
+        });
+
+        registros.reverse();
+
+        registros.forEach(reg => {
+
+            const tr = document.createElement('tr');
+
+            tr.style.cursor = "pointer";
+
+            tr.innerHTML = `
+                <td>${reg.folio || ''}</td>
+                <td>${reg.usuario || ''}</td>
+                <td>${reg.servidor || ''}</td>
+                <td>${reg.tipo || ''}</td>
+                <td>${reg.estado || ''}</td>
+            `;
+
+            tr.onclick = () => cargarDetalleHistorial(reg);
+
+            tbody.appendChild(tr);
+
+        });
+
+    });
+}; 
+    window.cargarDetalleHistorial = (reg) => {
+
+    document.getElementById('det_servidor').innerText = reg.servidor || '-';
+    document.getElementById('det_folio').innerText = reg.folio || '-';
+    document.getElementById('det_solicitante').innerText = reg.solicitante || '-';
+    document.getElementById('det_usuario').innerText = reg.usuario || '-';
+    document.getElementById('det_nombre').innerText = reg.nombre || '-';
+    document.getElementById('det_puesto').innerText = reg.puesto || '-';
+    document.getElementById('det_empresa').innerText = reg.empresa || '-';
+    document.getElementById('det_zona').innerText = reg.zona || '-';
+    document.getElementById('det_estado').innerText = reg.estado || '-';
+    document.getElementById('det_tipo').innerText = reg.tipo || '-';
+    document.getElementById('det_sucursal').innerText = reg.sucursal || '-';
+    document.getElementById('det_perfil').innerText = reg.perfil || '-';
+    document.getElementById('det_registrado').innerText = reg.atendido_por || '-';
+
+};
     cargarCatalogo('servidores', 'servidor');
     cargarCatalogo('personal', 'sel_personal');
     document.getElementById('formRegistro').addEventListener('submit', async (e) => {
@@ -730,10 +843,159 @@ async function loadImageBase64(url) {
         );
     }
 });    
+    <!-- MODAL HISTORIAL BAJA -->
+<div class="modal fade" id="modalBaja" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <!-- HEADER -->
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-person-dash"></i>
+          BAJA DE USUARIO
+        </h5>
+
+        <button type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal">
+        </button>
+      </div>
+
+      <!-- BODY -->
+      <div class="modal-body">
+
+        <div class="row">
+
+          <!-- TABLA -->
+          <div class="col-md-5">
+
+            <div class="table-responsive border rounded" style="height:500px; overflow:auto;">
+
+              <table class="table table-sm table-hover table-bordered align-middle" id="tablaHistorial">
+                <thead class="table-dark sticky-top">
+                  <tr>
+                    <th>Folio</th>
+                    <th>Usuario</th>
+                    <th>Servidor</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+
+                <tbody id="tbodyHistorial">
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+          <!-- DETALLE -->
+          <div class="col-md-7">
+
+            <div class="border rounded p-3 bg-light">
+
+              <div class="row g-3">
+
+                <div class="col-md-6">
+                  <label class="fw-bold">SERVIDOR</label>
+                  <div id="det_servidor">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">FOLIO</label>
+                  <div id="det_folio">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">SOLICITADO POR</label>
+                  <div id="det_solicitante">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">USUARIO</label>
+                  <div id="det_usuario">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">NOMBRE</label>
+                  <div id="det_nombre">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">PUESTO</label>
+                  <div id="det_puesto">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">EMPRESA</label>
+                  <div id="det_empresa">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">ZONA</label>
+                  <div id="det_zona">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">ESTADO</label>
+                  <div id="det_estado">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">TIPO</label>
+                  <div id="det_tipo">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">SUCURSAL</label>
+                  <div id="det_sucursal">-</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="fw-bold">PERFIL</label>
+                  <div id="det_perfil">-</div>
+                </div>
+
+                <div class="col-md-12">
+                  <label class="fw-bold">REGISTRADO POR</label>
+                  <div id="det_registrado">-</div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+          Cerrar
+        </button>
+
+        <button type="button"
+                class="btn btn-danger"
+                id="btnConfirmarBaja">
+          Confirmar Baja
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
 };
 </script>
+    
 </body>
 </html>
