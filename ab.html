@@ -453,11 +453,19 @@ async function generarPDF(datos) {
    // =========================
 // LOGOS
 // =========================
-const logoGrupo = await loadImageBase64("https://i.imgur.com/azDvthM.jpeg");
-const logoACF = await loadImageBase64("https://i.imgur.com/CWJQAEt.png");
-// Insertar imágenes
-doc.addImage(logoGrupo, 'jpeg', 8, 18, 22, 22);
-doc.addImage(logoACF, 'PNG', 165, 20, 28, 14);
+try {
+    const logoGrupo = await loadImageBase64("https://i.imgur.com/azDvthM.jpeg");
+    const logoACF = await loadImageBase64("https://i.imgur.com/CWJQAEt.png");
+    if (logoGrupo) {
+        doc.addImage(logoGrupo, 'JPEG', 8, 18, 22, 22);
+    }
+    if (logoACF) {
+        doc.addImage(logoACF, 'PNG', 165, 20, 28, 14);
+    }
+} catch(err) {
+    console.error('Error insertando logos:', err);
+}
+
     // =========================
     // TABLA SUPERIOR DERECHA
     // =========================
@@ -632,40 +640,30 @@ doc.text(
     // EXPORTAR
     // =========================
 
-    return doc.output('datauristring');
+return doc.output('dataurlstring');
 }
     document.getElementById('final_n_solicitud').addEventListener('input', generarFolio);
 async function loadImageBase64(url) {
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
 
-    return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
 
-        const img = new Image();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
 
-        img.crossOrigin = 'Anonymous';
+            reader.readAsDataURL(blob);
+        });
 
-        img.onload = function () {
+    } catch (error) {
+        console.error('Error cargando imagen:', error);
 
-            const canvas = document.createElement('canvas');
-
-            canvas.width = img.width;
-            canvas.height = img.height;
-
-            const ctx = canvas.getContext('2d');
-
-            ctx.drawImage(img, 0, 0);
-
-            const dataURL = canvas.toDataURL('image/png');
-
-            resolve(dataURL);
-        };
-
-        img.onerror = function (error) {
-            reject(error);
-        };
-
-        img.src = url;
-    });
-}    
+        // REGRESAR NULL PARA EVITAR BLOQUEO
+        return null;
+    }
+}
 </script>
     <!-- MODAL HISTORIAL BAJA -->
 <div class="modal fade" id="modalBaja" tabindex="-1">
@@ -925,12 +923,28 @@ const q = query(
         fecha_alta: document.getElementById('final_fecha_sol').value,
         fecha_registro_sistema: new Date().toLocaleString()
     };
-    try {
+   Swal.fire({
+    title: 'Generando PDF...',
+    text: 'Espere un momento',
+    allowOutsideClick: false,
+    didOpen: () => {
+        Swal.showLoading();
+    }
+});
+        try {
         // Generar PDF y guardarlo dentro del registro
      const pdfBase64 = await generarPDF(payload);
         payload.pdfBase64 = pdfBase64;
         // Guardar UNA SOLA VEZ
-        await push(ref(db, 'movimientos'), payload);
+       await Promise.race([
+
+    push(ref(db, 'movimientos'), payload),
+
+    new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Tiempo agotado al guardar')), 15000)
+    )
+
+]);
         Swal.fire({
             title: "¡Registro Guardado!",
             text: "Folio: " + payload.folio,
