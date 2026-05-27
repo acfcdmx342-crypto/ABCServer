@@ -456,7 +456,7 @@ async function generarPDF(datos) {
 const logoGrupo = await loadImageBase64("https://i.imgur.com/azDvthM.jpeg");
 const logoACF = await loadImageBase64("https://i.imgur.com/CWJQAEt.png");
 // Insertar imágenes
-doc.addImage(logoGrupo, 'PNG', 8, 18, 22, 22);
+doc.addImage(logoGrupo, 'jpeg', 8, 18, 22, 22);
 doc.addImage(logoACF, 'PNG', 165, 20, 28, 14);
     // =========================
     // TABLA SUPERIOR DERECHA
@@ -736,7 +736,7 @@ async function loadImageBase64(url) {
       </div>
     </div>
   </div>
- 
+</div>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
