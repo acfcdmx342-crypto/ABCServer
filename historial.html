@@ -96,6 +96,7 @@
                         <th class="p-2 border dark:border-gray-700">Solicita</th>
                         <th class="p-2 border dark:border-gray-700">Alta por</th>
                         <th class="p-2 border dark:border-gray-700">Status</th>
+                        <th class="p-2 border dark:border-gray-700">Editar</th>
                         <th class="p-2 border dark:border-gray-700">PDF</th>
                     </tr>
                 </thead>
@@ -107,7 +108,7 @@
 
     <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-       import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+       import { getDatabase, ref, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
@@ -127,6 +128,79 @@ const puedeBorrar = nombreSesion.toUpperCase() === usuarioAutorizado;
 const registrosSeleccionados = new Set();
 
 if (puedeBorrar) {
+    window.abrirModalEditar = (id, reg) => {
+
+    document.getElementById('modalEditar').classList.remove('hidden');
+    document.getElementById('modalEditar').classList.add('flex');
+
+    document.getElementById('edit-id').value = id;
+
+    document.getElementById('edit-sucursal').value = reg.sucursal || '';
+    document.getElementById('edit-empresa').value = reg.empresa || '';
+    document.getElementById('edit-servidor').value = reg.servidor || '';
+    document.getElementById('edit-tipo').value = reg.tipo || '';
+    document.getElementById('edit-estado').value = reg.estado || '';
+    document.getElementById('edit-zona').value = reg.zona || '';
+    document.getElementById('edit-usuario').value = reg.usuario || '';
+    document.getElementById('edit-nombre').value = reg.nombre || '';
+    document.getElementById('edit-puesto').value = reg.puesto || '';
+    document.getElementById('edit-perfil').value = reg.perfil || '';
+    document.getElementById('edit-unidad').value = reg.unidad_organizativa || '';
+    document.getElementById('edit-programa').value = reg.inicia_programa || '';
+    document.getElementById('edit-comienza').value = reg.comienza_en || '';
+    document.getElementById('edit-fecha').value = reg.fecha_alta || '';
+    document.getElementById('edit-folio').value = reg.folio || '';
+    document.getElementById('edit-solicitante').value = reg.solicitante || '';
+};
+
+window.cerrarModalEditar = () => {
+
+    document.getElementById('modalEditar').classList.add('hidden');
+    document.getElementById('modalEditar').classList.remove('flex');
+};
+
+window.guardarEdicion = async () => {
+
+    const id = document.getElementById('edit-id').value;
+
+    const datosActualizados = {
+
+        sucursal: document.getElementById('edit-sucursal').value,
+        empresa: document.getElementById('edit-empresa').value,
+        servidor: document.getElementById('edit-servidor').value,
+        tipo: document.getElementById('edit-tipo').value,
+        estado: document.getElementById('edit-estado').value,
+        zona: document.getElementById('edit-zona').value,
+        usuario: document.getElementById('edit-usuario').value,
+        nombre: document.getElementById('edit-nombre').value,
+        puesto: document.getElementById('edit-puesto').value,
+        perfil: document.getElementById('edit-perfil').value,
+        unidad_organizativa: document.getElementById('edit-unidad').value,
+        inicia_programa: document.getElementById('edit-programa').value,
+        comienza_en: document.getElementById('edit-comienza').value,
+        fecha_alta: document.getElementById('edit-fecha').value,
+        folio: document.getElementById('edit-folio').value,
+        solicitante: document.getElementById('edit-solicitante').value
+    };
+
+    try {
+
+        await update(
+            ref(db, `movimientos/${id}`),
+            datosActualizados
+        );
+
+        alert('Registro actualizado correctamente');
+
+        cerrarModalEditar();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert('Error al actualizar registro');
+    }
+};
     document.getElementById('btn-borrar-seleccionados').classList.remove('hidden');
     document.getElementById('th-seleccionar').classList.remove('hidden');
 }
@@ -150,6 +224,12 @@ onValue(ref(db, 'movimientos'), (snapshot) => {
 
             tr.innerHTML = `
                 ${puedeBorrar ? `
+                <td class="p-2 border dark:border-gray-700">
+    <button onclick='abrirModalEditar("${id}", ${JSON.stringify(reg)})'
+        class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs">
+        ✏️ Editar
+    </button>
+</td>
                     <td class="p-2 border dark:border-gray-700">
                         <input type="checkbox"
                                class="chk-borrar w-4 h-4"
@@ -310,6 +390,122 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = e => {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
 };
-</script>    
+</script> 
+<!-- MODAL EDITAR -->
+<div id="modalEditar"
+     class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white dark:bg-gray-800 w-[95%] max-w-4xl rounded-lg shadow-xl p-6 overflow-y-auto max-h-[90vh]">
+
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white">
+                Editar Registro
+            </h2>
+
+            <button onclick="cerrarModalEditar()"
+                    class="text-red-600 text-2xl font-bold">
+                ✕
+            </button>
+        </div>
+
+        <input type="hidden" id="edit-id">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div>
+                <label class="text-sm font-bold">Sucursal</label>
+                <input id="edit-sucursal" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Empresa</label>
+                <input id="edit-empresa" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Servidor</label>
+                <input id="edit-servidor" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Tipo</label>
+                <input id="edit-tipo" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Estado</label>
+                <input id="edit-estado" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Zona</label>
+                <input id="edit-zona" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Usuario</label>
+                <input id="edit-usuario" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Nombre</label>
+                <input id="edit-nombre" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Puesto</label>
+                <input id="edit-puesto" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Perfil</label>
+                <input id="edit-perfil" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Unidad Organizativa</label>
+                <input id="edit-unidad" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Programa</label>
+                <input id="edit-programa" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Comienza En</label>
+                <input id="edit-comienza" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Fecha Alta</label>
+                <input id="edit-fecha" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Folio</label>
+                <input id="edit-folio" class="w-full border rounded p-2">
+            </div>
+
+            <div>
+                <label class="text-sm font-bold">Solicitante</label>
+                <input id="edit-solicitante" class="w-full border rounded p-2">
+            </div>
+
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3">
+            <button onclick="cerrarModalEditar()"
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                Cancelar
+            </button>
+
+            <button onclick="guardarEdicion()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                Guardar Cambios
+            </button>
+        </div>
+    </div>
+</div>    
 </body>
 </html>
