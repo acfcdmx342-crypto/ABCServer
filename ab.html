@@ -943,14 +943,17 @@ const q = query(
             document.getElementById('display-info').style.display = 'none';
             irFase(1);
         });
-    } catch (err) {
-        console.error(err);
-        Swal.fire(
-            "Error",
-            "No se pudo guardar el registro",
-            "error"
-        );
-    }
+    } 
+   catch (err) {
+
+    console.error("ERROR PDF:", err);
+
+    Swal.fire(
+        "Error",
+        err.message,
+        "error"
+    );
+}     
 });    
 
 document.addEventListener('contextmenu', e => e.preventDefault());
