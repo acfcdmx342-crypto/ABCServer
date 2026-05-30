@@ -260,30 +260,18 @@ Object.entries(personal).forEach(([key, value]) => {
         }
         const nombre = encontrado.nombreCompleto || "Usuario";
         const correo = encontrado.correo || "";
-        const telefono =encontrado.telefono ||encontrado.whatsapp ||encontrado.celular ||"";
-codigoRecuperacion = Math.floor(
+        codigoRecuperacion = Math.floor(
     100000 + Math.random() * 900000
 ).toString();
 
-const mensaje = `
-Hola ${nombre}
-
-Tu código de recuperación es:
-
-${codigoRecuperacion}
-
-Este código vence en 10 minutos.
-`;
         const opcion = await Swal.fire({
-            title: "Recuperar contraseña",
-            text: `Usuario encontrado: ${nombre}`,
-            icon: "info",
-            showCancelButton: true,
-            showDenyButton: true,
-            confirmButtonText: "Enviar por correo",
-            denyButtonText: "Enviar por WhatsApp",
-            cancelButtonText: "Cancelar"
-        });
+    title: "Recuperar contraseña",
+    text: `Usuario encontrado: ${nombre}`,
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonText: "Enviar código",
+    cancelButtonText: "Cancelar"
+});
 
        if (opcion.isConfirmed) {
 
@@ -324,25 +312,14 @@ Este código vence en 10 minutos.
         return;
     }
 
-    Swal.fire(
-        "Código enviado",
-        `Se envió un código a ${correo}`,
-        "success"
-    );
+await Swal.fire(
+    "Código enviado",
+    `Se envió un código a ${correo}`,
+    "success"
+);
 }
-               if (opcion.isDenied) {
-            if (!telefono) {
-                Swal.fire("Sin WhatsApp", "Este usuario no tiene teléfono o WhatsApp registrado", "warning");
-                return;
-            }
-
-            const numeroLimpio = telefono.replace(/\D/g, "");
-            const texto = encodeURIComponent(mensaje);
-
-            window.open(`https://wa.me/52${numeroLimpio}?text=${texto}`, "_blank");
-        }
- 
-if (opcion.isConfirmed || opcion.isDenied) {
+             
+if (opcion.isConfirmed) {
 
     const { value: codigoIngresado } = await Swal.fire({
         title: "Validación",
