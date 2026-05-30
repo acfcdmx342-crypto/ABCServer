@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>    
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>  
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -160,12 +161,39 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
+        import { getDatabase, ref, get, child, update} 
         const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        emailjs.init("rCrANJZmFHHsk9Yo0");
+        async function enviarCodigoCorreo(correo, nombre, codigo) {
 
+    try {
+
+        await emailjs.send(
+            "service_2om03jm",
+            "template_8e32lm9",
+            {
+                nombre: nombre,
+                codigo: codigo,
+                email: correo
+            }
+        );
+
+        return true;
+
+    } catch(error) {
+
+        console.error(error);
+
+        return false;
+    }
+}
+let codigoRecuperacion = null;
+let usuarioKey = null;
+function validarPassword(password) {
+    return /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_\-])[A-Za-z\d@$!%*?&.#_\-]{8,}$/.test(password);
+}
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const msg = document.getElementById('message');
@@ -217,26 +245,34 @@ document.getElementById('btnRecuperar').addEventListener('click', async () => {
             Swal.fire("Error", "No hay personal registrado", "error");
             return;
         }
-
         const personal = snapshot.val();
-
-        const encontrado = Object.values(personal).find(p =>
-            p.usuario?.toUpperCase() === userIn
-        );
-
-        if (!encontrado) {
+let encontrado = null;
+Object.entries(personal).forEach(([key, value]) => {
+    if (value.usuario?.toUpperCase() === userIn) {
+        encontrado = value;
+        usuarioKey = key;
+    }
+});
+    if (!encontrado) {
             Swal.fire("No encontrado", "El usuario no existe en el módulo de personal", "error");
             return;
         }
-
         const nombre = encontrado.nombreCompleto || "Usuario";
         const correo = encontrado.correo || "";
-        const password = encontrado.contraseña || "";
+        const telefono =encontrado.telefono ||encontrado.whatsapp ||encontrado.celular ||"";
+codigoRecuperacion = Math.floor(
+    100000 + Math.random() * 900000
+).toString();
 
-        const telefono = encontrado.telefono || encontrado.whatsapp || encontrado.celular || "";
+const mensaje = `
+Hola ${nombre}
 
-        const mensaje = `Hola ${nombre}, tu contraseña de acceso al sistema es: ${password}`;
+Tu código de recuperación es:
 
+${codigoRecuperacion}
+
+Este código vence en 10 minutos.
+`;
         const opcion = await Swal.fire({
             title: "Recuperar contraseña",
             text: `Usuario encontrado: ${nombre}`,
@@ -248,19 +284,52 @@ document.getElementById('btnRecuperar').addEventListener('click', async () => {
             cancelButtonText: "Cancelar"
         });
 
-        if (opcion.isConfirmed) {
-            if (!correo) {
-                Swal.fire("Sin correo", "Este usuario no tiene correo registrado", "warning");
-                return;
-            }
+       if (opcion.isConfirmed) {
 
-            const asunto = encodeURIComponent("Recuperación de contraseña - Sistemas Grupo Roma");
-            const cuerpo = encodeURIComponent(mensaje);
+    if (!correo) {
 
-            window.location.href = `mailto:${correo}?subject=${asunto}&body=${cuerpo}`;
-        }
+        Swal.fire(
+            "Sin correo",
+            "Este usuario no tiene correo registrado",
+            "warning"
+        );
 
-        if (opcion.isDenied) {
+        return;
+    }
+
+    Swal.fire({
+        title: "Enviando código...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    const enviado =
+        await enviarCodigoCorreo(
+            correo,
+            nombre,
+            codigoRecuperacion
+        );
+
+    Swal.close();
+
+    if (!enviado) {
+
+        Swal.fire(
+            "Error",
+            "No fue posible enviar el correo",
+            "error"
+        );
+
+        return;
+    }
+
+    Swal.fire(
+        "Código enviado",
+        `Se envió un código a ${correo}`,
+        "success"
+    );
+}
+               if (opcion.isDenied) {
             if (!telefono) {
                 Swal.fire("Sin WhatsApp", "Este usuario no tiene teléfono o WhatsApp registrado", "warning");
                 return;
@@ -271,7 +340,65 @@ document.getElementById('btnRecuperar').addEventListener('click', async () => {
 
             window.open(`https://wa.me/52${numeroLimpio}?text=${texto}`, "_blank");
         }
+ 
+if (opcion.isConfirmed || opcion.isDenied) {
 
+    const { value: codigoIngresado } = await Swal.fire({
+        title: "Validación",
+        input: "text",
+        inputLabel: "Ingresa el código recibido",
+        inputPlaceholder: "Código de 6 dígitos",
+        confirmButtonText: "Validar"
+    });
+
+     const { value: nuevaPassword } = await Swal.fire({
+        title: "Nueva contraseña",
+        input: "password",
+        inputLabel: "Ingresa la nueva contraseña"
+    });
+
+    if (!validarPassword(nuevaPassword)) {
+
+        Swal.fire(
+            "Contraseña inválida",
+            "Debe contener:\n\n• 8 caracteres mínimo\n• 1 mayúscula\n• 1 número\n• 1 carácter especial",
+            "warning"
+        );
+
+        return;
+    }
+
+    const { value: confirmarPassword } = await Swal.fire({
+        title: "Confirmar contraseña",
+        input: "password",
+        inputLabel: "Repite la contraseña"
+    });
+
+    if (nuevaPassword !== confirmarPassword) {
+
+        Swal.fire(
+            "Error",
+            "Las contraseñas no coinciden",
+            "error"
+        );
+
+        return;
+    }
+
+    await update(
+        ref(db, `personal/${usuarioKey}`),
+        {
+            contraseña: nuevaPassword
+        }
+    );
+
+    Swal.fire(
+        "Correcto",
+        "Contraseña actualizada correctamente",
+        "success"
+    );
+
+}
     } catch (error) {
         console.error(error);
         Swal.fire("Error", "No se pudo recuperar la contraseña", "error");
