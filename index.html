@@ -161,7 +161,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, get, child, update} 
+        import { getDatabase, ref, get, child, update} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
         const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -231,6 +231,7 @@ function validarPassword(password) {
             }
         });
 document.getElementById('btnRecuperar').addEventListener('click', async () => {
+    console.log("Botón recuperar presionado");
     const userIn = document.getElementById('user').value.trim().toUpperCase();
 
     if (!userIn) {
@@ -350,7 +351,14 @@ if (opcion.isConfirmed || opcion.isDenied) {
         inputPlaceholder: "Código de 6 dígitos",
         confirmButtonText: "Validar"
     });
-
+if (codigoIngresado !== codigoRecuperacion) {
+    Swal.fire(
+        "Error",
+        "Código incorrecto",
+        "error"
+    );
+    return;
+}
      const { value: nuevaPassword } = await Swal.fire({
         title: "Nueva contraseña",
         input: "password",
