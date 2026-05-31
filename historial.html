@@ -181,60 +181,175 @@ const escaparHtml = (valor) => (valor || '-')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 
-const generarPDFRegistro = (registro) => {
+const imagenesPDF = {};
+
+const cargarImagenPDF = async (url) => {
+    if (imagenesPDF[url]) return imagenesPDF[url];
+
+    try {
+        const respuesta = await fetch(url);
+        const blob = await respuesta.blob();
+
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+
+        imagenesPDF[url] = dataUrl;
+        return dataUrl;
+    } catch (error) {
+        console.warn('No se pudo cargar el logo para el PDF:', error);
+        return null;
+    }
+};
+
+const generarPDFRegistro = async (registro) => {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const fechaGeneracion = new Date().toLocaleString('es-MX');
-    const titulo = registro.accion === 'BAJA'
-        ? 'Baja de Usuario'
-        : 'Alta de Usuario';
+    const doc = new jsPDF('landscape', 'mm', 'letter');
+    const azul = [66, 99, 184];
+    const azulLinea = [0, 160, 255];
+    const grisFondo = [240, 240, 240];
+    const grisCelda = [245, 245, 245];
+    const negro = [0, 0, 0];
+    const blanco = [255, 255, 255];
+    const accion = (registro.accion || 'ALTA').toUpperCase();
+    const logoGrupoRoma = await cargarImagenPDF('https://i.imgur.com/CWJQAEt.png');
+    const logoAcf = await cargarImagenPDF('https://i.imgur.com/kgJVnJD.png');
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text(titulo, 14, 18);
+    const valor = (texto) => (texto || '-').toString();
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.text(`Folio: ${registro.folio || 'Sin folio'}`, 14, 26);
-    doc.text(`Fecha de generacion: ${fechaGeneracion}`, 14, 32);
+    const escribirTexto = (texto, x, y, opciones = {}) => {
+        doc.setFont('helvetica', opciones.bold ? 'bold' : 'normal');
+        doc.setFontSize(opciones.size || 7);
+        doc.setTextColor(...(opciones.color || negro));
+        doc.text(valor(texto), x, y, {
+            align: opciones.align || 'left',
+            maxWidth: opciones.maxWidth
+        });
+    };
 
-    doc.autoTable({
-        startY: 40,
-        theme: 'grid',
-        head: [['Campo', 'Informacion']],
-        body: [
-            ['Sucursal/Depto', registro.sucursal || '-'],
-            ['Empresa', registro.empresa || '-'],
-            ['Servidor', registro.servidor || '-'],
-            ['Tipo', registro.tipo || '-'],
-            ['Estado', registro.estado || '-'],
-            ['Zona', registro.zona || '-'],
-            ['Usuario', registro.usuario || '-'],
-            ['Nombre Completo', registro.nombre || '-'],
-            ['Puesto', registro.puesto || '-'],
-            ['Perfil', registro.perfil || '-'],
-            ['Unidad Organizativa', registro.unidad_organizativa || '-'],
-            ['Inicia Programa', registro.inicia_programa || '-'],
-            ['Comienza en', registro.comienza_en || '-'],
-            ['Fecha Alta', registro.fecha_alta || '-'],
-            ['Solicita', registro.solicitante || '-'],
-            ['Alta por', registro.atendido_por || 'Sistema'],
-            ['Status', registro.accion || '-']
-        ],
-        styles: {
-            fontSize: 9,
-            cellPadding: 2,
-            valign: 'middle'
-        },
-        headStyles: {
-            fillColor: [31, 41, 55],
-            textColor: [255, 255, 255]
-        },
-        columnStyles: {
-            0: { fontStyle: 'bold', cellWidth: 55 },
-            1: { cellWidth: 125 }
-        }
+    const celda = (x, y, w, h, texto, opciones = {}) => {
+        doc.setDrawColor(...(opciones.borderColor || negro));
+        doc.setLineWidth(opciones.lineWidth || 0.2);
+        doc.setFillColor(...(opciones.fill || blanco));
+        doc.rect(x, y, w, h, 'FD');
+        escribirTexto(texto, x + (opciones.align === 'center' ? w / 2 : 1.5), y + h / 2 + 1.2, {
+            bold: opciones.bold,
+            size: opciones.size || 6.5,
+            color: opciones.color || negro,
+            align: opciones.align || 'left',
+            maxWidth: w - 3
+        });
+    };
+
+    const filaDato = (x, y, etiquetaW, valorW, etiqueta, texto) => {
+        celda(x, y, etiquetaW, 7.5, etiqueta, {
+            fill: azul,
+            color: blanco,
+            borderColor: azul,
+            size: 5.8
+        });
+        celda(x + etiquetaW, y, valorW, 7.5, texto, {
+            fill: grisCelda,
+            color: negro,
+            borderColor: negro,
+            size: 6
+        });
+    };
+
+    const lineaPrograma = (x, y, etiqueta, texto) => {
+        celda(x, y, 48, 8, etiqueta, {
+            fill: azul,
+            color: blanco,
+            borderColor: azul,
+            align: 'center',
+            size: 5.8
+        });
+        escribirTexto(texto, x + 67, y + 5.5, { size: 6.5, maxWidth: 82 });
+        doc.setDrawColor(...azulLinea);
+        doc.setLineWidth(0.9);
+        doc.line(x + 48, y + 7.2, x + 130, y + 7.2);
+    };
+
+    doc.setFillColor(...grisFondo);
+    doc.rect(0, 0, 279.4, 215.9, 'F');
+
+    if (logoGrupoRoma) {
+        doc.addImage(logoGrupoRoma, 'PNG', 8, 17, 27, 29);
+    } else {
+        celda(8, 17, 27, 29, 'GRUPO ROMA', { fill: blanco, align: 'center', bold: true, size: 7 });
+    }
+
+    if (logoAcf) {
+        doc.addImage(logoAcf, 'PNG', 213, 21, 35, 18);
+    } else {
+        celda(213, 21, 35, 18, 'AC&F', { fill: blanco, align: 'center', bold: true, size: 9 });
+    }
+
+    escribirTexto('ALTAS Y BAJAS DE USUARIOS EN', 139.7, 14, { bold: true, size: 14, align: 'center' });
+    escribirTexto('SERVIDORES', 139.7, 24, { bold: true, size: 14, align: 'center' });
+    escribirTexto('Administradora de Comercios y Franquicias S.A. de C.V.', 139.7, 38, { bold: true, size: 8, align: 'center' });
+    escribirTexto('Huatulco #37, Col. Roma Sur, Cuauhtemoc, Ciudad de Mexico, Mexico, C.P. 06760', 139.7, 45, { size: 5.8, align: 'center' });
+    escribirTexto('Tel. (55) 52 64 76 62', 139.7, 51, { size: 5.8, align: 'center' });
+    escribirTexto('www.gruporoma.com', 139.7, 57, { size: 5.8, align: 'center' });
+
+    filaDato(8, 106, 48, 20, 'SERVIDOR', registro.servidor);
+    filaDato(8, 113.5, 48, 20, 'SOLICITADO POR', registro.solicitante);
+
+    filaDato(8, 136, 48, 53, 'EMPRESA', registro.empresa);
+    filaDato(8, 143.5, 48, 53, 'ZONA', registro.zona);
+    filaDato(8, 151, 48, 53, 'ESTADO', registro.estado);
+    filaDato(8, 158.5, 48, 53, 'TIPO', registro.tipo);
+    filaDato(8, 166, 48, 53, 'UNIDAD ORGANIZATIVA', registro.unidad_organizativa);
+
+    celda(171, 98, 25, 8, 'N° DE SOLICITUD', { fill: azul, color: blanco, borderColor: azul, align: 'center', size: 5 });
+    celda(196, 98, 43, 8, 'N° DE FOLIO', { fill: azul, color: blanco, borderColor: azul, align: 'center', size: 5 });
+    celda(239, 98, 31, 8, 'FECHA DE SOLICITUD', { fill: azul, color: blanco, borderColor: azul, align: 'center', size: 5 });
+    celda(171, 106, 25, 8, registro.numero_solicitud || '-', { fill: grisCelda, align: 'center', size: 5.8 });
+    celda(196, 106, 43, 8, registro.folio, { fill: grisCelda, align: 'center', size: 5.8 });
+    celda(239, 106, 31, 8, registro.fecha_alta || registro.fecha_solicitud || '-', { fill: grisCelda, align: 'center', size: 5.8 });
+
+    doc.setFillColor(255, 242, 0);
+    doc.rect(184, 121.5, 41, 8, 'F');
+    escribirTexto(accion, 204.5, 127, { bold: true, size: 8.5, align: 'center' });
+
+    const xInfo = 171;
+    const yInfo = 129.5;
+    const etiquetaW = 25;
+    const valorW = 70;
+    const infoFilas = [
+        ['USUARIO', registro.usuario],
+        ['NOM. COMPLETO', registro.nombre],
+        ['PUESTO', registro.puesto],
+        ['Sucursal', registro.sucursal],
+        ['PERFIL', registro.perfil],
+        ['ALTA POR', registro.atendido_por || nombreSesion || 'Sistema']
+    ];
+
+    infoFilas.forEach(([etiqueta, texto], index) => {
+        const y = yInfo + index * 7.5;
+        celda(xInfo, y, etiquetaW, 7.5, etiqueta, {
+            fill: azul,
+            color: blanco,
+            borderColor: azul,
+            align: 'center',
+            bold: true,
+            size: 5.2
+        });
+        celda(xInfo + etiquetaW, y, valorW, 7.5, texto, {
+            fill: grisCelda,
+            color: negro,
+            borderColor: azulLinea,
+            lineWidth: 0.8,
+            bold: true,
+            size: 6
+        });
     });
+
+    lineaPrograma(8, 184, 'INICIA PROGRAMA', registro.inicia_programa);
+    lineaPrograma(8, 197, 'COMIENZA EN', registro.comienza_en);
 
     return doc.output('datauristring');
 };
@@ -329,8 +444,8 @@ window.guardarCargaMasiva = async () => {
     if (!confirmar) return;
 
     try {
-        await Promise.all(registros.map(registro => {
-            registro.pdfBase64 = generarPDFRegistro(registro);
+        await Promise.all(registros.map(async registro => {
+            registro.pdfBase64 = await generarPDFRegistro(registro);
             const nuevoRegistro = push(ref(db, 'movimientos'));
             return update(nuevoRegistro, registro);
         }));
