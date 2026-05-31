@@ -565,6 +565,7 @@ window.cerrarModalEditar = () => {
 window.guardarEdicion = async () => {
 
     const id = document.getElementById('edit-id').value;
+    const registroActual = registrosActuales.get(id) || {};
 
     const datosActualizados = {
 
@@ -583,10 +584,18 @@ window.guardarEdicion = async () => {
         comienza_en: document.getElementById('edit-comienza').value,
         fecha_alta: document.getElementById('edit-fecha').value,
         folio: document.getElementById('edit-folio').value,
-        solicitante: document.getElementById('edit-solicitante').value
+        solicitante: document.getElementById('edit-solicitante').value,
+        actualizado_por: nombreSesion,
+        fecha_actualizacion: new Date().toISOString()
     };
 
     try {
+        const registroParaPDF = {
+            ...registroActual,
+            ...datosActualizados
+        };
+
+        datosActualizados.pdfBase64 = await generarPDFRegistro(registroParaPDF);
 
         await update(
             ref(db, `movimientos/${id}`),
