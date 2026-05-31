@@ -20,12 +20,45 @@
         .table-responsive { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .btn-add { background: #0f172a; color: white; border: none; }
         .btn-add:hover { background: #1e293b; color: white; }
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 24px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.25);
+            margin: 0;
+        }
+        .sidebar .btn-regresar {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #1e293b;
+            color: #fff;
+            text-decoration: none;
+            padding: 0;
+            transition: 0.2s;
+        }
+        .sidebar .btn-regresar:hover {
+            background: #38bdf8;
+            color: #0f172a;
+            transform: scale(1.05);
+            border-left: 0;
+        }
     </style>
 </head>
 <body>
 <div class="d-flex">
     <div class="sidebar">
-        <h5 class="text-center py-4 border-bottom"><i class="bi bi-layers-half"></i> Catálogos</h5>
+        <h5 class="sidebar-title">
+            <span><i class="bi bi-layers-half"></i> Catálogos</span>
+            <a href="ab.html" class="btn-regresar" title="Regresar">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </h5>
         <a onclick="cargar('servidores')"><i class="bi bi-hdd-stack"></i> Servidores</a>
         <hr class="mx-3 opacity-25">
         <a onclick="cargar('empresas')"><i class="bi bi-building"></i> Empresas</a>
