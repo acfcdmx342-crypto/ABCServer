@@ -973,7 +973,12 @@ const q = query(
         );
 
         await writable.close();
-    }
+    } else {
+
+    pdfDoc.save(`${payload.folio}.pdf`);
+
+}
+    
         Swal.fire({
             title: "¡Registro Guardado!",
             text: "Folio: " + payload.folio,
