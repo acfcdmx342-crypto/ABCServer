@@ -76,7 +76,7 @@
     </button>
 
     <button id="btn-carga-masiva"
-        onclick="window.location.href='carga_masiva.html'"
+        type="button"
         class="hidden bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition font-medium">
         📥 Carga Masiva
     </button>
@@ -121,7 +121,7 @@
 
     <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-       import { getDatabase, ref, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+       import { getDatabase, ref, onValue, remove, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = { databaseURL: "https://abcservers-2927d-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
@@ -139,10 +139,159 @@ document.getElementById('nombre-sesion').textContent = nombreSesion;
 
 const puedeBorrar = nombreSesion.toUpperCase() === usuarioAutorizado;
 const registrosSeleccionados = new Set();
+const columnasCargaMasiva = [
+    { campo: 'sucursal', nombre: 'Sucursal/Depto' },
+    { campo: 'empresa', nombre: 'Empresa' },
+    { campo: 'servidor', nombre: 'Servidor' },
+    { campo: 'tipo', nombre: 'Tipo' },
+    { campo: 'estado', nombre: 'Estado' },
+    { campo: 'zona', nombre: 'Zona' },
+    { campo: 'usuario', nombre: 'Usuario' },
+    { campo: 'nombre', nombre: 'Nombre Completo' },
+    { campo: 'puesto', nombre: 'Puesto' },
+    { campo: 'perfil', nombre: 'Perfil' },
+    { campo: 'unidad_organizativa', nombre: 'U. Org.' },
+    { campo: 'inicia_programa', nombre: 'Inicia Prog.' },
+    { campo: 'comienza_en', nombre: 'Comienza en' },
+    { campo: 'fecha_alta', nombre: 'Fecha Alta' },
+    { campo: 'folio', nombre: 'N Folio' },
+    { campo: 'solicitante', nombre: 'Solicita' },
+    { campo: 'atendido_por', nombre: 'Alta por' },
+    { campo: 'accion', nombre: 'Status' }
+];
+
+const normalizarTexto = (valor) => (valor || '')
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+
+const separarLineaCarga = (linea) => {
+    if (linea.includes('\t')) return linea.split('\t');
+    if (linea.includes(';')) return linea.split(';');
+    return linea.split(',');
+};
+
+const escaparHtml = (valor) => (valor || '-')
+    .toString()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+const convertirCargaMasiva = (texto) => {
+    const lineas = texto
+        .split(/\r?\n/)
+        .map(linea => linea.trim())
+        .filter(Boolean);
+
+    if (lineas.length === 0) return [];
+
+    let filas = lineas.map(separarLineaCarga);
+    const encabezadosNormalizados = filas[0].map(normalizarTexto);
+    const contieneEncabezado = columnasCargaMasiva.some(col =>
+        encabezadosNormalizados.includes(normalizarTexto(col.nombre)) ||
+        encabezadosNormalizados.includes(normalizarTexto(col.campo))
+    );
+
+    if (contieneEncabezado) {
+        filas = filas.slice(1);
+    }
+
+    return filas
+        .map(celdas => {
+            const registro = {};
+
+            columnasCargaMasiva.forEach((columna, index) => {
+                registro[columna.campo] = (celdas[index] || '').trim();
+            });
+
+            registro.accion = registro.accion || 'ALTA';
+            registro.atendido_por = registro.atendido_por || nombreSesion || 'Sistema';
+            registro.fecha_carga = new Date().toISOString();
+
+            return registro;
+        })
+        .filter(registro =>
+            registro.usuario ||
+            registro.nombre ||
+            registro.folio ||
+            registro.sucursal
+        );
+};
+
+const actualizarVistaPreviaCarga = () => {
+    const texto = document.getElementById('carga-masiva-texto').value;
+    const registros = convertirCargaMasiva(texto);
+    const resumen = document.getElementById('carga-masiva-resumen');
+    const preview = document.getElementById('carga-masiva-preview');
+
+    resumen.textContent = registros.length
+        ? `${registros.length} registro(s) listos para guardar.`
+        : 'Pega al menos una fila valida para cargar.';
+
+    preview.innerHTML = registros.slice(0, 5).map(reg => `
+        <tr class="border-b dark:border-gray-700">
+            <td class="p-2">${escaparHtml(reg.sucursal)}</td>
+            <td class="p-2">${escaparHtml(reg.empresa)}</td>
+            <td class="p-2">${escaparHtml(reg.usuario)}</td>
+            <td class="p-2">${escaparHtml(reg.nombre)}</td>
+            <td class="p-2">${escaparHtml(reg.folio)}</td>
+            <td class="p-2">${escaparHtml(reg.accion)}</td>
+        </tr>
+    `).join('');
+};
+
+window.abrirModalCargaMasiva = () => {
+    document.getElementById('modalCargaMasiva').classList.remove('hidden');
+    document.getElementById('modalCargaMasiva').classList.add('flex');
+    document.getElementById('carga-masiva-texto').focus();
+    actualizarVistaPreviaCarga();
+};
+
+window.cerrarModalCargaMasiva = () => {
+    document.getElementById('modalCargaMasiva').classList.add('hidden');
+    document.getElementById('modalCargaMasiva').classList.remove('flex');
+};
+
+window.guardarCargaMasiva = async () => {
+    if (!puedeBorrar) return;
+
+    const registros = convertirCargaMasiva(document.getElementById('carga-masiva-texto').value);
+
+    if (registros.length === 0) {
+        alert('Pega al menos un registro valido.');
+        return;
+    }
+
+    const confirmar = confirm(`Se guardaran ${registros.length} registro(s) en el historial. ¿Deseas continuar?`);
+
+    if (!confirmar) return;
+
+    try {
+        await Promise.all(registros.map(registro => {
+            const nuevoRegistro = push(ref(db, 'movimientos'));
+            return update(nuevoRegistro, registro);
+        }));
+
+        document.getElementById('carga-masiva-texto').value = '';
+        actualizarVistaPreviaCarga();
+        cerrarModalCargaMasiva();
+        alert('Carga masiva guardada correctamente.');
+    } catch (error) {
+        console.error(error);
+        alert('No se pudo guardar la carga masiva.');
+    }
+};
 
 /* BOTON CARGA MASIVA */
 if (nombreSesion.toUpperCase() === usuarioAutorizado) {
-    document.getElementById('btn-carga-masiva').classList.remove('hidden');
+    const botonCargaMasiva = document.getElementById('btn-carga-masiva');
+    botonCargaMasiva.classList.remove('hidden');
+    botonCargaMasiva.addEventListener('click', abrirModalCargaMasiva);
+    document.getElementById('carga-masiva-texto').addEventListener('input', actualizarVistaPreviaCarga);
 }
 
 if (puedeBorrar) {
@@ -407,6 +556,72 @@ document.onkeydown = e => {
     if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
 };
 </script> 
+<!-- MODAL CARGA MASIVA -->
+<div id="modalCargaMasiva"
+     class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white dark:bg-gray-800 w-[95%] max-w-5xl rounded-lg shadow-xl p-6 overflow-y-auto max-h-[90vh]">
+
+        <div class="flex justify-between items-start gap-4 mb-4">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">
+                    Carga Masiva
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                    Pega la informacion en el orden de la tabla: Sucursal, Empresa, Servidor, Tipo, Estado, Zona, Usuario, Nombre, Puesto, Perfil, U. Org., Programa, Comienza, Fecha, Folio, Solicita, Alta por y Status.
+                </p>
+            </div>
+
+            <button onclick="cerrarModalCargaMasiva()"
+                    class="text-red-600 text-2xl font-bold">
+                ✕
+            </button>
+        </div>
+
+        <div class="bg-yellow-50 border border-yellow-200 text-yellow-900 rounded p-3 text-sm mb-4">
+            Puedes copiar desde Excel y pegar aqui. Si la primera fila trae encabezados, se omitira automaticamente.
+        </div>
+
+        <textarea id="carga-masiva-texto"
+                  class="w-full min-h-[190px] border rounded p-3 font-mono text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+                  placeholder="Sucursal/Depto&#9;Empresa&#9;Servidor&#9;Tipo&#9;Estado&#9;Zona&#9;Usuario&#9;Nombre Completo&#9;Puesto&#9;Perfil&#9;U. Org.&#9;Inicia Prog.&#9;Comienza en&#9;Fecha Alta&#9;N Folio&#9;Solicita&#9;Alta por&#9;Status"></textarea>
+
+        <div class="mt-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <p id="carga-masiva-resumen" class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Pega al menos una fila valida para cargar.
+            </p>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="cerrarModalCargaMasiva()"
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                    Cancelar
+                </button>
+
+                <button onclick="guardarCargaMasiva()"
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
+                    Guardar Datos
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-4 overflow-x-auto border border-gray-200 dark:border-gray-700 rounded">
+            <table class="min-w-full text-xs text-left text-gray-700 dark:text-gray-300">
+                <thead class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white uppercase">
+                    <tr>
+                        <th class="p-2">Sucursal</th>
+                        <th class="p-2">Empresa</th>
+                        <th class="p-2">Usuario</th>
+                        <th class="p-2">Nombre</th>
+                        <th class="p-2">Folio</th>
+                        <th class="p-2">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="carga-masiva-preview"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL EDITAR -->
 <div id="modalEditar"
      class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
