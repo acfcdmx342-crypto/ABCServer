@@ -77,6 +77,7 @@
             <table id="tabla-datos" class="min-w-full table-auto border-collapse">
                 <thead>
                     <tr class="bg-gray-800 dark:bg-black text-white text-[10px] uppercase text-center">
+                        <th class="p-2 border dark:border-gray-700">Editar</th>
                         <th id="th-seleccionar" class="hidden p-2 border dark:border-gray-700">Sel.</th>
                         <th class="p-2 border dark:border-gray-700">Sucursal/Depto</th>
                         <th class="p-2 border dark:border-gray-700">Empresa</th>
@@ -96,7 +97,6 @@
                         <th class="p-2 border dark:border-gray-700">Solicita</th>
                         <th class="p-2 border dark:border-gray-700">Alta por</th>
                         <th class="p-2 border dark:border-gray-700">Status</th>
-                        <th class="p-2 border dark:border-gray-700">Editar</th>
                         <th class="p-2 border dark:border-gray-700">PDF</th>
                     </tr>
                 </thead>
@@ -132,9 +132,7 @@ if (puedeBorrar) {
 
     document.getElementById('modalEditar').classList.remove('hidden');
     document.getElementById('modalEditar').classList.add('flex');
-
     document.getElementById('edit-id').value = id;
-
     document.getElementById('edit-sucursal').value = reg.sucursal || '';
     document.getElementById('edit-empresa').value = reg.empresa || '';
     document.getElementById('edit-servidor').value = reg.servidor || '';
