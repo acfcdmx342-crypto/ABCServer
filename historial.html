@@ -181,6 +181,64 @@ const escaparHtml = (valor) => (valor || '-')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 
+const generarPDFRegistro = (registro) => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const fechaGeneracion = new Date().toLocaleString('es-MX');
+    const titulo = registro.accion === 'BAJA'
+        ? 'Baja de Usuario'
+        : 'Alta de Usuario';
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text(titulo, 14, 18);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(`Folio: ${registro.folio || 'Sin folio'}`, 14, 26);
+    doc.text(`Fecha de generacion: ${fechaGeneracion}`, 14, 32);
+
+    doc.autoTable({
+        startY: 40,
+        theme: 'grid',
+        head: [['Campo', 'Informacion']],
+        body: [
+            ['Sucursal/Depto', registro.sucursal || '-'],
+            ['Empresa', registro.empresa || '-'],
+            ['Servidor', registro.servidor || '-'],
+            ['Tipo', registro.tipo || '-'],
+            ['Estado', registro.estado || '-'],
+            ['Zona', registro.zona || '-'],
+            ['Usuario', registro.usuario || '-'],
+            ['Nombre Completo', registro.nombre || '-'],
+            ['Puesto', registro.puesto || '-'],
+            ['Perfil', registro.perfil || '-'],
+            ['Unidad Organizativa', registro.unidad_organizativa || '-'],
+            ['Inicia Programa', registro.inicia_programa || '-'],
+            ['Comienza en', registro.comienza_en || '-'],
+            ['Fecha Alta', registro.fecha_alta || '-'],
+            ['Solicita', registro.solicitante || '-'],
+            ['Alta por', registro.atendido_por || 'Sistema'],
+            ['Status', registro.accion || '-']
+        ],
+        styles: {
+            fontSize: 9,
+            cellPadding: 2,
+            valign: 'middle'
+        },
+        headStyles: {
+            fillColor: [31, 41, 55],
+            textColor: [255, 255, 255]
+        },
+        columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 55 },
+            1: { cellWidth: 125 }
+        }
+    });
+
+    return doc.output('datauristring');
+};
+
 const convertirCargaMasiva = (texto) => {
     const lineas = texto
         .split(/\r?\n/)
@@ -272,6 +330,7 @@ window.guardarCargaMasiva = async () => {
 
     try {
         await Promise.all(registros.map(registro => {
+            registro.pdfBase64 = generarPDFRegistro(registro);
             const nuevoRegistro = push(ref(db, 'movimientos'));
             return update(nuevoRegistro, registro);
         }));
