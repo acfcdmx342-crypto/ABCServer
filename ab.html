@@ -78,13 +78,16 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .theme-btn, .history-btn {
-            cursor: pointer;
-            font-size: 1.2rem;
-            margin-right: 15px;
-            color: var(--text);
-            transition: transform 0.2s;
-        }
+     .theme-btn, .history-btn {
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-right: 15px;
+    color: var(--text);
+    transition: transform 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
         .history-btn:hover { transform: scale(1.1); color: #38bdf8; }
         .bi-sun-fill { display: none; color: #ffca28; }
         .dark-mode .bi-sun-fill { display: block; }
@@ -167,8 +170,9 @@
                     <i class="bi bi-moon-stars-fill"></i>
                     <i class="bi bi-sun-fill"></i>
                     </div>
-                <a href="info.html">
-                <i class="bi bi-database" mb-6></i></a>
+                <a href="info.html" class="history-btn" title="Base de datos">
+    <i class="bi bi-database"></i>
+</a>
                 <a href="historial.html" class="history-btn" title="Ver Historial">
                     <i class="bi bi-clock-history"></i>
                 </a>
