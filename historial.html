@@ -81,6 +81,13 @@
         📥 Carga Masiva
     </button>
 
+    <button id="btn-papelera"
+        type="button"
+        title="Ver registros eliminados"
+        class="hidden bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-900 transition font-medium">
+        ♻️ Reciclaje
+    </button>
+
 </div>
                
             </div>
@@ -130,6 +137,7 @@
 
 const usuarioAutorizado = 'LUIS ALBERTO GARCIA SANCHEZ';
 const nombreSesion = (localStorage.getItem('user_name') || '').trim();
+const nombreSesionNormalizado = nombreSesion.toUpperCase();
 
 if (!nombreSesion) {
     window.location.href = 'index.html';
@@ -137,8 +145,11 @@ if (!nombreSesion) {
 
 document.getElementById('nombre-sesion').textContent = nombreSesion;
 
-const puedeBorrar = nombreSesion.toUpperCase() === usuarioAutorizado;
+const puedeBorrar = nombreSesionNormalizado === usuarioAutorizado;
+const puedeVerPapelera = nombreSesionNormalizado === 'LGARCIA' || nombreSesionNormalizado === usuarioAutorizado;
 const registrosSeleccionados = new Set();
+const registrosActuales = new Map();
+const registrosEliminados = new Map();
 const columnasCargaMasiva = [
     { campo: 'sucursal', nombre: 'Sucursal/Depto' },
     { campo: 'empresa', nombre: 'Empresa' },
@@ -460,12 +471,65 @@ window.guardarCargaMasiva = async () => {
     }
 };
 
+window.abrirModalPapelera = () => {
+    if (!puedeVerPapelera) return;
+
+    document.getElementById('modalPapelera').classList.remove('hidden');
+    document.getElementById('modalPapelera').classList.add('flex');
+};
+
+window.cerrarModalPapelera = () => {
+    document.getElementById('modalPapelera').classList.add('hidden');
+    document.getElementById('modalPapelera').classList.remove('flex');
+};
+
+window.restaurarRegistroEliminado = async (id) => {
+    if (!puedeVerPapelera) return;
+
+    const registro = registrosEliminados.get(id);
+
+    if (!registro) {
+        alert('No se encontro el registro eliminado.');
+        return;
+    }
+
+    const confirmar = confirm(`¿Deseas restaurar el registro ${registro.folio || registro.usuario || id}?`);
+
+    if (!confirmar) return;
+
+    try {
+        const registroRestaurado = { ...registro };
+        delete registroRestaurado.id_original;
+        delete registroRestaurado.eliminado_por;
+        delete registroRestaurado.fecha_eliminacion;
+
+        await update(ref(db, `movimientos/${registro.id_original || id}`), {
+            ...registroRestaurado,
+            restaurado_por: nombreSesion,
+            fecha_restauracion: new Date().toISOString()
+        });
+
+        await remove(ref(db, `papelera_movimientos/${id}`));
+
+        alert('Registro restaurado correctamente.');
+    } catch (error) {
+        console.error(error);
+        alert('No se pudo restaurar el registro.');
+    }
+};
+
 /* BOTON CARGA MASIVA */
 if (nombreSesion.toUpperCase() === usuarioAutorizado) {
     const botonCargaMasiva = document.getElementById('btn-carga-masiva');
     botonCargaMasiva.classList.remove('hidden');
     botonCargaMasiva.addEventListener('click', abrirModalCargaMasiva);
     document.getElementById('carga-masiva-texto').addEventListener('input', actualizarVistaPreviaCarga);
+}
+
+if (puedeVerPapelera) {
+    const botonPapelera = document.getElementById('btn-papelera');
+    botonPapelera.classList.remove('hidden');
+    botonPapelera.addEventListener('click', abrirModalPapelera);
 }
 
 if (puedeBorrar) {
@@ -547,6 +611,7 @@ window.guardarEdicion = async () => {
 onValue(ref(db, 'movimientos'), (snapshot) => {
     tablaBody.innerHTML = "";
     registrosSeleccionados.clear();
+    registrosActuales.clear();
 
     const data = snapshot.val();
 
@@ -554,6 +619,8 @@ onValue(ref(db, 'movimientos'), (snapshot) => {
         const registros = Object.entries(data).reverse();
 
         registros.forEach(([id, reg]) => {
+            registrosActuales.set(id, reg);
+
             const tr = document.createElement('tr');
             tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 bg-white dark:bg-gray-800 text-center";
 
@@ -619,6 +686,51 @@ onValue(ref(db, 'movimientos'), (snapshot) => {
     }
 });
 
+onValue(ref(db, 'papelera_movimientos'), (snapshot) => {
+    const tablaPapelera = document.getElementById('tabla-papelera');
+    const mensajePapelera = document.getElementById('mensaje-papelera');
+
+    if (!tablaPapelera || !mensajePapelera) return;
+
+    registrosEliminados.clear();
+    tablaPapelera.innerHTML = '';
+
+    const data = snapshot.val();
+
+    if (!data) {
+        mensajePapelera.textContent = 'No hay registros eliminados.';
+        return;
+    }
+
+    const registros = Object.entries(data).reverse();
+
+    mensajePapelera.textContent = `${registros.length} registro(s) en reciclaje.`;
+
+    registros.forEach(([id, reg]) => {
+        registrosEliminados.set(id, reg);
+
+        const tr = document.createElement('tr');
+        tr.className = 'border-b dark:border-gray-700 text-center';
+        tr.innerHTML = `
+            <td class="p-2">${escaparHtml(reg.sucursal)}</td>
+            <td class="p-2">${escaparHtml(reg.empresa)}</td>
+            <td class="p-2 font-mono">${escaparHtml(reg.usuario)}</td>
+            <td class="p-2 font-semibold">${escaparHtml(reg.nombre)}</td>
+            <td class="p-2">${escaparHtml(reg.folio)}</td>
+            <td class="p-2">${escaparHtml(reg.eliminado_por)}</td>
+            <td class="p-2">${escaparHtml(reg.fecha_eliminacion ? new Date(reg.fecha_eliminacion).toLocaleString('es-MX') : '-')}</td>
+            <td class="p-2">
+                <button onclick="restaurarRegistroEliminado('${id}')"
+                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-semibold">
+                    Restaurar
+                </button>
+            </td>
+        `;
+
+        tablaPapelera.appendChild(tr);
+    });
+});
+
 document.getElementById('btn-borrar-seleccionados').addEventListener('click', async () => {
     if (!puedeBorrar) return;
 
@@ -627,25 +739,34 @@ document.getElementById('btn-borrar-seleccionados').addEventListener('click', as
         return;
     }
 
-    const confirmar = confirm(`¿Seguro que deseas borrar ${registrosSeleccionados.size} registro(s)?`);
+    const confirmar = confirm(`¿Seguro que deseas enviar ${registrosSeleccionados.size} registro(s) a reciclaje?`);
 
     if (!confirmar) return;
 
     try {
-        const eliminaciones = [];
+        const eliminaciones = Array.from(registrosSeleccionados).map(async id => {
+            const registro = registrosActuales.get(id);
 
-        registrosSeleccionados.forEach(id => {
-            eliminaciones.push(remove(ref(db, `movimientos/${id}`)));
+            if (!registro) return;
+
+            await update(ref(db, `papelera_movimientos/${id}`), {
+                ...registro,
+                id_original: id,
+                eliminado_por: nombreSesion,
+                fecha_eliminacion: new Date().toISOString()
+            });
+
+            return remove(ref(db, `movimientos/${id}`));
         });
 
         await Promise.all(eliminaciones);
 
         registrosSeleccionados.clear();
 
-        alert('Registro(s) eliminado(s) correctamente.');
+        alert('Registro(s) enviado(s) a reciclaje correctamente.');
     } catch (error) {
         console.error(error);
-        alert('No se pudieron borrar los registros.');
+        alert('No se pudieron enviar los registros a reciclaje.');
     }
 });
         // Lógica de Exportación
@@ -792,6 +913,55 @@ document.onkeydown = e => {
                 </thead>
                 <tbody id="carga-masiva-preview"></tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL RECICLAJE -->
+<div id="modalPapelera"
+     class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white dark:bg-gray-800 w-[95%] max-w-6xl rounded-lg shadow-xl p-6 overflow-y-auto max-h-[90vh]">
+
+        <div class="flex justify-between items-start gap-4 mb-4">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">
+                    Registros Eliminados
+                </h2>
+                <p id="mensaje-papelera" class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                    No hay registros eliminados.
+                </p>
+            </div>
+
+            <button onclick="cerrarModalPapelera()"
+                    class="text-red-600 text-2xl font-bold">
+                ✕
+            </button>
+        </div>
+
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded">
+            <table class="min-w-full text-xs text-gray-700 dark:text-gray-300">
+                <thead class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white uppercase">
+                    <tr>
+                        <th class="p-2">Sucursal</th>
+                        <th class="p-2">Empresa</th>
+                        <th class="p-2">Usuario</th>
+                        <th class="p-2">Nombre</th>
+                        <th class="p-2">Folio</th>
+                        <th class="p-2">Eliminado por</th>
+                        <th class="p-2">Fecha eliminacion</th>
+                        <th class="p-2">Accion</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-papelera"></tbody>
+            </table>
+        </div>
+
+        <div class="mt-5 flex justify-end">
+            <button onclick="cerrarModalPapelera()"
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                Cerrar
+            </button>
         </div>
     </div>
 </div>
