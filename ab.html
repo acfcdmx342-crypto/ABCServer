@@ -640,7 +640,7 @@ doc.text(
     // EXPORTAR
     // =========================
 
-return doc.output('dataurlstring');
+return doc;
 }
     document.getElementById('final_n_solicitud').addEventListener('input', generarFolio);
 async function loadImageBase64(url) {
@@ -931,20 +931,49 @@ const q = query(
         Swal.showLoading();
     }
 });
-        try {
-        // Generar PDF y guardarlo dentro del registro
-     const pdfBase64 = await generarPDF(payload);
-        payload.pdfBase64 = pdfBase64;
-        // Guardar UNA SOLA VEZ
-       await Promise.race([
+       try {
 
-    push(ref(db, 'movimientos'), payload),
+    // GENERAR PDF
+    const pdfDoc = await generarPDF(payload);
 
-    new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Tiempo agotado al guardar')), 15000)
-    )
+    // GUARDAR PDF EN FIREBASE
+    payload.pdfBase64 = pdfDoc.output('dataurlstring');
 
-]);
+    // GUARDAR REGISTRO
+    await Promise.race([
+
+        push(ref(db, 'movimientos'), payload),
+
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Tiempo agotado al guardar')), 15000)
+        )
+
+    ]);
+
+    // ==========================
+    // ABRIR VENTANA GUARDAR COMO
+    // ==========================
+
+    if ('showSaveFilePicker' in window) {
+
+        const handle = await window.showSaveFilePicker({
+            suggestedName: `${payload.folio}.pdf`,
+            types: [{
+                description: 'Archivo PDF',
+                accept: {
+                    'application/pdf': ['.pdf']
+                }
+            }]
+        });
+
+        const writable = await handle.createWritable();
+
+        await writable.write(
+            pdfDoc.output('blob')
+        );
+
+        await writable.close();
+    }
         Swal.fire({
             title: "¡Registro Guardado!",
             text: "Folio: " + payload.folio,
