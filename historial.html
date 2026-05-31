@@ -68,8 +68,21 @@
                         </button>
                     </div>
                 </div>
+<div class="flex flex-col gap-2">
 
-                <button onclick="window.location.href='ab.html'" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition font-medium">Nuevo Registro</button>
+    <button onclick="window.location.href='ab.html'"
+        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition font-medium">
+        Nuevo Registro
+    </button>
+
+    <button id="btn-carga-masiva"
+        onclick="window.location.href='carga_masiva.html'"
+        class="hidden bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition font-medium">
+        📥 Carga Masiva
+    </button>
+
+</div>
+               
             </div>
         </div>
 
@@ -126,6 +139,11 @@ document.getElementById('nombre-sesion').textContent = nombreSesion;
 
 const puedeBorrar = nombreSesion.toUpperCase() === usuarioAutorizado;
 const registrosSeleccionados = new Set();
+
+/* BOTON CARGA MASIVA */
+if (nombreSesion.toUpperCase() === usuarioAutorizado) {
+    document.getElementById('btn-carga-masiva').classList.remove('hidden');
+}
 
 if (puedeBorrar) {
     window.abrirModalEditar = (id, reg) => {
