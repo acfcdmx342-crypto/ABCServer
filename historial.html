@@ -97,7 +97,7 @@
             <table id="tabla-datos" class="min-w-full table-auto border-collapse">
                 <thead>
                     <tr class="bg-gray-800 dark:bg-black text-white text-[10px] uppercase text-center">
-                        <th class="p-2 border dark:border-gray-700">Editar</th>
+                        <th id="th-editar" class="hidden p-2 border dark:border-gray-700">Editar</th>
                         <th id="th-seleccionar" class="hidden p-2 border dark:border-gray-700">Sel.</th>
                         <th class="p-2 border dark:border-gray-700">Sucursal/Depto</th>
                         <th class="p-2 border dark:border-gray-700">Empresa</th>
@@ -613,8 +613,9 @@ window.guardarEdicion = async () => {
         alert('Error al actualizar registro');
     }
 };
-    document.getElementById('btn-borrar-seleccionados').classList.remove('hidden');
-    document.getElementById('th-seleccionar').classList.remove('hidden');
+       document.getElementById('btn-borrar-seleccionados').classList.remove('hidden');
+       document.getElementById('th-editar').classList.remove('hidden');
+       document.getElementById('th-seleccionar').classList.remove('hidden');
 }
 
 onValue(ref(db, 'movimientos'), (snapshot) => {
