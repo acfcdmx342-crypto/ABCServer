@@ -738,17 +738,21 @@ console.log(evaluaciones);
         if(!folio || !fechaSol) return alert("Folio y Fecha son obligatorios.");
         if(window.sigEncargado.isEmpty() || window.sigSistemas.isEmpty()) return alert("Firmas obligatorias.");
 
-        const nuevaVisita = {
-            fecha: document.getElementById('fecha_inicio').value,
-            empresa: document.getElementById('selEmpresa').value,
-            zona: document.getElementById('selZona').value,
-            sucursal: document.getElementById('selSucursal').value,
-            folio: folio,
-            cumplimiento: document.getElementById('final-score').innerText,
-            fechaSolucion: fechaSol,
-            observaciones: document.getElementById('obs_encargado').value,
-            detalleEvaluacion: evaluaciones
-        };
+     const nuevaVisita = {
+    fecha: document.getElementById('fecha_inicio').value,
+    empresa: document.getElementById('selEmpresa').value,
+    zona: document.getElementById('selZona').value,
+    sucursal: document.getElementById('selSucursal').value,
+    folio: folio,
+    cumplimiento: document.getElementById('final-score').innerText,
+    fechaSolucion: fechaSol,
+    observaciones: document.getElementById('obs_encargado').value,
+
+    firmaEncargado: window.sigEncargado.toDataURL(),
+    firmaSistemas: window.sigSistemas.toDataURL(),
+
+    detalleEvaluacion: evaluaciones
+};
 
         const nodoDestino = ref(db, 'visitasIT');
 
