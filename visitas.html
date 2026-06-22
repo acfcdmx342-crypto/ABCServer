@@ -107,48 +107,73 @@
 </div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, remove, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, remove, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 const firebaseConfig = {
     databaseURL: "https://mydbu-fbc33-default-rtdb.firebaseio.com/"
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-function cargarHistorial() {
-    const visitasRef = ref(db, 'visitasIT');
-    onValue(visitasRef, (snapshot) => {
+async function cargarHistorial() {
+
+    const tbody = document.querySelector('#tablaVisitas tbody');
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="9" style="text-align:center">
+                Cargando información...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        const snapshot = await get(ref(db, 'visitasIT'));
+
         const data = snapshot.val() || {};
+
         const historial = Object.entries(data).map(([id, val]) => ({
             id,
             ...val
         }));
+
         pintarTabla(historial);
-    });
+
+    } catch(error) {
+
+        console.error(error);
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align:center;color:red">
+                    Error al cargar información
+                </td>
+            </tr>
+        `;
+    }
 }
 function pintarTabla(historial) {
-    const tbody = document.querySelector('#tablaVisitas tbody');
-    tbody.innerHTML = "";
-    historial.reverse().forEach((visita) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${visita.fecha || 'N/A'}</td>
-            <td>${visita.empresa || '-'}</td>
-            <td>${visita.zona || '-'}</td>
-            <td>${visita.sucursal || '-'}</td>
-            <td>${visita.folio || '-'}</td>
-            <td><b>${visita.cumplimiento || '0%'}</b></td>
-            <td>${visita.fechaSolucion || '-'}</td>
-            <td>${visita.observaciones || ''}</td>
-            <td>
-                <button class="btn-action btn-view" onclick="verPendientes('${visita.id}')">Ver</button>
-                <button class="btn-action btn-pdf" onclick="recuperarPDF('${visita.id}')">PDF</button>
-                <button class="btn-action btn-note" onclick="agregarNota('${visita.id}')">Nota</button>
-                <button class="btn-action btn-delete" onclick="eliminarRegistro('${visita.id}')">Borrar</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
 
+    const tbody = document.querySelector('#tablaVisitas tbody');
+
+    tbody.innerHTML = "";
+
+    const fragment = document.createDocumentFragment();
+
+    historial
+    .sort((a,b) => (b.fecha || '').localeCompare(a.fecha || ''))
+    .forEach((visita) => {
+
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+            ...
+        `;
+
+        fragment.appendChild(tr);
+    });
+
+    tbody.appendChild(fragment);
+}
 // ================== FUNCIÓN RECUPERAR PDF COMPLETO ==================
 window.recuperarPDF = async function(id) {
     const snap = await get(ref(db, 'visitasIT/' + id));
